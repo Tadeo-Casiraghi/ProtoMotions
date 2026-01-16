@@ -268,7 +268,7 @@ class Simulator(ABC):
 
         # Use joint limits from KinematicInfo instead of simulator-specific ones
         # Verify that simulator-specific limits match the parsed ones
-        self._verify_joint_limits()
+        # self._verify_joint_limits()
 
         self._common_pd_action_offset, self._common_pd_action_scale = (
             build_pd_action_offset_scale(

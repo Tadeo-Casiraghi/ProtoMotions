@@ -1567,7 +1567,7 @@ env:
     subset_method: null
     exclude_motion_ids: null
     realign_motion_with_humanoid_on_each_step: false
-    resample_on_reset: true
+    resample_on_: true
   ref_respawn_offset: 0.05
   ref_object_respawn_offset: 0.0
   ref_contact_smooth_window: 0
@@ -1615,7 +1615,7 @@ env:
       num_future_steps: 1
   mimic_early_termination: null
   mimic_bootstrap_on_episode_end: true
-  reset_grace_period: 5
+  _grace_period: 5
   masked_mimic_obs:
     enabled: true
     masked_mimic_masking:

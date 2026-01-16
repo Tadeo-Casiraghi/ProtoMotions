@@ -139,6 +139,18 @@ class Mimic(BaseEnv):
                 self.motion_lib is not None
             ), "Motion lib must be set if sync_motion is True"
 
+        sim_body_names = robot_config.kinematic_info.body_names
+        robot_dof_names = robot_config.kinematic_info.dof_names
+
+        print("Robot Num Bodies:", sim_body_names)
+        print("Robot Num DOF:", robot_dof_names)
+
+        # Force the MotionLib to match the Robot
+        self.motion_lib.expand_data_to_match_robot(
+            sim_body_names=sim_body_names,
+            sim_dof_names=robot_dof_names
+        )
+
         if self.config.mimic_obs.enabled:
             self.mimic_obs_cb = MimicObs(self.config.mimic_obs, self)
 
@@ -485,6 +497,38 @@ class Mimic(BaseEnv):
         ref_gt += self.get_spawn_to_ref_pose_offset_with_terrain_height_correction(
             ref_gt
         )
+
+        # --- NEW: THE ZERO ERROR HACK ---
+        # Reuse current_state from parent context
+        current_state = reward_context["current_state"]
+        
+        # Identify Ghost Bodies: Any body with Z < -900 meters in the reference
+        # (This matches the -1000.0 we set in MotionLib)
+        ghost_mask = ref_gt[..., 2] < -900.0
+        
+        if ghost_mask.any():
+            # 1. Overwrite Position:
+            # Set Reference Pos = Current Pos for ghosts. Distance becomes 0.
+            ref_gt[ghost_mask] = current_state.rigid_body_pos[ghost_mask]
+            
+            # 2. Overwrite Rotation:
+            # Set Reference Rot = Current Rot for ghosts. Orientation diff becomes 0.
+            # We need to clone ref_rot first
+            ref_gr = ref_state.rigid_body_rot.clone()
+            ref_gr[ghost_mask] = current_state.rigid_body_rot[ghost_mask]
+            ref_state.rigid_body_rot = ref_gr
+
+            # 3. Overwrite DoFs (Optional but recommended for extra joints like Slides):
+            # If you have extra DoFs that are 0 in MotionLib, sync them here 
+            # so the policy isn't forced to keep them at 0.
+            # (Assuming you initialized the mapping with 0s for missing DoFs)
+            # This logic detects which DoFs are permanently 0 in the batch and syncs them.
+            # OR simpler: just sync indices you know are fake. For now, Pos/Rot is usually enough.
+
+        # Update the state object with our hacked positions
+        ref_state.rigid_body_pos = ref_gt
+        # --------------------------------
+
         ref_state.rigid_body_pos = ref_gt
 
         hinge_axes_map = self.robot_config.kinematic_info.hinge_axes_map
@@ -532,6 +576,15 @@ class Mimic(BaseEnv):
         hinge_axes_map = self.robot_config.kinematic_info.hinge_axes_map
         ref_lr = dof_to_local(ref_state.dof_pos, hinge_axes_map, True)
 
+        # --- NEW: Create Validity Mask ---
+        # Identify valid bodies (Z > -900). 
+        # We use float mask (1.0 for Valid, 0.0 for Ghost) for math.
+        valid_body_mask = (ref_gt[..., 2] > -900.0).float()
+        
+        # Calculate number of valid bodies per environment to normalize correctly
+        valid_count = valid_body_mask.sum(dim=-1).clamp(min=1.0)
+        # ---------------------------------
+
         # Get current state from simulator
         current_state = self.simulator.get_robot_state()
         lr = dof_to_local(current_state.dof_pos, hinge_axes_map, True)
@@ -556,15 +609,27 @@ class Mimic(BaseEnv):
         )  # [num_envs, num_bodies]
 
         gt_per_joint_err = (ref_gt - gt).pow(2).sum(-1).sqrt()
-        gt_err = gt_per_joint_err.mean(-1)
-        max_joint_err = gt_per_joint_err.max(-1)[0]
-        rh_err = (ref_gt - gt)[:, 0, -1].abs()
+        # Instead of .mean(-1), we mask and divide by valid count
+        gt_err = (gt_per_joint_err * valid_body_mask).sum(-1) / valid_count
+        
+        # Max error: we need to mask the ghost errors (which are huge) before taking max
+        # Set ghost errors to -1 so they aren't picked as max
+        masked_per_joint_err = gt_per_joint_err.clone()
+        masked_per_joint_err[valid_body_mask == 0] = -1.0
+        max_joint_err = masked_per_joint_err.max(-1)[0]
 
+        # 2. Rotation Error
         gr_diff = quat_diff_norm(gr, ref_gr, True)
-        gr_err = gr_diff.mean(-1)
+        
+        # Mask out ghosts for rotation error too
+        gr_err = (gr_diff * valid_body_mask).sum(-1) / valid_count
         gr_err_degrees = gr_err * 180 / torch.pi
-        max_gr_err = gr_diff.max(-1)[0]
+        
+        masked_gr_diff = gr_diff.clone()
+        masked_gr_diff[valid_body_mask == 0] = -1.0
+        max_gr_err = masked_gr_diff.max(-1)[0]
         max_gr_err_degrees = max_gr_err * 180 / torch.pi
+        rh_err = (ref_gt - gt)[:, 0, -1].abs()
 
         lr_diff = quat_diff_norm(lr, ref_lr, True)
         lr_err = lr_diff.mean(-1)

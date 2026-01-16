@@ -35,6 +35,7 @@ from typing import Optional, Tuple
 from dataclasses import dataclass
 from easydict import EasyDict
 from pathlib import Path
+import copy
 
 import torch
 import yaml
@@ -326,10 +327,18 @@ class MotionLib:
                 motion_state_0[key], motion_state_1[key], blend
             )
 
-        # TODO: HACK: assume when local_rigid_body_rot is not None, all joints are exp_map
-        # will use local_rigid_body_rot for interpolation
+        # Check if the topology matches the "Standard Humanoid" assumption 
+        # (where every joint is a 3-DOF spherical joint).
+        # Formula: num_dofs == (num_bodies - 1) * 3
+        use_spherical_interp = False
         if motion_state_0.local_rigid_body_rot is not None:
-            # lr: (num_envs, num_bodies, 4)
+            num_bodies_chk = motion_state_0.local_rigid_body_rot.shape[1]
+            num_dofs_chk = motion_state_0.dof_pos.shape[1]
+            if num_dofs_chk == (num_bodies_chk - 1) * 3:
+                use_spherical_interp = True
+
+        if use_spherical_interp:
+            # High-quality interpolation for spherical joints (SMPL standard)
             lr = interpolate_quat(
                 motion_state_0.local_rigid_body_rot,
                 motion_state_1.local_rigid_body_rot,
@@ -339,13 +348,12 @@ class MotionLib:
             lr = lr[:, 1:, :].reshape(
                 -1, 4
             )  # (num_envs * num_bodies - 1, 4), excluding root
-            assert (
-                motion_state_0.dof_pos.shape[1] == (j - 1) * 3
-            ), "dof_pos shape mismatch"
+            
             motion_state_0.dof_pos = quat_to_exp_map(lr, w_last=True).reshape(
                 b, (j - 1) * 3
             )
         else:
+            # Standard linear interpolation for general robots (Prosthetics, quadrupeds, etc.)
             motion_state_0.dof_pos = interpolate_pos(
                 motion_state_0.dof_pos, motion_state_1.dof_pos, blend
             )
@@ -697,6 +705,129 @@ class MotionLib:
             translation[:2] = translation_xy
 
             self.gts[start_idx:end_idx, :, :] += translation.reshape(1, 1, 3)
+
+    # In protomotions/components/motion_lib.py
+
+    def expand_data_to_match_robot(self, sim_body_names: list, sim_dof_names: list):
+        """
+        Reorders and pads motion data to match the Simulation Body and DoF order exactly
+        using string name matching.
+        """
+        if self.num_motions() == 0:
+            return
+
+        print(f"MotionLib: Mapping {len(sim_body_names)} Sim Bodies and {len(sim_dof_names)} Sim DoFs...")
+
+        # --- 1. Define Standard SMPL Reference Names ---
+        # Derived from the standard SMPL hierarchy found in your XML
+        ref_body_names = [
+            "Pelvis", 
+            "L_Hip", "L_Knee", "L_Ankle", "L_Toe", 
+            "R_Hip", "R_Knee", "R_Ankle", "R_Toe", 
+            "Torso", "Spine", "Chest", "Neck", "Head", 
+            "L_Thorax", "L_Shoulder", "L_Elbow", "L_Wrist", "L_Hand", 
+            "R_Thorax", "R_Shoulder", "R_Elbow", "R_Wrist", "R_Hand"
+        ]
+        
+        # Create a map: Name -> Index (0-23)
+        ref_body_map = {name: i for i, name in enumerate(ref_body_names)}
+
+        # --- 2. Build Body Index Map ---
+        # For every body in the SIMULATION, find where it is in the REFERENCE.
+        body_indices = []
+        for name in sim_body_names:
+            # Clean name (remove namespaces like "Robot/" or "bodies/")
+            clean = name.split("/")[-1]
+            
+            if clean in ref_body_map:
+                body_indices.append(ref_body_map[clean])
+            else:
+                # This is a Prosthetic part (e.g., "Prosthetic_Socket")
+                # Mark as -1 to fill with zeros later
+                body_indices.append(-1)
+
+        # --- 3. Build DoF Index Map ---
+        # We need to map Simulation DoFs (e.g., "L_Hip_x") to Reference DoF columns.
+        # Reference Data (self.dps) is a flat tensor [Frames, 69].
+        # We assume standard SMPL order: L_Hip (3), L_Knee (3)... excluding Pelvis (Root).
+        
+        # Generate the list of Reference DoF names in order
+        # Note: Pelvis is usually Root, so DoFs start at L_Hip
+        ref_dof_names = []
+        dof_bodies = [b for b in ref_body_names if b != "Pelvis"] # 23 bodies
+        axes = ["x", "y", "z"]
+        
+        for body in dof_bodies:
+            for axis in axes:
+                ref_dof_names.append(f"{body}_{axis}") # e.g., "L_Hip_x"
+
+        ref_dof_map = {name: i for i, name in enumerate(ref_dof_names)}
+
+        dof_indices = []
+        for name in sim_dof_names:
+            # Clean name (e.g., "L_Hip_x" or "L_Knee_rot_z")
+            # We try to find a substring match if exact match fails
+            clean = name.split("/")[-1]
+            
+            idx = -1
+            if clean in ref_dof_map:
+                idx = ref_dof_map[clean]
+            else:
+                # Fuzzy match: if Sim is "L_Knee_rot_x", match with Ref "L_Knee_x"
+                # This handles minor naming variations in XML
+                for ref_name in ref_dof_names:
+                    # Check if body name matches and axis matches
+                    # e.g. ref="L_Knee_x", sim="L_Knee_rot_x" -> both have "L_Knee" and ends with "x"
+                    base_ref = ref_name[:-2] # "L_Knee"
+                    axis_ref = ref_name[-1]  # "x"
+                    if base_ref in clean and clean.endswith(axis_ref):
+                        idx = ref_dof_map[ref_name]
+                        break
+            
+            dof_indices.append(idx)
+
+        # --- 4. Reconstruct Tensors ---
+        
+        # Helper function to shuffle columns
+        def remap_tensor(tensor, indices, dim=1, default_val=0.0):
+            shape = list(tensor.shape)
+            shape[dim] = len(indices) # Resize to match Simulation
+            new_tensor = torch.full(shape, default_val, device=self.device, dtype=tensor.dtype)
+            
+            for i, old_idx in enumerate(indices):
+                if old_idx != -1:
+                    if dim == 1:
+                        new_tensor[:, i] = tensor[:, old_idx]
+                    elif dim == 2: # For shaped pos/rot [Frames, Bodies, 3]
+                        new_tensor[:, i, :] = tensor[:, old_idx, :]
+            return new_tensor
+
+        # Remap Rigid Bodies
+        self.gts = remap_tensor(self.gts, body_indices, dim=1, default_val=-1000.0)
+        self.gvs = remap_tensor(self.gvs, body_indices, dim=1, default_val=0.0)
+        self.gavs = remap_tensor(self.gavs, body_indices, dim=1, default_val=0.0)
+        
+        # Remap Rotations (Default w=1)
+        self.grs = remap_tensor(self.grs, body_indices, dim=1, default_val=0.0)
+        # Fix Quaternions that were padded (0,0,0,0) -> (0,0,0,1)
+        # Assuming format [x, y, z, w]. If [w, x, y, z], change index to 0.
+        # Based on Isaac standard, w is usually last.
+        padded_mask = torch.tensor([i == -1 for i in body_indices], device=self.device)
+        self.grs[:, padded_mask, 3] = 1.0 
+
+        # Remap Contacts
+        self.contacts = remap_tensor(self.contacts, body_indices, dim=1, default_val=0.0)
+
+        # Remap DoFs
+        self.dps = remap_tensor(self.dps, dof_indices, dim=1, default_val=0.0)
+        self.dvs = remap_tensor(self.dvs, dof_indices, dim=1, default_val=0.0)
+
+        # Remap Local Rotations (if they exist)
+        if self.lrs is not None:
+             self.lrs = remap_tensor(self.lrs, body_indices, dim=1, default_val=0.0)
+             self.lrs[:, padded_mask, 3] = 1.0
+
+        print(f"MotionLib: Remapped to {len(body_indices)} Bodies and {len(dof_indices)} DoFs.")
 
 
 if __name__ == "__main__":

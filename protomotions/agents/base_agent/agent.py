@@ -123,6 +123,9 @@ class BaseAgent:
         # timer
         self.time_report = TimeReport()
 
+        self.time_report.add_timer('Main Timer')
+        self.time_report.start_timer('Main Timer')
+
         self.current_lengths = torch.zeros(
             self.num_envs, dtype=torch.long, device=self.device
         )
@@ -585,6 +588,8 @@ class BaseAgent:
                 self.fabric.call("on_training_stop", self)
                 self.save(checkpoint_name="last.ckpt")
                 return
+
+        self.time_report.end_timer('Main Timer')
 
         self.time_report.report()
         self.save(checkpoint_name="last.ckpt")
