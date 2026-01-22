@@ -96,6 +96,7 @@ class IsaacLabSimulator(Simulator):
             device=str(device),
             dt=1.0 / self.config.sim.fps,
             render_interval=self.config.sim.decimation,
+            
             physx=PhysxCfg(
                 solver_type=self.config.sim.physx.solver_type,
                 max_position_iteration_count=self.config.sim.physx.num_position_iterations,
@@ -104,6 +105,7 @@ class IsaacLabSimulator(Simulator):
                 gpu_max_rigid_contact_count=self.config.sim.physx.gpu_max_rigid_contact_count,
                 gpu_found_lost_pairs_capacity=self.config.sim.physx.gpu_found_lost_pairs_capacity,
                 gpu_found_lost_aggregate_pairs_capacity=self.config.sim.physx.gpu_found_lost_aggregate_pairs_capacity,
+                gpu_max_rigid_patch_count=300000,
             ),
         )
         self._simulation_app = simulation_app
@@ -449,6 +451,16 @@ class IsaacLabSimulator(Simulator):
 
     def _apply_simulator_pd_targets(self, pd_targets: torch.Tensor) -> None:
         """Applies PD position targets using IsaacLab's internal PD controller."""
+        # TEMPORARY
+        pd_targets[...,self._robot.joint_names.index("suspension_slide")] = -0.025
+        pd_targets[...,28] = 0
+        pd_targets[...,29] = 0
+        pd_targets[...,30] = 0
+
+        # print('suspension_x', ":", )
+        # print('suspension_y', ":", self._robot.joint_names.index("suspension_y"))
+        # print('suspension_z', ":", self._robot.joint_names.index("suspension_z"))
+        # print(pd_targets)
         self._robot.set_joint_position_target(pd_targets, joint_ids=None)
 
     def _apply_simulator_torques(self, torques: torch.Tensor) -> None:

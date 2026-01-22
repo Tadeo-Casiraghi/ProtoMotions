@@ -96,7 +96,7 @@
           <body name="prosthetic_assembly1" pos="-0.014825  0.00555  -0.13945" quat="0.53483409 -0.46255    -0.48321172  0.51624261">
           <inertial pos="0 0 0" mass="0.1" diaginertia="0.001 0.001 0.001"/>
             <joint name="suspension_slide" type="slide" axis="0 1 0" 
-               range="-0.05 0.05" stiffness="1000" damping="100" springref="-0.025"/>
+               range="-0.05 0.05" stiffness="10000000" damping="1" springref="-0.025"/>
               
             <body name="prosthetic_assembly2" pos="0.0  0.0  0.0" quat="1.0 0.0 0.0 0.0">
             <inertial pos="0 0 0" mass="0.1" diaginertia="0.001 0.001 0.001"/>

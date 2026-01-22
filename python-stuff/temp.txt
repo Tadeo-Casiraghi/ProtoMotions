@@ -1,0 +1,2 @@
+            float physxMaterial:compliantContactDamping = 4660
+            float physxMaterial:compliantContactStiffness = 46666

@@ -74,8 +74,8 @@ over "Flattened_Prototype_88"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_2>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_20"
@@ -130,8 +130,8 @@ over "Flattened_Prototype_91"
     def Xform "_geom_15"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_15" (
@@ -151,8 +151,8 @@ over "Flattened_Prototype_92"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_1>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_15"
@@ -167,7 +167,7 @@ over "Flattened_Prototype_93"
     def Xform "_geom_9"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.008767000399529934)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -206,7 +206,7 @@ over "Flattened_Prototype_95"
     def Xform "_geom_12"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.005276999901980162)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -334,8 +334,8 @@ over "Flattened_Prototype_101"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_3>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_21"
@@ -417,8 +417,8 @@ over "Flattened_Prototype_105"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_4>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_22"
@@ -440,7 +440,7 @@ over "Flattened_Prototype_107"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.008767000399529934)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -524,7 +524,7 @@ over "Flattened_Prototype_111"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.005276999901980162)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -564,8 +564,8 @@ over "Flattened_Prototype_113"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_3>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_17"
@@ -623,8 +623,8 @@ over "Flattened_Prototype_116"
     def Xform "_geom_20"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_20" (
@@ -685,8 +685,8 @@ over "Flattened_Prototype_119"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_1>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_19"
@@ -701,7 +701,7 @@ over "Flattened_Prototype_120"
     def Xform "_geom_8"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.008767000399529934)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -719,7 +719,7 @@ over "Flattened_Prototype_121"
     def Xform "_geom_10"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.008767000399529934)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -795,8 +795,8 @@ over "Flattened_Prototype_125"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_4>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_18"
@@ -923,7 +923,7 @@ over "Flattened_Prototype_132"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.005276999901980162)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -942,8 +942,8 @@ over "Flattened_Prototype_133"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_2>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_16"
@@ -983,7 +983,7 @@ over "Flattened_Prototype_135"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.005276999901980162)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -1021,8 +1021,8 @@ over "Flattened_Prototype_138"
     def Xform "_geom_17"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_17" (
@@ -1061,7 +1061,7 @@ over "Flattened_Prototype_140"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.008767000399529934)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -1095,7 +1095,7 @@ over "Flattened_Prototype_142"
     def Xform "_geom_7"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.008767000399529934)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -1156,7 +1156,7 @@ over "Flattened_Prototype_145"
     def Xform "_geom_11"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.005276999901980162)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -1174,8 +1174,8 @@ over "Flattened_Prototype_146"
     def Xform "_geom_16"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_16" (
@@ -1195,7 +1195,7 @@ over "Flattened_Prototype_147"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.008767000399529934)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -1233,8 +1233,8 @@ over "Flattened_Prototype_149"
     def Xform "_geom_22"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_22" (
@@ -1251,8 +1251,8 @@ over "Flattened_Prototype_150"
     def Xform "_geom_18"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_18" (
@@ -1287,8 +1287,8 @@ over "Flattened_Prototype_152"
     def Xform "_geom_19"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_19" (
@@ -1342,8 +1342,8 @@ over "Flattened_Prototype_155"
     def Xform "_geom_21"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_21" (
@@ -1360,7 +1360,7 @@ over "Flattened_Prototype_156"
     def Xform "_geom_14"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.005276999901980162)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -1404,7 +1404,7 @@ over "Flattened_Prototype_159"
     def Xform "_geom_13"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.005276999901980162)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -1425,7 +1425,7 @@ over "Flattened_Prototype_160"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.005276999901980162)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -1503,7 +1503,7 @@ over "Flattened_Prototype_164"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.008767000399529934)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -1669,8 +1669,8 @@ over "Flattened_Prototype_4"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_4>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_22"
@@ -1728,7 +1728,7 @@ over "Flattened_Prototype_7"
     def Xform "_geom_7"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.008767000399529934)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -1792,8 +1792,8 @@ over "Flattened_Prototype_10"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_1>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_15"
@@ -1808,8 +1808,8 @@ over "Flattened_Prototype_11"
     def Xform "_geom_17"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_17" (
@@ -1892,7 +1892,7 @@ over "Flattened_Prototype_16"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.008767000399529934)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -1947,8 +1947,8 @@ over "Flattened_Prototype_19"
     def Xform "_geom_21"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_21" (
@@ -2047,8 +2047,8 @@ over "Flattened_Prototype_25"
     def Xform "_geom_22"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_22" (
@@ -2087,8 +2087,8 @@ over "Flattened_Prototype_27"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_2>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_16"
@@ -2121,8 +2121,8 @@ over "Flattened_Prototype_29"
     def Xform "_geom_20"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_20" (
@@ -2204,7 +2204,7 @@ over "Flattened_Prototype_33"
     def Xform "_geom_11"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.005276999901980162)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -2244,7 +2244,7 @@ over "Flattened_Prototype_35"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.005276999901980162)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -2260,8 +2260,8 @@ over "Flattened_Prototype_36"
     def Xform "_geom_18"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_18" (
@@ -2281,8 +2281,8 @@ over "Flattened_Prototype_37"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_2>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_20"
@@ -2339,7 +2339,7 @@ over "Flattened_Prototype_40"
     def Xform "_geom_14"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.005276999901980162)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -2378,8 +2378,8 @@ over "Flattened_Prototype_42"
     def Xform "_geom_16"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_16" (
@@ -2399,7 +2399,7 @@ over "Flattened_Prototype_43"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.005276999901980162)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -2482,7 +2482,7 @@ over "Flattened_Prototype_48"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.008767000399529934)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -2501,8 +2501,8 @@ over "Flattened_Prototype_49"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_1>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_19"
@@ -2542,7 +2542,7 @@ over "Flattened_Prototype_51"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.005276999901980162)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -2558,7 +2558,7 @@ over "Flattened_Prototype_52"
     def Xform "_geom_13"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.005276999901980162)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -2678,8 +2678,8 @@ over "Flattened_Prototype_58"
     def Xform "_geom_19"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_19" (
@@ -2696,8 +2696,8 @@ over "Flattened_Prototype_59"
     def Xform "_geom_15"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_15" (
@@ -2732,7 +2732,7 @@ over "Flattened_Prototype_61"
     def Xform "_geom_9"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.008767000399529934)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -2750,7 +2750,7 @@ over "Flattened_Prototype_62"
     def Xform "_geom_8"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.008767000399529934)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -2814,8 +2814,8 @@ over "Flattened_Prototype_66"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_4>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_18"
@@ -2833,8 +2833,8 @@ over "Flattened_Prototype_67"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_3>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_17"
@@ -2871,7 +2871,7 @@ over "Flattened_Prototype_69"
     def Xform "_geom_10"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.008767000399529934)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -2914,7 +2914,7 @@ over "Flattened_Prototype_71"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.005276999901980162)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -2976,7 +2976,7 @@ over "Flattened_Prototype_74"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.008767000399529934)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -3032,7 +3032,7 @@ over "Flattened_Prototype_77"
     def Xform "_geom_12"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.005276999901980162)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -3136,8 +3136,8 @@ over "Flattened_Prototype_82"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_3>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
+        double3 xformOp:translate = (0, 0, -0.00250)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_21"
@@ -3177,7 +3177,7 @@ over "Flattened_Prototype_84"
     {
         rel material:binding = </smpl_humanoid8/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.004999999888241291, 0.004999999888241291, 0.008767000399529934)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
@@ -3301,10 +3301,6 @@ def Xform "smpl_humanoid8" (
             prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "PhysicsArticulationRootAPI", "PhysxArticulationAPI", "AnimationDataAPI"]
         )
         {
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
             float physics:density = 1000
             rel physics:simulationOwner
             bool physxArticulation:enabledSelfCollisions = 1
@@ -3333,10 +3329,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
             float physics:density = 2040.8163
             rel physics:simulationOwner
             quatd xformOp:orient = (1, 0, 0, 0)
@@ -3364,10 +3356,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
             float physics:density = 1234.5679
             rel physics:filteredPairs = [
                 </smpl_humanoid8/bodies/L_Toe>,
@@ -3400,10 +3388,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
             float physics:density = 1000
             rel physics:filteredPairs = </smpl_humanoid8/bodies/R_Knee>
             rel physics:simulationOwner
@@ -3432,10 +3416,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
             float physics:density = 1000
             rel physics:filteredPairs = [
                 </smpl_humanoid8/bodies/L_Knee>,
@@ -3467,10 +3447,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
             float physics:density = 2040.8163
             rel physics:simulationOwner
             quatd xformOp:orient = (1, 0, 0, 0)
@@ -3498,10 +3474,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
             float physics:density = 14088
             rel physics:filteredPairs = [
                 </smpl_humanoid8/bodies/L_Ankle>,
@@ -3534,10 +3506,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
             float physics:density = 140057
             rel physics:simulationOwner
             quatd xformOp:orient = (0.5259542465209961, -0.4726226329803467, 0.492927610874176, -0.5069737434387207)
@@ -3569,12 +3537,11 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 140057
             rel physics:simulationOwner
-            quatd xformOp:orient = (0.03309040516614914, 0.04097448289394379, -0.6574625372886658, 0.7516443133354187)
+            quatd xformOp:orient = (0.1342133730649948, -0.04127012938261032, -0.64666348695755, 0.7497398853302002)
             double3 xformOp:scale = (1, 1, 1)
-            double3 xformOp:translate = (-0.024048222228884697, -0.2800208032131195, -0.527974545955658)
+            double3 xformOp:translate = (-0.024048222228884697, -0.29001307487487793, -0.5283675789833069)
             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
             def Xform "visuals" (
@@ -3601,10 +3568,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
             float physics:density = 140057
             rel physics:simulationOwner
             quatd xformOp:orient = (0.5727511048316956, -0.4146759808063507, -0.43686482310295105, 0.5560117959976196)
@@ -3636,15 +3599,11 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
             float physics:density = 140057
             rel physics:simulationOwner
-            quatd xformOp:orient = (0.7769020199775696, -0.627414882183075, 0.039642371237277985, 0.03467514365911484)
+            quatd xformOp:orient = (0.7745747566223145, -0.6166990399360657, -0.04651285707950592, 0.13248777389526367)
             double3 xformOp:scale = (1, 1, 1)
-            double3 xformOp:translate = (-0.024048222228884697, -0.3717718720436096, -0.5315831899642944)
+            double3 xformOp:translate = (-0.024048222228884697, -0.3617795705795288, -0.5311901569366455)
             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
             def Xform "visuals" (
@@ -3671,10 +3630,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
             float physics:density = 140057
             rel physics:simulationOwner
             quatd xformOp:orient = (0.5259542465209961, -0.4726226329803467, 0.492927610874176, -0.5069737434387207)
@@ -3706,12 +3661,11 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 140057
             rel physics:simulationOwner
-            quatd xformOp:orient = (0.03309040516614914, 0.04097448289394379, -0.6574625372886658, 0.7516443133354187)
+            quatd xformOp:orient = (0.1342133730649948, -0.04127012938261032, -0.64666348695755, 0.7497398853302002)
             double3 xformOp:scale = (1, 1, 1)
-            double3 xformOp:translate = (-0.03240129351615906, -0.28722530603408813, -0.6072884202003479)
+            double3 xformOp:translate = (-0.03240129351615906, -0.29721757769584656, -0.607681393623352)
             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
             def Xform "visuals" (
@@ -3738,7 +3692,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 140057
             rel physics:simulationOwner
             quatd xformOp:orient = (0.5727511048316956, -0.4146759808063507, -0.43686482310295105, 0.5560117959976196)
@@ -3770,15 +3723,11 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
             float physics:density = 140057
             rel physics:simulationOwner
-            quatd xformOp:orient = (0.7769020199775696, -0.627414882183075, 0.039642371237277985, 0.03467514365911484)
+            quatd xformOp:orient = (0.7745747566223145, -0.6166990399360657, -0.04651285707950592, 0.13248777389526367)
             double3 xformOp:scale = (1, 1, 1)
-            double3 xformOp:translate = (-0.03240129351615906, -0.35836032032966614, -0.61008620262146)
+            double3 xformOp:translate = (-0.03240129351615906, -0.3483680486679077, -0.609693169593811)
             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
             def Xform "visuals" (
@@ -3805,7 +3754,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             point3f physics:centerOfMass = (0, 0, 0)
             float3 physics:diagonalInertia = (0.001, 0.001, 0.001)
             float physics:mass = 0.1
@@ -3835,7 +3783,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             point3f physics:centerOfMass = (0, 0, 0)
             float3 physics:diagonalInertia = (0.001, 0.001, 0.001)
             float physics:mass = 0.1
@@ -3865,10 +3812,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
             float physics:density = 5912
             rel physics:simulationOwner
             quatd xformOp:orient = (0.5259559750556946, -0.47262075543403625, 0.4929257929325104, -0.5069755911827087)
@@ -3896,12 +3839,11 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 5912
             rel physics:simulationOwner
-            quatd xformOp:orient = (0.03309062123298645, 0.040974318981170654, -0.6574665307998657, 0.7516409754753113)
+            quatd xformOp:orient = (0.13421285152435303, -0.04126742482185364, -0.6466599702835083, 0.7497433423995972)
             double3 xformOp:scale = (1, 1, 1)
-            double3 xformOp:translate = (-0.02688811719417572, -0.26970380544662476, -0.5544377565383911)
+            double3 xformOp:translate = (-0.024501433596014977, -0.28000593185424805, -0.5550955533981323)
             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
             def Xform "visuals" (
@@ -3924,7 +3866,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 5912
             rel physics:simulationOwner
             quatd xformOp:orient = (0.5727527141571045, -0.41467392444610596, -0.4368628263473511, 0.5560134649276733)
@@ -3952,12 +3893,11 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 5912
             rel physics:simulationOwner
-            quatd xformOp:orient = (0.7768987417221069, -0.6274189949035645, 0.03964218869805336, 0.03467534855008125)
+            quatd xformOp:orient = (0.7745778560638428, -0.6166954040527344, -0.04651013761758804, 0.13248737156391144)
             double3 xformOp:scale = (1, 1, 1)
-            double3 xformOp:translate = (-0.02688811533153057, -0.37997856736183167, -0.5587748885154724)
+            double3 xformOp:translate = (-0.024501435458660126, -0.36965662240982056, -0.5586215853691101)
             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
             def Xform "visuals" (
@@ -3980,7 +3920,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 5912
             rel physics:simulationOwner
             quatd xformOp:orient = (0.5259559750556946, -0.47262075543403625, 0.4929257929325104, -0.5069755911827087)
@@ -4008,12 +3947,11 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 5912
             rel physics:simulationOwner
-            quatd xformOp:orient = (0.03309062123298645, 0.040974318981170654, -0.6574665307998657, 0.7516409754753113)
+            quatd xformOp:orient = (0.13421285152435303, -0.04126742482185364, -0.6466599702835083, 0.7497433423995972)
             double3 xformOp:scale = (1, 1, 1)
-            double3 xformOp:translate = (-0.03517807275056839, -0.28037312626838684, -0.6332907676696777)
+            double3 xformOp:translate = (-0.03367644548416138, -0.29055899381637573, -0.6338503360748291)
             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
             def Xform "visuals" (
@@ -4036,7 +3974,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 5912
             rel physics:simulationOwner
             quatd xformOp:orient = (0.5727527141571045, -0.41467392444610596, -0.4368628263473511, 0.5560134649276733)
@@ -4064,12 +4001,11 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 5912
             rel physics:simulationOwner
-            quatd xformOp:orient = (0.7768987417221069, -0.6274189949035645, 0.03964218869805336, 0.03467534855008125)
+            quatd xformOp:orient = (0.7745778560638428, -0.6166954040527344, -0.04651013761758804, 0.13248737156391144)
             double3 xformOp:scale = (1, 1, 1)
-            double3 xformOp:translate = (-0.03517807275056839, -0.36314913630485535, -0.6365463733673096)
+            double3 xformOp:translate = (-0.033676449209451675, -0.3529507517814636, -0.6363042593002319)
             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
             def Xform "visuals" (
@@ -4092,10 +4028,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
             float physics:density = 1000
             rel physics:filteredPairs = </smpl_humanoid8/bodies/L_Knee>
             rel physics:simulationOwner
@@ -4124,7 +4056,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 1000
             rel physics:filteredPairs = [
                 </smpl_humanoid8/bodies/L_Knee>,
@@ -4156,10 +4087,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
             float physics:density = 2040.8163
             rel physics:filteredPairs = </smpl_humanoid8/bodies/Chest>
             rel physics:simulationOwner
@@ -4188,7 +4115,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 2040.8163
             rel physics:simulationOwner
             quatd xformOp:orient = (1, 0, 0, 0)
@@ -4216,7 +4142,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 2040.8163
             rel physics:filteredPairs = [
                 </smpl_humanoid8/bodies/Torso>,
@@ -4250,10 +4175,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
             float physics:density = 1000
             rel physics:simulationOwner
             quatd xformOp:orient = (1, 0, 0, 0)
@@ -4281,7 +4202,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 1000
             rel physics:filteredPairs = </smpl_humanoid8/bodies/Chest>
             rel physics:simulationOwner
@@ -4310,7 +4230,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 1000
             rel physics:simulationOwner
             quatd xformOp:orient = (1, 0, 0, 0)
@@ -4338,7 +4257,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 1000
             rel physics:filteredPairs = </smpl_humanoid8/bodies/Chest>
             rel physics:simulationOwner
@@ -4367,7 +4285,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 1000
             rel physics:simulationOwner
             quatd xformOp:orient = (1, 0, 0, 0)
@@ -4395,7 +4312,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 1000
             rel physics:simulationOwner
             quatd xformOp:orient = (1, 0, 0, 0)
@@ -4423,7 +4339,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 1000
             rel physics:simulationOwner
             quatd xformOp:orient = (1, 0, 0, 0)
@@ -4451,7 +4366,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 1000
             rel physics:simulationOwner
             quatd xformOp:orient = (1, 0, 0, 0)
@@ -4479,7 +4393,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 1000
             rel physics:filteredPairs = </smpl_humanoid8/bodies/Chest>
             rel physics:simulationOwner
@@ -4508,7 +4421,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 1000
             rel physics:simulationOwner
             quatd xformOp:orient = (1, 0, 0, 0)
@@ -4536,7 +4448,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 1000
             rel physics:simulationOwner
             quatd xformOp:orient = (1, 0, 0, 0)
@@ -4564,7 +4475,6 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            string isaac:nameOverride
             float physics:density = 1000
             rel physics:simulationOwner
             quatd xformOp:orient = (1, 0, 0, 0)
@@ -4592,7 +4502,7 @@ def Xform "smpl_humanoid8" (
     def Scope "joints"
     {
         def PhysicsJoint "L_Hip" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 80
@@ -4607,16 +4517,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 800
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -4644,7 +4547,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "L_Knee" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 80
@@ -4659,16 +4562,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 800
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -4696,7 +4592,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "L_Ankle" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 80
@@ -4711,19 +4607,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 800
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -4751,7 +4637,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "L_Toe" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 50
@@ -4766,16 +4652,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 500
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -4803,7 +4682,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "R_Hip" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 80
@@ -4818,16 +4697,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 800
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -4855,7 +4727,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "R_Knee" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 80
@@ -4870,19 +4742,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 800
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -4910,19 +4772,9 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsFixedJoint "skin_box_posterior_top" (
-            apiSchemas = ["IsaacJointAPI"]
+            
         )
         {
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
-            int isaac:physics:Rot_X:DofOffset
-            int isaac:physics:Rot_Y:DofOffset
-            int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             rel physics:body0 = </smpl_humanoid8/bodies/R_Knee>
             rel physics:body1 = </smpl_humanoid8/bodies/skin_box_posterior_top>
             float physics:breakForce = 3.4028235e38
@@ -4934,43 +4786,23 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsFixedJoint "skin_box_medial_top" (
-            apiSchemas = ["IsaacJointAPI"]
+            
         )
         {
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
-            int isaac:physics:Rot_X:DofOffset
-            int isaac:physics:Rot_Y:DofOffset
-            int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             rel physics:body0 = </smpl_humanoid8/bodies/R_Knee>
             rel physics:body1 = </smpl_humanoid8/bodies/skin_box_medial_top>
             float physics:breakForce = 3.4028235e38
             float physics:breakTorque = 3.4028235e38
-            point3f physics:localPos0 = (-0.009048223, 0.04927922, -0.083074555)
+            point3f physics:localPos0 = (-0.009048223, 0.039286945, -0.08346756)
             point3f physics:localPos1 = (0, 0, 0)
-            quatf physics:localRot0 = (0.033090405, 0.040974483, -0.65746254, 0.7516443)
+            quatf physics:localRot0 = (0.13421337, -0.04127013, -0.6466635, 0.7497399)
             quatf physics:localRot1 = (1, 0, 0, 0)
         }
 
         def PhysicsFixedJoint "skin_box_anterior_top" (
-            apiSchemas = ["IsaacJointAPI"]
+            
         )
         {
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
-            int isaac:physics:Rot_X:DofOffset
-            int isaac:physics:Rot_Y:DofOffset
-            int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             rel physics:body0 = </smpl_humanoid8/bodies/R_Knee>
             rel physics:body1 = </smpl_humanoid8/bodies/skin_box_anterior_top>
             float physics:breakForce = 3.4028235e38
@@ -4982,43 +4814,23 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsFixedJoint "skin_box_lateral_top" (
-            apiSchemas = ["IsaacJointAPI"]
+            
         )
         {
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
-            int isaac:physics:Rot_X:DofOffset
-            int isaac:physics:Rot_Y:DofOffset
-            int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             rel physics:body0 = </smpl_humanoid8/bodies/R_Knee>
             rel physics:body1 = </smpl_humanoid8/bodies/skin_box_lateral_top>
             float physics:breakForce = 3.4028235e38
             float physics:breakTorque = 3.4028235e38
-            point3f physics:localPos0 = (-0.009048223, -0.042471845, -0.08668318)
+            point3f physics:localPos0 = (-0.009048223, -0.03247957, -0.08629017)
             point3f physics:localPos1 = (0, 0, 0)
-            quatf physics:localRot0 = (0.776902, -0.6274149, 0.03964237, 0.034675144)
+            quatf physics:localRot0 = (0.77457476, -0.61669904, -0.046512857, 0.13248777)
             quatf physics:localRot1 = (1, 0, 0, 0)
         }
 
         def PhysicsFixedJoint "skin_box_posterior_bottom" (
-            apiSchemas = ["IsaacJointAPI"]
+            
         )
         {
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
-            int isaac:physics:Rot_X:DofOffset
-            int isaac:physics:Rot_Y:DofOffset
-            int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             rel physics:body0 = </smpl_humanoid8/bodies/R_Knee>
             rel physics:body1 = </smpl_humanoid8/bodies/skin_box_posterior_bottom>
             float physics:breakForce = 3.4028235e38
@@ -5030,43 +4842,23 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsFixedJoint "skin_box_medial_bottom" (
-            apiSchemas = ["IsaacJointAPI"]
+            
         )
         {
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
-            int isaac:physics:Rot_X:DofOffset
-            int isaac:physics:Rot_Y:DofOffset
-            int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             rel physics:body0 = </smpl_humanoid8/bodies/R_Knee>
             rel physics:body1 = </smpl_humanoid8/bodies/skin_box_medial_bottom>
             float physics:breakForce = 3.4028235e38
             float physics:breakTorque = 3.4028235e38
-            point3f physics:localPos0 = (-0.017401293, 0.0420747, -0.16238841)
+            point3f physics:localPos0 = (-0.017401293, 0.032082427, -0.16278142)
             point3f physics:localPos1 = (0, 0, 0)
-            quatf physics:localRot0 = (0.033090405, 0.040974483, -0.65746254, 0.7516443)
+            quatf physics:localRot0 = (0.13421337, -0.04127013, -0.6466635, 0.7497399)
             quatf physics:localRot1 = (1, 0, 0, 0)
         }
 
         def PhysicsFixedJoint "skin_box_anterior_bottom" (
-            apiSchemas = ["IsaacJointAPI"]
+            
         )
         {
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
-            int isaac:physics:Rot_X:DofOffset
-            int isaac:physics:Rot_Y:DofOffset
-            int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             rel physics:body0 = </smpl_humanoid8/bodies/R_Knee>
             rel physics:body1 = </smpl_humanoid8/bodies/skin_box_anterior_bottom>
             float physics:breakForce = 3.4028235e38
@@ -5078,61 +4870,44 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsFixedJoint "skin_box_lateral_bottom" (
-            apiSchemas = ["IsaacJointAPI"]
+            
         )
         {
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
-            int isaac:physics:Rot_X:DofOffset
-            int isaac:physics:Rot_Y:DofOffset
-            int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             rel physics:body0 = </smpl_humanoid8/bodies/R_Knee>
             rel physics:body1 = </smpl_humanoid8/bodies/skin_box_lateral_bottom>
             float physics:breakForce = 3.4028235e38
             float physics:breakTorque = 3.4028235e38
-            point3f physics:localPos0 = (-0.017401293, -0.029060302, -0.1651862)
+            point3f physics:localPos0 = (-0.017401293, -0.019068027, -0.1647932)
             point3f physics:localPos1 = (0, 0, 0)
-            quatf physics:localRot0 = (0.776902, -0.6274149, 0.03964237, 0.034675144)
+            quatf physics:localRot0 = (0.77457476, -0.61669904, -0.046512857, 0.13248777)
             quatf physics:localRot1 = (1, 0, 0, 0)
         }
 
         def PhysicsJoint "prosthetic_assembly2" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 1
-            float drive:rotX:physics:maxForce = 0
-            float drive:rotX:physics:stiffness = 10
+            float drive:rotX:physics:maxForce = 1000
+            float drive:rotX:physics:stiffness = 100
             uniform token drive:rotX:physics:type = "force"
             float drive:rotY:physics:damping = 1
-            float drive:rotY:physics:maxForce = 0
-            float drive:rotY:physics:stiffness = 10
+            float drive:rotY:physics:maxForce = 1000
+            float drive:rotY:physics:stiffness = 100
             uniform token drive:rotY:physics:type = "force"
             float drive:rotZ:physics:damping = 1
-            float drive:rotZ:physics:maxForce = 0
-            float drive:rotZ:physics:stiffness = 10
+            float drive:rotZ:physics:maxForce = 1000
+            float drive:rotZ:physics:stiffness = 100
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 10
             float limit:rotX:physics:low = -10
             float limit:rotY:physics:high = 10
             float limit:rotY:physics:low = -10
-            float limit:rotZ:physics:high = 20
-            float limit:rotZ:physics:low = -20
+            float limit:rotZ:physics:high = 10
+            float limit:rotZ:physics:low = -10
             float limit:transX:physics:high = -1
             float limit:transX:physics:low = 1
             float limit:transY:physics:high = -1
@@ -5144,29 +4919,18 @@ def Xform "smpl_humanoid8" (
             custom token mjcf:rotZ:name = "suspension_z"
             rel physics:body0 = </smpl_humanoid8/bodies/prosthetic_assembly1>
             rel physics:body1 = </smpl_humanoid8/bodies/prosthetic_assembly2>
-            float physics:breakForce = 3.4028235e38
             float physics:breakTorque = 3.4028235e38
-            point3f physics:localPos0 = (0, 0, 0)
-            point3f physics:localPos1 = (0, 0, 0)
+            point3f physics:localPos0 = (0, 0.06, 0)
+            point3f physics:localPos1 = (0, 0.06, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
             quatf physics:localRot1 = (1, 0, 0, 0)
             float physxJoint:armature = 0.01
         }
 
         def PhysicsFixedJoint "socket_box_posterior_top" (
-            apiSchemas = ["IsaacJointAPI"]
+            
         )
         {
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
-            int isaac:physics:Rot_X:DofOffset
-            int isaac:physics:Rot_Y:DofOffset
-            int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             rel physics:body0 = </smpl_humanoid8/bodies/prosthetic_assembly2>
             rel physics:body1 = </smpl_humanoid8/bodies/socket_box_posterior_top>
             float physics:breakForce = 3.4028235e38
@@ -5178,43 +4942,23 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsFixedJoint "socket_box_medial_top" (
-            apiSchemas = ["IsaacJointAPI"]
+            
         )
         {
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
-            int isaac:physics:Rot_X:DofOffset
-            int isaac:physics:Rot_Y:DofOffset
-            int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             rel physics:body0 = </smpl_humanoid8/bodies/prosthetic_assembly2>
             rel physics:body1 = </smpl_humanoid8/bodies/socket_box_medial_top>
             float physics:breakForce = 3.4028235e38
             float physics:breakTorque = 3.4028235e38
-            point3f physics:localPos0 = (0.05518, -0.02792, 0)
+            point3f physics:localPos0 = (0.04486, -0.02792, -0.0024)
             point3f physics:localPos1 = (0, 0, 0)
-            quatf physics:localRot0 = (0.7044699, 0.061009992, -0.7044699, 0.061009992)
+            quatf physics:localRot0 = (0.79039294, 0.068460256, -0.6064923, 0.052530196)
             quatf physics:localRot1 = (1, 0, 0, 0)
         }
 
         def PhysicsFixedJoint "socket_box_anterior_top" (
-            apiSchemas = ["IsaacJointAPI"]
+            
         )
         {
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
-            int isaac:physics:Rot_X:DofOffset
-            int isaac:physics:Rot_Y:DofOffset
-            int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             rel physics:body0 = </smpl_humanoid8/bodies/prosthetic_assembly2>
             rel physics:body1 = </smpl_humanoid8/bodies/socket_box_anterior_top>
             float physics:breakForce = 3.4028235e38
@@ -5226,43 +4970,23 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsFixedJoint "socket_box_lateral_top" (
-            apiSchemas = ["IsaacJointAPI"]
+            
         )
         {
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
-            int isaac:physics:Rot_X:DofOffset
-            int isaac:physics:Rot_Y:DofOffset
-            int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             rel physics:body0 = </smpl_humanoid8/bodies/prosthetic_assembly2>
             rel physics:body1 = </smpl_humanoid8/bodies/socket_box_lateral_top>
             float physics:breakForce = 3.4028235e38
             float physics:breakTorque = 3.4028235e38
-            point3f physics:localPos0 = (-0.05518, -0.02792, -0)
+            point3f physics:localPos0 = (-0.04486, -0.02792, -0.0024)
             point3f physics:localPos1 = (0, 0, 0)
-            quatf physics:localRot0 = (0.7044699, 0.061009992, 0.7044699, -0.061009992)
+            quatf physics:localRot0 = (0.79039294, 0.068460256, 0.6064923, -0.052530196)
             quatf physics:localRot1 = (1, 0, 0, 0)
         }
 
         def PhysicsFixedJoint "socket_box_posterior_bottom" (
-            apiSchemas = ["IsaacJointAPI"]
+            
         )
         {
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
-            int isaac:physics:Rot_X:DofOffset
-            int isaac:physics:Rot_Y:DofOffset
-            int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             rel physics:body0 = </smpl_humanoid8/bodies/prosthetic_assembly2>
             rel physics:body1 = </smpl_humanoid8/bodies/socket_box_posterior_bottom>
             float physics:breakForce = 3.4028235e38
@@ -5274,43 +4998,23 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsFixedJoint "socket_box_medial_bottom" (
-            apiSchemas = ["IsaacJointAPI"]
+            
         )
         {
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
-            int isaac:physics:Rot_X:DofOffset
-            int isaac:physics:Rot_Y:DofOffset
-            int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             rel physics:body0 = </smpl_humanoid8/bodies/prosthetic_assembly2>
             rel physics:body1 = </smpl_humanoid8/bodies/socket_box_medial_bottom>
             float physics:breakForce = 3.4028235e38
             float physics:breakTorque = 3.4028235e38
-            point3f physics:localPos0 = (0.04142, 0.05089, 0)
+            point3f physics:localPos0 = (0.03122, 0.05089, -0.00151)
             point3f physics:localPos1 = (0, 0, 0)
-            quatf physics:localRot0 = (0.7044699, 0.061009992, -0.7044699, 0.061009992)
+            quatf physics:localRot0 = (0.79039294, 0.068460256, -0.6064923, 0.052530196)
             quatf physics:localRot1 = (1, 0, 0, 0)
         }
 
         def PhysicsFixedJoint "socket_box_anterior_bottom" (
-            apiSchemas = ["IsaacJointAPI"]
+            
         )
         {
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
-            int isaac:physics:Rot_X:DofOffset
-            int isaac:physics:Rot_Y:DofOffset
-            int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             rel physics:body0 = </smpl_humanoid8/bodies/prosthetic_assembly2>
             rel physics:body1 = </smpl_humanoid8/bodies/socket_box_anterior_bottom>
             float physics:breakForce = 3.4028235e38
@@ -5322,31 +5026,21 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsFixedJoint "socket_box_lateral_bottom" (
-            apiSchemas = ["IsaacJointAPI"]
+            
         )
         {
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
-            int isaac:physics:Rot_X:DofOffset
-            int isaac:physics:Rot_Y:DofOffset
-            int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             rel physics:body0 = </smpl_humanoid8/bodies/prosthetic_assembly2>
             rel physics:body1 = </smpl_humanoid8/bodies/socket_box_lateral_bottom>
             float physics:breakForce = 3.4028235e38
             float physics:breakTorque = 3.4028235e38
-            point3f physics:localPos0 = (-0.04142, 0.05089, -0)
+            point3f physics:localPos0 = (-0.03122, 0.05089, -0.00151)
             point3f physics:localPos1 = (0, 0, 0)
-            quatf physics:localRot0 = (0.7044699, 0.061009992, 0.7044699, -0.061009992)
+            quatf physics:localRot0 = (0.79039294, 0.068460256, 0.6064923, -0.052530196)
             quatf physics:localRot1 = (1, 0, 0, 0)
         }
 
         def PhysicsJoint "R_Ankle" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 80
@@ -5361,19 +5055,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 800
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -5401,7 +5085,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "R_Toe" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 50
@@ -5416,16 +5100,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 500
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -5453,7 +5130,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "Torso" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 100
@@ -5468,16 +5145,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 1000
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -5505,7 +5175,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "Spine" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 100
@@ -5520,16 +5190,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 1000
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -5557,7 +5220,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "Chest" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 100
@@ -5572,16 +5235,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 1000
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -5609,7 +5265,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "Neck" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 50
@@ -5624,16 +5280,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 500
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -5661,7 +5310,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "Head" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 50
@@ -5676,16 +5325,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 500
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -5713,7 +5355,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "L_Thorax" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 50
@@ -5728,16 +5370,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 500
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -5765,7 +5400,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "L_Shoulder" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 50
@@ -5780,16 +5415,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 500
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -5817,7 +5445,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "L_Elbow" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 50
@@ -5832,16 +5460,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 500
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -5869,7 +5490,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "L_Wrist" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 30
@@ -5884,16 +5505,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 300
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -5921,7 +5535,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "L_Hand" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 30
@@ -5936,16 +5550,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 300
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -5973,7 +5580,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "R_Thorax" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 50
@@ -5988,16 +5595,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 500
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -6025,7 +5625,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "R_Shoulder" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 50
@@ -6040,16 +5640,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 500
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -6077,7 +5670,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "R_Elbow" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 50
@@ -6092,16 +5685,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 500
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -6129,7 +5715,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "R_Wrist" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 30
@@ -6144,16 +5730,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 300
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -6181,7 +5760,7 @@ def Xform "smpl_humanoid8" (
         }
 
         def PhysicsJoint "R_Hand" (
-            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ", "IsaacJointAPI"]
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
             float drive:rotX:physics:damping = 30
@@ -6196,19 +5775,9 @@ def Xform "smpl_humanoid8" (
             float drive:rotZ:physics:maxForce = 1000
             float drive:rotZ:physics:stiffness = 300
             uniform token drive:rotZ:physics:type = "force"
-            string isaac:nameOverride (
-                displayName = "Name Override"
-                doc = "Name override for prim lookup in base name search"
-            )
-            float[] isaac:physics:AccelerationLimit
-            int isaac:physics:index
-            float[] isaac:physics:JerkLimit
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            int isaac:physics:Tr_X:DofOffset
-            int isaac:physics:Tr_Y:DofOffset
-            int isaac:physics:Tr_Z:DofOffset
             float limit:rotX:physics:high = 180
             float limit:rotX:physics:low = -180
             float limit:rotY:physics:high = 180
@@ -6239,10 +5808,10 @@ def Xform "smpl_humanoid8" (
             apiSchemas = ["PhysicsJointStateAPI:linear", "PhysxJointAPI", "PhysxLimitAPI:X", "PhysicsDriveAPI:linear"]
         )
         {
-            float drive:linear:physics:damping = 0.05
-            float drive:linear:physics:maxForce = 1000
-            float drive:linear:physics:stiffness = 1000
-            float drive:linear:physics:targetPosition = -0.025
+            float drive:linear:physics:damping = 0
+            float drive:linear:physics:maxForce = 1.0e9
+            float drive:linear:physics:stiffness = 100000
+            float drive:linear:physics:targetPosition = -0.05
             uniform token drive:linear:physics:type = "force"
             uniform token physics:axis = "X"
             rel physics:body0 = </smpl_humanoid8/bodies/R_Knee>
@@ -6253,8 +5822,8 @@ def Xform "smpl_humanoid8" (
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (0.013146132, -0.6687546, -0.014610052, 0.74322355)
             quatf physics:localRot1 = (0.7071068, 1.0244548e-8, -5.9604645e-8, 0.7071069)
-            float physics:lowerLimit = -0.05
-            float physics:upperLimit = 0.05
+            float physics:lowerLimit = -0.1
+            float physics:upperLimit = 0.005
             float physxJoint:armature = 0.01
             float state:linear:physics:position = -0
             float state:linear:physics:velocity = 0
@@ -6372,11 +5941,10 @@ def Xform "smpl_humanoid8" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 1
-            float physics:restitution = 0
-            float physics:staticFriction = 1
-            float physxMaterial:compliantContactDamping = 875
-            float physxMaterial:compliantContactStiffness = 87500
+            float physics:dynamicFriction = 0.05
+            float physics:staticFriction = 0.1
+            float physxMaterial:compliantContactDamping = 1750
+            float physxMaterial:compliantContactStiffness = 175000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
 
@@ -6387,11 +5955,10 @@ def Xform "smpl_humanoid8" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 1
-            float physics:restitution = 0
-            float physics:staticFriction = 1
-            float physxMaterial:compliantContactDamping = 650
-            float physxMaterial:compliantContactStiffness = 65000
+            float physics:dynamicFriction = 0.05
+            float physics:staticFriction = 0.1
+            float physxMaterial:compliantContactDamping = 1300
+            float physxMaterial:compliantContactStiffness = 130000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
 
@@ -6402,10 +5969,10 @@ def Xform "smpl_humanoid8" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 1
-            float physics:staticFriction = 1
-            float physxMaterial:compliantContactDamping = 250
-            float physxMaterial:compliantContactStiffness = 25000
+            float physics:dynamicFriction = 0.05
+            float physics:staticFriction = 0.1
+            float physxMaterial:compliantContactDamping = 500
+            float physxMaterial:compliantContactStiffness = 50000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
 
@@ -6416,10 +5983,10 @@ def Xform "smpl_humanoid8" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 1
-            float physics:staticFriction = 1
-            float physxMaterial:compliantContactDamping = 466
-            float physxMaterial:compliantContactStiffness = 46666
+            float physics:dynamicFriction = 0.05
+            float physics:staticFriction = 0.1
+            float physxMaterial:compliantContactDamping = 920
+            float physxMaterial:compliantContactStiffness = 92000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
     }

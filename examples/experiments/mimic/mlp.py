@@ -141,7 +141,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "ref_state.rigid_body_pos[:, 0, 2]",
                 "coefficient": "-100.0",
             },
-            weight=0.2,
+            weight=0.1,
         ),
         "pow_rew": RewardComponentConfig(
             function=power_consumption_sum,
@@ -152,7 +152,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             },
             weight=-1e-5,
             min_value=-0.5,
-            zero_during_grace_period=True,
+            zero_during_grace_period=False,
         ),
         "contact_match_rew": RewardComponentConfig(
             function=contact_mismatch_sum,

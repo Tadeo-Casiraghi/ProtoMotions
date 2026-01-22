@@ -45,6 +45,27 @@ class MimicADD(AMP):
         ref_state = self.env.motion_lib.get_motion_state(motion_ids, motion_times)
 
         ref_state_gt = ref_state.rigid_body_pos.reshape(self.num_envs, -1, 3)
+
+        # --- INSERTION START: GHOST BODY HACK ---
+        # We must grab current state BEFORE calculating offsets to sync the ghost bodies
+        current_state = self.env.simulator.get_bodies_state()
+        
+        # Identify Ghost Bodies (Z < -900m in reference)
+        ghost_mask = ref_state_gt[..., 2] < -900.0
+        
+        if ghost_mask.any():
+            # 1. Snap Reference Position to Current Position
+            # This ensures that (Ref - Current) = 0 for these bodies
+            ref_state_gt[ghost_mask] = current_state.rigid_body_pos[ghost_mask]
+            
+            # 2. Snap Reference Rotation
+            # We must update ref_state.rigid_body_rot so compute_humanoid_max_coords_observations
+            # calculates zero rotation error too.
+            ref_gr = ref_state.rigid_body_rot.clone()
+            ref_gr[ghost_mask] = current_state.rigid_body_rot[ghost_mask]
+            ref_state.rigid_body_rot = ref_gr
+        # --- INSERTION END ---
+
         ref_state_gt += (
             self.env.get_spawn_to_ref_pose_offset_with_terrain_height_correction(
                 ref_state_gt
@@ -54,7 +75,6 @@ class MimicADD(AMP):
             ref_state_gt[:, 0]
         ).clone()
 
-        current_state = self.env.simulator.get_bodies_state()
         ground_heights = self.env.terrain.get_ground_heights(
             current_state.rigid_body_pos[:, 0]
         ).clone()

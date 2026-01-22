@@ -32,6 +32,7 @@ from typing import List, Dict
 from dataclasses import dataclass, field
 
 
+
 @dataclass
 class Smpl8RobotConfig(RobotConfig):
     trackable_bodies_subset: List[str] = field(
@@ -121,6 +122,7 @@ class Smpl8RobotConfig(RobotConfig):
             isaaclab=IsaacLabSimParams(
                 fps=120,
                 decimation=4,
+                
                 physx=IsaacLabPhysXParams(
                     num_position_iterations=4,
                     num_velocity_iterations=4,

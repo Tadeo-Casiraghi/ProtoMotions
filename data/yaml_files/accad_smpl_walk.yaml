@@ -1,0 +1,265 @@
+motions:
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male1Walking_c3d/Walk_B13___Walk_turn_right_45_poses.motion
+  fps: 120.0
+  idx: 6647
+  sub_motions:
+  - timings:
+      end: 9.3
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male1Walking_c3d/Walk_B15___Walk_turn_around_poses.motion
+  fps: 120.0
+  idx: 6648
+  sub_motions:
+  - timings:
+      end: 11.391666666666667
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male1Walking_c3d/Walk_B23___Side_step_right_poses.motion
+  fps: 120.0
+  idx: 6649
+  sub_motions:
+  - timings:
+      end: 3.5833333333333335
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male1Walking_c3d/Walk_B10___Walk_turn_left_45_poses.motion
+  fps: 120.0
+  idx: 6650
+  sub_motions:
+  - timings:
+      end: 8.425
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male1Walking_c3d/Walk_B21___Put_Down_Box_to_walk_poses.motion
+  fps: 120.0
+  idx: 6651
+  sub_motions:
+  - timings:
+      end: 6.958333333333333
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male1Walking_c3d/Walk_B17___Walk_2_hop_2_walk_poses.motion
+  fps: 120.0
+  idx: 6652
+  sub_motions:
+  - timings:
+      end: 8.158333333333333
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male1Walking_c3d/Walk_B4___Stand_to_Walk_Back_poses.motion
+  fps: 120.0
+  idx: 6653
+  sub_motions:
+  - timings:
+      end: 12.958333333333334
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male1Walking_c3d/Male1_Cal_poses.motion
+  fps: 120.0
+  idx: 6654
+  sub_motions:
+  - timings:
+      end: 3.0
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male1Walking_c3d/Walk_B16___Walk_turn_change_poses.motion
+  fps: 120.0
+  idx: 6655
+  sub_motions:
+  - timings:
+      end: 12.116666666666667
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male1Walking_c3d/Walk_B22___Side_step_left_poses.motion
+  fps: 120.0
+  idx: 6656
+  sub_motions:
+  - timings:
+      end: 4.625
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B18____Walk_to_leap_to_walk_t3_poses.motion
+  fps: 120.0
+  idx: 6771
+  sub_motions:
+  - timings:
+      end: 3.8666666666666667
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B9____Walk_turn_left_90_poses.motion
+  fps: 120.0
+  idx: 6772
+  sub_motions:
+  - timings:
+      end: 5.033333333333333
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B23____side_step_right_poses.motion
+  fps: 120.0
+  idx: 6773
+  sub_motions:
+  - timings:
+      end: 3.0
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B17____Walk_to_hop_to_walk_a_poses.motion
+  fps: 120.0
+  idx: 6774
+  sub_motions:
+  - timings:
+      end: 5.491666666666666
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B21____put_down_box_to_walk_poses.motion
+  fps: 120.0
+  idx: 6775
+  sub_motions:
+  - timings:
+      end: 5.55
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B10____Walk_turn_left_45_poses.motion
+  fps: 120.0
+  idx: 6776
+  sub_motions:
+  - timings:
+      end: 5.983333333333333
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B18____Walk_to_leap_to_walk_t2_poses.motion
+  fps: 120.0
+  idx: 6777
+  sub_motions:
+  - timings:
+      end: 2.2333333333333334
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B27____skip_to_walk_a_poses.motion
+  fps: 120.0
+  idx: 6778
+  sub_motions:
+  - timings:
+      end: 4.566666666666666
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B20____Walk_with_box_poses.motion
+  fps: 120.0
+  idx: 6779
+  sub_motions:
+  - timings:
+      end: 6.441666666666666
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B11____Walk_turn_left_135_poses.motion
+  fps: 120.0
+  idx: 6780
+  sub_motions:
+  - timings:
+      end: 6.491666666666666
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B15____Walk_turn_around_poses.motion
+  fps: 120.0
+  idx: 6781
+  sub_motions:
+  - timings:
+      end: 7.508333333333334
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B14____Walk_turn_right_45_poses.motion
+  fps: 120.0
+  idx: 6782
+  sub_motions:
+  - timings:
+      end: 4.091666666666667
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B14____Walk_turn_right_45_t2_poses.motion
+  fps: 120.0
+  idx: 6783
+  sub_motions:
+  - timings:
+      end: 5.8
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B5____Walk_backwards_poses.motion
+  fps: 120.0
+  idx: 6784
+  sub_motions:
+  - timings:
+      end: 8.125
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B21____put_down_box_to_walk_a_poses.motion
+  fps: 120.0
+  idx: 6785
+  sub_motions:
+  - timings:
+      end: 5.55
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B24____walk_to_crouch_poses.motion
+  fps: 120.0
+  idx: 6786
+  sub_motions:
+  - timings:
+      end: 6.108333333333333
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B19____Walk_to_pickup_box_poses.motion
+  fps: 120.0
+  idx: 6787
+  sub_motions:
+  - timings:
+      end: 6.675
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B22____side_step_left_poses.motion
+  fps: 120.0
+  idx: 6788
+  sub_motions:
+  - timings:
+      end: 2.466666666666667
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B18____Walk_to_leap_to_walk_poses.motion
+  fps: 120.0
+  idx: 6789
+  sub_motions:
+  - timings:
+      end: 2.0
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B4___Stand_to_Walk_backwards_poses.motion
+  fps: 120.0
+  idx: 6790
+  sub_motions:
+  - timings:
+      end: 4.608333333333333
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B13____Walk_turn_right_90_poses.motion
+  fps: 120.0
+  idx: 6791
+  sub_motions:
+  - timings:
+      end: 5.616666666666666
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B26____walk_to_skip_poses.motion
+  fps: 120.0
+  idx: 6792
+  sub_motions:
+  - timings:
+      end: 5.875
+      start: 0.0
+  weight: 1.0
+- file: /home/admlinar/ProtoProsthetic/AMASS/ACCAD/Male2Walking_c3d/B17____Walk_to_hop_to_walk_poses.motion
+  fps: 120.0
+  idx: 6793
+  sub_motions:
+  - timings:
+      end: 5.491666666666666
+      start: 0.0
+  weight: 1.0

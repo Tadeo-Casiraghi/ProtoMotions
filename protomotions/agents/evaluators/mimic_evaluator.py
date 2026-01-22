@@ -420,6 +420,26 @@ class MimicEvaluator(BaseEvaluator):
             self.fabric.world_size == 1
         ), "Simple test policy only supported for single process"
 
+
+        # 1. SETUP STORAGE
+        # Initialize a list to store the joint positions
+        prismatic_data = []
+        rotation_x = []
+        rotation_y = []
+        rotation_z = []
+
+        joint_name = "suspension_slide"
+        joint_idx = self.env.robot_config.kinematic_info.dof_names.index(joint_name)
+
+        joint_name_x = "suspension_x"
+        joint_idx_x = self.env.robot_config.kinematic_info.dof_names.index(joint_name_x)
+
+        joint_name_y = "suspension_y"
+        joint_idx_y = self.env.robot_config.kinematic_info.dof_names.index(joint_name_y)
+
+        joint_name_z = "suspension_z"
+        joint_idx_z = self.env.robot_config.kinematic_info.dof_names.index(joint_name_z)
+
         num_motions = self.motion_lib.num_motions()
         motion_lengths = self.motion_lib.get_motion_length(None)
         motion_num_frames = (motion_lengths / self.env.dt).floor().long()
@@ -470,10 +490,31 @@ class MimicEvaluator(BaseEvaluator):
                         actions[0].detach().cpu().numpy()
                     )  # Store first env's actions
 
+
                 # Step the environment
                 obs, rewards, dones, terminated, extras = self.env.step(actions)
                 obs = self.agent.add_agent_info_to_obs(obs)
                 obs_td = self.agent.obs_dict_to_tensordict(obs)
+
+                dof_state = self.env.simulator.get_dof_state()
+                
+                current_val = dof_state.dof_pos[0, joint_idx].item()
+                current_val_x = dof_state.dof_pos[0, joint_idx_x].item()
+                current_val_y = dof_state.dof_pos[0, joint_idx_y].item()
+                current_val_z = dof_state.dof_pos[0, joint_idx_z].item()
+                
+                prismatic_data.append(current_val)
+                rotation_x.append(current_val_x)
+                rotation_y.append(current_val_y)
+                rotation_z.append(current_val_z)
+
+                if len(prismatic_data) % 100 == 0:
+                    np.savez('python-stuff/multiple_arrays.npz', prismatic=prismatic_data, 
+                                                    rotx=rotation_x,
+                                                    roty=rotation_y,
+                                                    rotz=rotation_z)
+                    # Optional: Print a dot so you know it's working without spamming logs
+                    print(".", end="", flush=True)
 
                 if collect_metrics:
                     # remove duplicate motions sampled
@@ -492,6 +533,7 @@ class MimicEvaluator(BaseEvaluator):
                 step += 1
         except KeyboardInterrupt:
             print("\nEvaluation interrupted by Ctrl+C, exiting...")
+            
             if collect_metrics:
                 print("Metrics up to now:")
                 for k in (

@@ -111,12 +111,53 @@ class SceneCfg(InteractiveSceneCfg):
             if robot_config.control.control_type == ControlType.BUILT_IN_PD
             else IdealPDActuatorCfg
         )
+
+        def printout(dof_name, stiffness, damping, armature, effort_limit, velocity_limit, friction):
+            print()
+            print(dof_name, ":")
+            print('    stiffness:', stiffness)
+            print('    damping:', damping)
+            print('    armature:', armature)
+            print('    effort_limit:', effort_limit)
+            print('    velocity_limit:', velocity_limit)
+            print('    friction:', friction)
+            print()
+
         for dof_name, control_info in robot_config.control.control_info.items():
             stiffness = control_info.stiffness
             damping = control_info.damping
             if robot_config.control.control_type != ControlType.BUILT_IN_PD:
                 stiffness = 0.0
                 damping = 0.0
+            if dof_name == "suspension_slide":
+                # TEMPORARY
+                stiffness = 2000.0
+                damping = 500.0
+                control_info.armature = 0.02
+                control_info.effort_limit = 10000.0
+                control_info.velocity_limit = 10000.0
+                control_info.friction = 0.0
+                printout(dof_name, stiffness, damping, control_info.armature, control_info.effort_limit, control_info.velocity_limit, control_info.friction)
+            if dof_name == "suspension_y":
+                # TEMPORARY
+                stiffness = 5000.0
+                damping = 500.0
+                control_info.armature = 0.02
+                control_info.effort_limit = 10000.0
+                control_info.velocity_limit = 10000.0
+                control_info.friction = 0.0
+                printout(dof_name, stiffness, damping, control_info.armature, control_info.effort_limit, control_info.velocity_limit, control_info.friction)
+            
+            if dof_name in ["suspension_x", "suspension_z"]:
+                # TEMPORARY
+                stiffness = 100.0
+                damping = 0.0
+                control_info.armature = 0.02
+                control_info.effort_limit = 10000.0
+                control_info.velocity_limit = 10000.0
+                control_info.friction = 0.0
+                printout(dof_name, stiffness, damping, control_info.armature, control_info.effort_limit, control_info.velocity_limit, control_info.friction)
+            
             actuators[dof_name] = ActuatorConfig(
                 joint_names_expr=[dof_name],
                 # Only include non-None values in the kwargs
@@ -158,9 +199,9 @@ class SceneCfg(InteractiveSceneCfg):
                     contact_offset=config.sim.physx.contact_offset,
                     rest_offset=config.sim.physx.rest_offset,
                 ),
-                visual_material=sim_utils.PreviewSurfaceCfg(
-                    diffuse_color=(0.9, 0.9, 0.9), metallic=0.5
-                ),
+                # visual_material=sim_utils.PreviewSurfaceCfg(
+                #     diffuse_color=(0.9, 0.9, 0.9), metallic=0.5
+                # ),
             ),
             init_state=ArticulationCfg.InitialStateCfg(
                 pos=(0.0, 0.0, robot_config.default_root_height),
