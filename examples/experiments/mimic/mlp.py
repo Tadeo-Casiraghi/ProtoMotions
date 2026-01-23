@@ -107,6 +107,15 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             },
             weight=0.5,
         ),
+        # "gs_rew": RewardComponentConfig( # TODO
+        #     function=mean_squared_error_exp,
+        #     variables={
+        #         "x": "skin_forces",
+        #         "ref_x": "skin_forces_ref",
+        #         "coefficient": "-100.0",
+        #     },
+        #     weight=0.2,
+        # ),
         "gr_rew": RewardComponentConfig(
             function=rotation_error_exp,
             variables={

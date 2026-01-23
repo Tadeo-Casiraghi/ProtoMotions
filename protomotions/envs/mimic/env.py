@@ -166,6 +166,19 @@ class Mimic(BaseEnv):
             self.num_envs, num_bodies, dtype=torch.float, device=self.device
         )
 
+        # Find indices for any body that contains "skin_box" in its name
+        self.skin_body_indices = [
+            i for i, name in enumerate(sim_body_names) 
+            if "skin_box" in name
+        ]
+
+        # Convert to a torch tensor for faster indexing later
+        self.skin_body_indices = torch.tensor(
+            self.skin_body_indices, dtype=torch.long, device=self.device
+        )
+
+
+
     def create_motion_manager(self):
         """Create Mimic-specific motion manager with optional scene-based motion assignment.
 
@@ -537,6 +550,23 @@ class Mimic(BaseEnv):
         # Reuse current_state from parent context
         current_state = reward_context["current_state"]
         lr = dof_to_local(current_state.dof_pos, hinge_axes_map, True)
+
+        # --- NEW: SKIN FORCE EXTRACTION ---
+        # 1. Get all contact forces (Shape: [num_envs, num_bodies, 3])
+        all_forces = current_state.rigid_body_contact_forces
+        
+        # 2. Slice only the skin bodies using the indices cached in __init__
+        # Shape becomes: [num_envs, num_skin_bodies, 3]
+        skin_forces = all_forces[:, self.skin_body_indices, :]
+
+        # 3. Calculate magnitudes (Shape: [num_envs, num_skin_bodies])
+        skin_force_magnitudes = torch.norm(skin_forces, dim=-1)
+        
+        # 4. (Optional) Total skin force per environment (Shape: [num_envs])
+        total_skin_force = torch.sum(skin_force_magnitudes, dim=-1)
+
+        print(total_skin_force)
+        # ----------------------------------
 
         reward_context.update(
             {

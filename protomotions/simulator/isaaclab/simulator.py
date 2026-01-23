@@ -359,6 +359,12 @@ class IsaacLabSimulator(Simulator):
 
         self._apply_domain_randomization_if_needed()
 
+        self.special_settings = {self._robot.joint_names.index("suspension_slide"): -0.025,
+                                 self._robot.joint_names.index("suspension_x"): 0,
+                                 self._robot.joint_names.index("suspension_y"): 0,
+                                 self._robot.joint_names.index("suspension_z"): 0,
+                                 self._robot.joint_names.index("R_Ankle_y"): 0}
+
     def _apply_domain_randomization_if_needed(self) -> None:
         all_env_ids = torch.arange(self.config.num_envs, dtype=torch.int)
         if (
@@ -453,11 +459,8 @@ class IsaacLabSimulator(Simulator):
         """Applies PD position targets using IsaacLab's internal PD controller."""
         # TEMPORARY
         # print(self._robot.joint_names)
-        pd_targets[...,self._robot.joint_names.index("suspension_slide")] = -0.025
-        pd_targets[...,self._robot.joint_names.index("suspension_x")] = 0
-        pd_targets[...,self._robot.joint_names.index("suspension_y")] = 0
-        pd_targets[...,self._robot.joint_names.index("suspension_z")] = 0
-        pd_targets[...,self._robot.joint_names.index("R_Ankle_y")] = 0
+        for key, value in self.special_settings.items():
+            pd_targets[...,key] = value
 
         # print('suspension_x', ":", )
         # print('suspension_y', ":", self._robot.joint_names.index("suspension_y"))
