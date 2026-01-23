@@ -452,10 +452,12 @@ class IsaacLabSimulator(Simulator):
     def _apply_simulator_pd_targets(self, pd_targets: torch.Tensor) -> None:
         """Applies PD position targets using IsaacLab's internal PD controller."""
         # TEMPORARY
+        # print(self._robot.joint_names)
         pd_targets[...,self._robot.joint_names.index("suspension_slide")] = -0.025
-        pd_targets[...,28] = 0
-        pd_targets[...,29] = 0
-        pd_targets[...,30] = 0
+        pd_targets[...,self._robot.joint_names.index("suspension_x")] = 0
+        pd_targets[...,self._robot.joint_names.index("suspension_y")] = 0
+        pd_targets[...,self._robot.joint_names.index("suspension_z")] = 0
+        pd_targets[...,self._robot.joint_names.index("R_Ankle_y")] = 0
 
         # print('suspension_x', ":", )
         # print('suspension_y', ":", self._robot.joint_names.index("suspension_y"))

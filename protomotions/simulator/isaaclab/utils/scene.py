@@ -129,6 +129,15 @@ class SceneCfg(InteractiveSceneCfg):
             if robot_config.control.control_type != ControlType.BUILT_IN_PD:
                 stiffness = 0.0
                 damping = 0.0
+            
+            if dof_name == "R_Ankle_y":
+                stiffness = 3000.0
+                damping = 300.0
+                control_info.armature = 0.02
+                control_info.effort_limit = 10000.0
+                control_info.velocity_limit = 10000.0
+                control_info.friction = 0.0
+                printout(dof_name, stiffness, damping, control_info.armature, control_info.effort_limit, control_info.velocity_limit, control_info.friction)
             if dof_name == "suspension_slide":
                 # TEMPORARY
                 stiffness = 2000.0
