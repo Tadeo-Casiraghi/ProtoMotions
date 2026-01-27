@@ -33,10 +33,10 @@ def configure_robot_and_simulator(
     robot_cfg: RobotConfig, simulator_cfg: SimulatorConfig, args: argparse.Namespace
 ):
     """Configure robot to add contact sensors for foot contact tracking."""
-    robot_cfg.update_fields(
-        contact_bodies=["all_left_foot_bodies", "all_right_foot_bodies"]
-    )
-
+    # robot_cfg.update_fields(
+    #     contact_bodies=["all_left_foot_bodies", "all_right_foot_bodies"]
+    # )
+    pass
 
 def terrain_config(args: argparse.Namespace):
     """Build terrain configuration."""
@@ -77,6 +77,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         norm,
         contact_mismatch_sum,
         impact_force_penalty,
+        skin_pressure_penalty,
     )
 
     mimic_early_termination = [
@@ -107,15 +108,16 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             },
             weight=0.5,
         ),
-        # "gs_rew": RewardComponentConfig( # TODO
-        #     function=mean_squared_error_exp,
-        #     variables={
-        #         "x": "skin_forces",
-        #         "ref_x": "skin_forces_ref",
-        #         "coefficient": "-100.0",
-        #     },
-        #     weight=0.2,
-        # ),
+        "skin_rew": RewardComponentConfig(
+            function=skin_pressure_penalty,
+            variables={
+                "contact_forces": "current_state.rigid_body_contact_forces",
+                "body_quats": "current_state.rigid_body_rot",
+                "indices" : "[ 7,  8,  9, 10, 11, 12, 13, 14]",
+            },
+            weight=-2e-4,  # Negative = Penalty
+            min_value=-0.5,
+        ),
         "gr_rew": RewardComponentConfig(
             function=rotation_error_exp,
             variables={
@@ -159,7 +161,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "dof_vel": "current_state.dof_vel",
                 "use_torque_squared": "False",
             },
-            weight=-1e-5,
+            weight=-2e-5,
             min_value=-0.5,
             zero_during_grace_period=False,
         ),

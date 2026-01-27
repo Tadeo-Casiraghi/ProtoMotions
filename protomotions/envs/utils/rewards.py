@@ -274,8 +274,10 @@ def power_consumption_sum(
         dof_vel = dof_vel[:, indices]
 
     if use_torque_squared:
+        # print("Power:", torch.abs(dof_forces * dof_forces).sum(dim=-1))
         return torch.abs(dof_forces * dof_forces).sum(dim=-1)
     else:
+        # print("Power:", torch.abs(dof_forces * dof_vel).sum(dim=-1))
         return torch.abs(dof_forces * dof_vel).sum(dim=-1)
 
 
@@ -330,6 +332,53 @@ def contact_mismatch_sum(
         ref_contacts = ref_contacts[:, indices]
 
     return torch.abs(sim_contacts.float() - ref_contacts.float()).sum(dim=1)
+
+def skin_pressure_penalty(
+    contact_forces: Tensor,
+    body_quats: Tensor,
+    indices: Optional[Tensor] = None,
+) -> Tensor:
+    """Penalizes normal (compression) forces on specific skin bodies.
+
+    Rotates global contact forces into the local frame of each body and
+    sums the positive Z-axis forces (assuming Z is the surface normal).
+
+    Args:
+        contact_forces: Global contact forces [num_envs, num_bodies, 3]
+        body_quats: Global body orientations [num_envs, num_bodies, 4] (w_last)
+        indices: Indices of skin bodies to check [num_skin_bodies]
+
+    Returns:
+        Total normal force penalty [num_envs]
+    """
+    if indices is not None:
+        contact_forces = contact_forces[:, indices]
+        body_quats = body_quats[:, indices]
+
+    # 1. Prepare Quaternion Components (assuming [x, y, z, w] format)
+    # We want to rotate World -> Local, which is the inverse rotation.
+    q_vec = body_quats[..., 0:3]
+    q_w = body_quats[..., 3].unsqueeze(-1)
+
+    # 2. Apply Inverse Rotation (v_local = q_inv * v_world * q)
+    # For a unit quaternion, q_inv is the conjugate (negate the vector part).
+    # To rotate vector 'v' by quaternion 'q':
+    #   t = 2 * cross(q_xyz, v)
+    #   v_rot = v + q_w * t + cross(q_xyz, t)
+    # To rotate by inverse, we just use -q_xyz.
+    
+    t = 2.0 * torch.cross(-q_vec, contact_forces, dim=-1)
+    skin_forces_local = contact_forces + q_w * t + torch.cross(-q_vec, t, dim=-1)
+
+    # 3. Extract Normal Force
+    # Assumes the skin sensor's "out" direction is the local Z-axis (index 2).
+    # If your sensors point along X, change to [..., 0].
+    normal_forces = skin_forces_local[..., 2]
+
+    # print("Skin:", torch.relu(normal_forces).sum(dim=-1))
+    # 4. Compute Penalty
+    # ReLU ensures we only penalize compression (pushing), not stickiness (pulling).
+    return torch.relu(normal_forces).sum(dim=-1)
 
 
 def impact_force_penalty(

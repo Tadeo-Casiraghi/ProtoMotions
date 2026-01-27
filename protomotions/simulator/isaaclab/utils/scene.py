@@ -56,6 +56,10 @@ class SceneCfg(InteractiveSceneCfg):
 
         activate_contact_sensors = robot_config.contact_bodies is not None
 
+        print("CONTACT BODIES:")
+        for bodi in robot_config.contact_bodies:
+            print("    -", bodi)
+
         # lights
         if True:  # pretty:
             # This is way prettier, but also slower to render
@@ -140,18 +144,18 @@ class SceneCfg(InteractiveSceneCfg):
                 printout(dof_name, stiffness, damping, control_info.armature, control_info.effort_limit, control_info.velocity_limit, control_info.friction)
             if dof_name == "suspension_slide":
                 # TEMPORARY
-                stiffness = 2000.0
-                damping = 500.0
-                control_info.armature = 0.02
-                control_info.effort_limit = 10000.0
-                control_info.velocity_limit = 10000.0
+                stiffness = 10000.0
+                damping = 0.0
+                control_info.armature = 0.0
+                control_info.effort_limit = 100000.0
+                control_info.velocity_limit = 1000000.0
                 control_info.friction = 0.0
                 printout(dof_name, stiffness, damping, control_info.armature, control_info.effort_limit, control_info.velocity_limit, control_info.friction)
             if dof_name == "suspension_y":
                 # TEMPORARY
                 stiffness = 5000.0
                 damping = 500.0
-                control_info.armature = 0.02
+                control_info.armature = 0.0
                 control_info.effort_limit = 10000.0
                 control_info.velocity_limit = 10000.0
                 control_info.friction = 0.0
@@ -161,7 +165,7 @@ class SceneCfg(InteractiveSceneCfg):
                 # TEMPORARY
                 stiffness = 100.0
                 damping = 0.0
-                control_info.armature = 0.02
+                control_info.armature = 0.0
                 control_info.effort_limit = 10000.0
                 control_info.velocity_limit = 10000.0
                 control_info.friction = 0.0

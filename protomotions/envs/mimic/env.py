@@ -58,6 +58,14 @@ from protomotions.envs.mimic.config import MimicEnvConfig
 from protomotions.robot_configs.base import RobotConfig
 from protomotions.simulator.base_simulator.simulator_state import ResetState
 
+def quat_rotate_inverse(q, v):
+    shape = q.shape
+    q_w = q[:, -1]
+    q_vec = q[:, :3]
+    a = v * (2.0 * q_w ** 2 - 1.0).unsqueeze(-1)
+    b = torch.cross(q_vec, v, dim=-1) * q_w.unsqueeze(-1) * 2.0
+    c = q_vec * torch.sum(q_vec * v, dim=-1).unsqueeze(-1) * 2.0
+    return a - b + c
 
 class Mimic(BaseEnv):
     """Mimic environment for reference motion tracking.
@@ -176,7 +184,6 @@ class Mimic(BaseEnv):
         self.skin_body_indices = torch.tensor(
             self.skin_body_indices, dtype=torch.long, device=self.device
         )
-
 
 
     def create_motion_manager(self):
@@ -551,23 +558,6 @@ class Mimic(BaseEnv):
         current_state = reward_context["current_state"]
         lr = dof_to_local(current_state.dof_pos, hinge_axes_map, True)
 
-        # --- NEW: SKIN FORCE EXTRACTION ---
-        # 1. Get all contact forces (Shape: [num_envs, num_bodies, 3])
-        all_forces = current_state.rigid_body_contact_forces
-        
-        # 2. Slice only the skin bodies using the indices cached in __init__
-        # Shape becomes: [num_envs, num_skin_bodies, 3]
-        skin_forces = all_forces[:, self.skin_body_indices, :]
-
-        # 3. Calculate magnitudes (Shape: [num_envs, num_skin_bodies])
-        skin_force_magnitudes = torch.norm(skin_forces, dim=-1)
-        
-        # 4. (Optional) Total skin force per environment (Shape: [num_envs])
-        total_skin_force = torch.sum(skin_force_magnitudes, dim=-1)
-
-        print(total_skin_force)
-        # ----------------------------------
-
         reward_context.update(
             {
                 "ref_state": ref_state,
@@ -682,6 +672,27 @@ class Mimic(BaseEnv):
             .mean(dim=-1)
         )
 
+
+        # contact_buf = self.simulator.get_bodies_contact_buf()
+        # all_forces = contact_buf.rigid_body_contact_forces
+        # skin_forces_world_tensor = all_forces[:, self.skin_body_indices, :]
+        
+        # all_quats = current_state.rigid_body_rot
+        # skin_quats_tensor = all_quats[:, self.skin_body_indices, :]
+
+        # # 3. Convert to Numpy
+        # forces_np = skin_forces_world_tensor[0].detach().cpu().numpy()
+        # quats_np = skin_quats_tensor[0].detach().cpu().numpy()
+
+        # # 4. Rotate to Local Frame (SciPy)
+        # # RobotState uses (x, y, z, w). SciPy uses (x, y, z, w).
+        # # No formatting/rolling needed.
+        # rot = R.from_quat(quats_np)
+        
+        # # Apply Inverse Rotation (World -> Local)
+        # forces_local_np = rot.inv().apply(forces_np)
+
+
         other_log_terms = {
             "gt_err": gt_err,
             "gr_err": gr_err,
@@ -752,6 +763,7 @@ class Mimic(BaseEnv):
         self.prev_contact_force_magnitudes = torch.norm(
             current_state.rigid_body_contact_forces, dim=-1
         ).clone()
+
 
     def compute_observations(self, env_ids=None):
         """Compute observations including mimic-specific target poses.

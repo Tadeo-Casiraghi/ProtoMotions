@@ -359,7 +359,7 @@ class IsaacLabSimulator(Simulator):
 
         self._apply_domain_randomization_if_needed()
 
-        self.special_settings = {self._robot.joint_names.index("suspension_slide"): -0.025,
+        self.special_settings = {self._robot.joint_names.index("suspension_slide"): -0.01,
                                  self._robot.joint_names.index("suspension_x"): 0,
                                  self._robot.joint_names.index("suspension_y"): 0,
                                  self._robot.joint_names.index("suspension_z"): 0,

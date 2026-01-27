@@ -5943,6 +5943,7 @@ def Xform "smpl_humanoid8" (
             token outputs:mdl:volume
             float physics:dynamicFriction = 0.05
             float physics:staticFriction = 0.1
+            float physics:restitution = 1
             float physxMaterial:compliantContactDamping = 1750
             float physxMaterial:compliantContactStiffness = 175000
             uniform token ui:nodegraph:node:expansionState = "open"
@@ -5957,6 +5958,7 @@ def Xform "smpl_humanoid8" (
             token outputs:mdl:volume
             float physics:dynamicFriction = 0.05
             float physics:staticFriction = 0.1
+            float physics:restitution = 1
             float physxMaterial:compliantContactDamping = 1300
             float physxMaterial:compliantContactStiffness = 130000
             uniform token ui:nodegraph:node:expansionState = "open"
@@ -5971,6 +5973,7 @@ def Xform "smpl_humanoid8" (
             token outputs:mdl:volume
             float physics:dynamicFriction = 0.05
             float physics:staticFriction = 0.1
+            float physics:restitution = 1
             float physxMaterial:compliantContactDamping = 500
             float physxMaterial:compliantContactStiffness = 50000
             uniform token ui:nodegraph:node:expansionState = "open"
@@ -5985,6 +5988,7 @@ def Xform "smpl_humanoid8" (
             token outputs:mdl:volume
             float physics:dynamicFriction = 0.05
             float physics:staticFriction = 0.1
+            float physics:restitution = 1
             float physxMaterial:compliantContactDamping = 920
             float physxMaterial:compliantContactStiffness = 92000
             uniform token ui:nodegraph:node:expansionState = "open"

@@ -46,6 +46,21 @@ class Smpl9RobotConfig(RobotConfig):
         ]
     )
 
+    contact_bodies: List[str] = field(
+        default_factory=lambda: [
+            "all_left_foot_bodies",
+            "all_right_foot_bodies",
+            "skin_box_posterior_top",
+            "skin_box_medial_top",
+            "skin_box_anterior_top",
+            "skin_box_lateral_top",
+            "skin_box_posterior_bottom",
+            "skin_box_medial_bottom",
+            "skin_box_anterior_bottom",
+            "skin_box_lateral_bottom",
+        ]
+    )
+
     non_termination_contact_bodies: List[str] = field(
         default_factory=lambda: ["R_Ankle", "L_Ankle", "R_Toe", "L_Toe"]
     )
