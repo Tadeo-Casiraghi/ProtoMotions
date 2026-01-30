@@ -139,8 +139,9 @@ class Smpl9RobotConfig(RobotConfig):
                 decimation=4,
                 
                 physx=IsaacLabPhysXParams(
-                    num_position_iterations=4,
-                    num_velocity_iterations=4,
+                    num_position_iterations=16,
+                    num_velocity_iterations=8, 
+                    contact_offset=0.002,
                     max_depenetration_velocity=1,
                 ),
             ),

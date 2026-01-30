@@ -284,6 +284,7 @@ def main():
         app_launcher_flags = {"headless": args.headless, "device": str(fabric.device)}
         app_launcher = AppLauncher(app_launcher_flags)
         simulator_extra_params["simulation_app"] = app_launcher.app
+        
 
     # Create components (terrain, scene_lib, motion_lib, simulator)
     from protomotions.utils.component_builder import build_all_components

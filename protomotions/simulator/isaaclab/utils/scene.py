@@ -144,8 +144,8 @@ class SceneCfg(InteractiveSceneCfg):
                 printout(dof_name, stiffness, damping, control_info.armature, control_info.effort_limit, control_info.velocity_limit, control_info.friction)
             if dof_name == "suspension_slide":
                 # TEMPORARY
-                stiffness = 10000.0
-                damping = 0.0
+                stiffness = 2000.0
+                damping = 1000.0
                 control_info.armature = 0.0
                 control_info.effort_limit = 100000.0
                 control_info.velocity_limit = 1000000.0
@@ -163,8 +163,8 @@ class SceneCfg(InteractiveSceneCfg):
             
             if dof_name in ["suspension_x", "suspension_z"]:
                 # TEMPORARY
-                stiffness = 100.0
-                damping = 0.0
+                stiffness = 5000.0
+                damping = 500.0
                 control_info.armature = 0.0
                 control_info.effort_limit = 10000.0
                 control_info.velocity_limit = 10000.0

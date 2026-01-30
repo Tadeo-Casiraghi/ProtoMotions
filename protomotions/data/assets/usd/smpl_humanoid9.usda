@@ -74,8 +74,8 @@ over "Flattened_Prototype_88"
     {
         rel material:binding = </smpl_humanoid9/Looks/material_rgba_2>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_20"
@@ -130,8 +130,8 @@ over "Flattened_Prototype_91"
     def Xform "_geom_15"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_15" (
@@ -151,8 +151,8 @@ over "Flattened_Prototype_92"
     {
         rel material:binding = </smpl_humanoid9/Looks/material_rgba_1>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_15"
@@ -334,8 +334,8 @@ over "Flattened_Prototype_101"
     {
         rel material:binding = </smpl_humanoid9/Looks/material_rgba_3>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_21"
@@ -417,8 +417,8 @@ over "Flattened_Prototype_105"
     {
         rel material:binding = </smpl_humanoid9/Looks/material_rgba_4>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_22"
@@ -564,8 +564,8 @@ over "Flattened_Prototype_113"
     {
         rel material:binding = </smpl_humanoid9/Looks/material_rgba_3>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_17"
@@ -623,8 +623,8 @@ over "Flattened_Prototype_116"
     def Xform "_geom_20"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_20" (
@@ -685,8 +685,8 @@ over "Flattened_Prototype_119"
     {
         rel material:binding = </smpl_humanoid9/Looks/material_rgba_1>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_19"
@@ -795,8 +795,8 @@ over "Flattened_Prototype_125"
     {
         rel material:binding = </smpl_humanoid9/Looks/material_rgba_4>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_18"
@@ -942,8 +942,8 @@ over "Flattened_Prototype_133"
     {
         rel material:binding = </smpl_humanoid9/Looks/material_rgba_2>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_16"
@@ -1021,8 +1021,8 @@ over "Flattened_Prototype_138"
     def Xform "_geom_17"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_17" (
@@ -1174,8 +1174,8 @@ over "Flattened_Prototype_146"
     def Xform "_geom_16"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_16" (
@@ -1233,8 +1233,8 @@ over "Flattened_Prototype_149"
     def Xform "_geom_22"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_22" (
@@ -1251,8 +1251,8 @@ over "Flattened_Prototype_150"
     def Xform "_geom_18"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_18" (
@@ -1287,8 +1287,8 @@ over "Flattened_Prototype_152"
     def Xform "_geom_19"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_19" (
@@ -1342,8 +1342,8 @@ over "Flattened_Prototype_155"
     def Xform "_geom_21"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_21" (
@@ -1669,8 +1669,8 @@ over "Flattened_Prototype_4"
     {
         rel material:binding = </smpl_humanoid9/Looks/material_rgba_4>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_22"
@@ -1792,8 +1792,8 @@ over "Flattened_Prototype_10"
     {
         rel material:binding = </smpl_humanoid9/Looks/material_rgba_1>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_15"
@@ -1808,8 +1808,8 @@ over "Flattened_Prototype_11"
     def Xform "_geom_17"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_17" (
@@ -1947,8 +1947,8 @@ over "Flattened_Prototype_19"
     def Xform "_geom_21"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_21" (
@@ -2047,8 +2047,8 @@ over "Flattened_Prototype_25"
     def Xform "_geom_22"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_22" (
@@ -2087,8 +2087,8 @@ over "Flattened_Prototype_27"
     {
         rel material:binding = </smpl_humanoid9/Looks/material_rgba_2>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_16"
@@ -2121,8 +2121,8 @@ over "Flattened_Prototype_29"
     def Xform "_geom_20"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_20" (
@@ -2260,8 +2260,8 @@ over "Flattened_Prototype_36"
     def Xform "_geom_18"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_18" (
@@ -2281,8 +2281,8 @@ over "Flattened_Prototype_37"
     {
         rel material:binding = </smpl_humanoid9/Looks/material_rgba_2>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_20"
@@ -2378,8 +2378,8 @@ over "Flattened_Prototype_42"
     def Xform "_geom_16"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_16" (
@@ -2501,8 +2501,8 @@ over "Flattened_Prototype_49"
     {
         rel material:binding = </smpl_humanoid9/Looks/material_rgba_1>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_19"
@@ -2678,8 +2678,8 @@ over "Flattened_Prototype_58"
     def Xform "_geom_19"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_19" (
@@ -2696,8 +2696,8 @@ over "Flattened_Prototype_59"
     def Xform "_geom_15"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_15" (
@@ -2814,8 +2814,8 @@ over "Flattened_Prototype_66"
     {
         rel material:binding = </smpl_humanoid9/Looks/material_rgba_4>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_18"
@@ -2833,8 +2833,8 @@ over "Flattened_Prototype_67"
     {
         rel material:binding = </smpl_humanoid9/Looks/material_rgba_3>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_17"
@@ -3136,8 +3136,8 @@ over "Flattened_Prototype_82"
     {
         rel material:binding = </smpl_humanoid9/Looks/material_rgba_3>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.009999999888241291)
-        double3 xformOp:translate = (0, 0, -0.0050)
+        double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+        double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_21"
@@ -4063,7 +4063,7 @@ def Xform "smpl_humanoid9" (
             rel physics:simulationOwner
             quatd xformOp:orient = (1, 0, 0, 0)
             double3 xformOp:scale = (1, 1, 1)
-            double3 xformOp:translate = (0.06599999964237213, -0.33890002965927124, -0.8913999795913696)
+            double3 xformOp:translate = (0.06599999964237213, -0.33890002965927124, -0.8983999795913696)
             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
             def Xform "visuals" (
@@ -5898,11 +5898,11 @@ def Xform "smpl_humanoid9" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 1.0
-            float physics:staticFriction = 0.5
-            float physics:restitution = 1
-            float physxMaterial:compliantContactDamping = 8750
-            float physxMaterial:compliantContactStiffness = 87500
+            float physics:dynamicFriction = 0.4
+            float physics:staticFriction = 0.8
+            float physics:restitution = 0.1
+            float physxMaterial:compliantContactDamping =  7000
+            float physxMaterial:compliantContactStiffness = 175000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
 
@@ -5913,11 +5913,11 @@ def Xform "smpl_humanoid9" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 1.0
-            float physics:staticFriction = 0.5
-            float physics:restitution = 1
-            float physxMaterial:compliantContactDamping = 6500
-            float physxMaterial:compliantContactStiffness = 65000
+            float physics:dynamicFriction = 0.4
+            float physics:staticFriction = 0.8
+            float physics:restitution = 0.1
+            float physxMaterial:compliantContactDamping = 7000
+            float physxMaterial:compliantContactStiffness = 130000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
 
@@ -5928,11 +5928,11 @@ def Xform "smpl_humanoid9" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 1.0
-            float physics:staticFriction = 0.5
-            float physics:restitution = 1
-            float physxMaterial:compliantContactDamping = 2500
-            float physxMaterial:compliantContactStiffness = 25000
+            float physics:dynamicFriction = 0.4
+            float physics:staticFriction = 0.8
+            float physics:restitution = 0.1
+            float physxMaterial:compliantContactDamping = 7000
+            float physxMaterial:compliantContactStiffness = 50000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
 
@@ -5943,11 +5943,11 @@ def Xform "smpl_humanoid9" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 1.0
-            float physics:staticFriction = 0.5
-            float physics:restitution = 1
-            float physxMaterial:compliantContactDamping = 4600
-            float physxMaterial:compliantContactStiffness = 46000
+            float physics:dynamicFriction = 0.4
+            float physics:staticFriction = 0.8
+            float physics:restitution = 0.1
+            float physxMaterial:compliantContactDamping = 7000
+            float physxMaterial:compliantContactStiffness = 90000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
     }

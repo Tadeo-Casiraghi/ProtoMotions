@@ -115,7 +115,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "body_quats": "current_state.rigid_body_rot",
                 "indices" : "[ 7,  8,  9, 10, 11, 12, 13, 14]",
             },
-            weight=-2e-4,  # Negative = Penalty
+            weight=-1e-4,  # Negative = Penalty
             min_value=-0.5,
         ),
         "gr_rew": RewardComponentConfig(
@@ -152,7 +152,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "ref_state.rigid_body_pos[:, 0, 2]",
                 "coefficient": "-100.0",
             },
-            weight=0.1,
+            weight=0.2,
         ),
         "pow_rew": RewardComponentConfig(
             function=power_consumption_sum,

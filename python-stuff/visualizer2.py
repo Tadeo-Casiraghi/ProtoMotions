@@ -138,13 +138,18 @@ def plot_data():
             k_fy = net_vector[:, 1]
             k_fz = net_vector[:, 2]
             
+            world_forces = loaded_data['skin_forces_world']
+            world_net_vector = np.sum(world_forces, axis=1) # <--- Sum sensors first!
+            world_fz = world_net_vector[:, 2] # <--- Extract Z component
+            
             # 2. Magnitude of the result
             net_mag = np.linalg.norm(net_vector, axis=1)
 
-            ax4.plot(time_axis, k_fx, 'r', alpha=0.6, label='Knee X')
-            ax4.plot(time_axis, k_fy, 'g', alpha=0.6, label='Knee Y')
+            # ax4.plot(time_axis, k_fx, 'r', alpha=0.6, label='Knee X')
+            # ax4.plot(time_axis, k_fy, 'g', alpha=0.6, label='Knee Y')
             ax4.plot(time_axis, k_fz, 'b', alpha=0.6, label='Knee Z')
-            ax4.plot(time_axis, net_mag, 'k--', linewidth=2.0, label='Net Magnitude')
+            ax4.plot(time_axis, world_fz, 'g', alpha=0.6, label='World Z')
+            # ax4.plot(time_axis, net_mag, 'k--', linewidth=2.0, label='Net Magnitude')
 
             ax4.set_title("Total Net Force on Leg (Knee Frame)", fontsize=16)
             ax4.set_xlabel("Time (s)", fontsize=14)
