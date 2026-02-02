@@ -164,6 +164,7 @@ class BaseEnv:
 
         # Buffers
         self.rew_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.float)
+        self.rew_buf_secondary = torch.zeros(self.num_envs, device=self.device, dtype=torch.float)
         self.reset_buf = torch.ones(self.num_envs, device=self.device, dtype=torch.bool)
         self.progress_buf = torch.zeros(
             self.num_envs, device=self.device, dtype=torch.long
@@ -454,7 +455,17 @@ class BaseEnv:
             self.user_reset()
 
         obs = self.get_obs()
-        return obs, self.rew_buf, self.reset_buf, self.terminate_buf, self.extras
+
+        if self.config.secondary_reward_flag:
+            rewards = {
+                "humanoid": self.rew_buf,
+                "prosthetic": self.rew_buf_secondary,
+            }
+        else:
+            rewards = self.rew_buf
+
+
+        return obs, rewards, self.reset_buf, self.terminate_buf, self.extras
 
     def process_actions(self, actions):
         """Process and clamp actions before passing to simulator.
@@ -630,6 +641,7 @@ class BaseEnv:
         self,
         reward_components: Dict[str, Any],
         context: Dict[str, Any],
+        log_prefix: str = "",
     ) -> torch.Tensor:
         """Compute rewards from dynamic reward component configurations.
 
@@ -683,7 +695,7 @@ class BaseEnv:
                 torch.isfinite(reward_value)
             ), f"Reward '{reward_name}' is not finite: {reward_value}"
 
-            self.extras[f"raw_r/{reward_name}"] = reward_value
+            self.extras[f"{log_prefix}raw_r/{reward_name}"] = reward_value
 
             # Apply weight/multiplicative logic
             if component.multiplicative:
@@ -695,13 +707,13 @@ class BaseEnv:
                     scaled_reward = torch.clamp(scaled_reward, min=component.min_value)
                 if component.max_value is not None:
                     scaled_reward = torch.clamp(scaled_reward, max=component.max_value)
-                self.extras[f"scaled_r/{reward_name}"] = scaled_reward
+                self.extras[f"{log_prefix}scaled_r/{reward_name}"] = scaled_reward
                 additive_reward += scaled_reward
 
         # Combine rewards
         if any_multiplicative:
-            self.extras["multiplicative_reward"] = multiplicative_reward
-            self.extras["additive_reward"] = additive_reward
+            self.extras[f"{log_prefix}multiplicative_reward"] = multiplicative_reward
+            self.extras[f"{log_prefix}additive_reward"] = additive_reward
             combined_reward = additive_reward + multiplicative_reward
         else:
             combined_reward = additive_reward
@@ -749,11 +761,27 @@ class BaseEnv:
         # Build context for variable evaluation
         context = self._get_reward_context()
 
-        combined_reward = self._compute_dynamic_rewards(
-            self.config.reward_config, context
-        )
+        # If the secondary reward flag is set, compute dynamics twice with different log prefixes
+        if self.config.secondary_reward_flag:
+            primary_reward = self._compute_dynamic_rewards(
+                self.config.reward_config, context, log_prefix="humanoid/"
+            )
+            secondary_reward = self._compute_dynamic_rewards(
+                self.config.secondary_reward_config, context, log_prefix="prosthetic/"
+            )
+            combined_reward = primary_reward + secondary_reward
+            
+            self.rew_buf[:] = primary_reward
+            self.rew_buf_sec[:] = secondary_reward
 
-        self.rew_buf[:] = combined_reward
+            self.extras["humanoid/total_env_reward"] = primary_reward
+            self.extras["prosthetic/total_env_reward"] = secondary_reward
+        else:
+            combined_reward = self._compute_dynamic_rewards(
+                self.config.reward_config, context
+            )
+
+            self.rew_buf[:] = combined_reward
 
         self.extras["total_env_reward"] = combined_reward
 

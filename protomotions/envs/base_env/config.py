@@ -99,3 +99,6 @@ class EnvConfig(ConfigBuilder):
 
     # Reward configuration - single unified dict for all reward components
     reward_config: Dict[str, RewardComponentConfig] = field(default_factory=dict)
+
+    secondary_reward_flag: bool = False
+    secondary_reward_config: Dict[str, RewardComponentConfig] = field(default_factory=dict)

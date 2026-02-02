@@ -484,6 +484,11 @@ class BaseAgent:
 
                     # Step the environment
                     next_obs, rewards, dones, terminated, extras = self.env.step(action)
+
+                    # WILL DELETE LATER
+                    if isinstance(rewards, dict):
+                        rewards = rewards['humanoid']
+
                     assert torch.all(
                         torch.isfinite(rewards)
                     ), f"NaN or Inf in rewards: {rewards}"
