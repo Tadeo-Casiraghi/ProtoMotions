@@ -165,7 +165,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "dof_vel": "current_state.dof_vel",
                 "use_torque_squared": "False",
             },
-            weight=-5e-5,
+            weight=-7.5e-5,
             min_value=-0.75,
             zero_during_grace_period=False,
         ),

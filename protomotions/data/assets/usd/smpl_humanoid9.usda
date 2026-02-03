@@ -5901,8 +5901,8 @@ def Xform "smpl_humanoid9" (
             float physics:dynamicFriction = 0.4
             float physics:staticFriction = 0.8
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping =  7000
-            float physxMaterial:compliantContactStiffness = 175000
+            float physxMaterial:compliantContactDamping =  5000
+            float physxMaterial:compliantContactStiffness = 87500
             uniform token ui:nodegraph:node:expansionState = "open"
         }
 
@@ -5916,8 +5916,8 @@ def Xform "smpl_humanoid9" (
             float physics:dynamicFriction = 0.4
             float physics:staticFriction = 0.8
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 7000
-            float physxMaterial:compliantContactStiffness = 130000
+            float physxMaterial:compliantContactDamping = 5000
+            float physxMaterial:compliantContactStiffness = 65000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
 
@@ -5931,8 +5931,8 @@ def Xform "smpl_humanoid9" (
             float physics:dynamicFriction = 0.4
             float physics:staticFriction = 0.8
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 7000
-            float physxMaterial:compliantContactStiffness = 50000
+            float physxMaterial:compliantContactDamping = 5000
+            float physxMaterial:compliantContactStiffness = 25000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
 
@@ -5946,8 +5946,8 @@ def Xform "smpl_humanoid9" (
             float physics:dynamicFriction = 0.4
             float physics:staticFriction = 0.8
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 7000
-            float physxMaterial:compliantContactStiffness = 90000
+            float physxMaterial:compliantContactDamping = 5000
+            float physxMaterial:compliantContactStiffness = 46666
             uniform token ui:nodegraph:node:expansionState = "open"
         }
     }
