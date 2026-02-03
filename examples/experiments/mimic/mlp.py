@@ -106,6 +106,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "ref_state.rigid_body_pos",
                 "coefficient": "-100.0",
             },
+            indices_subset=["tracking_bodies"],
             weight=0.5,
         ),
         "skin_rew": RewardComponentConfig(
@@ -113,8 +114,8 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             variables={
                 "contact_forces": "current_state.rigid_body_contact_forces",
                 "body_quats": "current_state.rigid_body_rot",
-                "indices" : "[ 7,  8,  9, 10, 11, 12, 13, 14]",
             },
+            indices_subset=["skin_bodies"],
             weight=-1e-4,  # Negative = Penalty
             min_value=-0.5,
         ),
@@ -125,6 +126,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_q": "ref_state.rigid_body_rot",
                 "coefficient": "-5.0",
             },
+            indices_subset=["tracking_bodies"],
             weight=0.3,
         ),
         "gv_rew": RewardComponentConfig(
@@ -134,6 +136,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "ref_state.rigid_body_vel",
                 "coefficient": "-0.5",
             },
+            indices_subset=["tracking_bodies"],
             weight=0.1,
         ),
         "gav_rew": RewardComponentConfig(
@@ -143,6 +146,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "ref_state.rigid_body_ang_vel",
                 "coefficient": "-0.1",
             },
+            indices_subset=["tracking_bodies"],
             weight=0.1,
         ),
         "rh_rew": RewardComponentConfig(
@@ -171,7 +175,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "sim_contacts": "current_state.rigid_body_contacts",
                 "ref_contacts": "ref_state.rigid_body_contacts",
             },
-            indices_subset=["all_left_foot_bodies", "all_right_foot_bodies"],
+            indices_subset=["all_left_foot_bodies"], #, "all_right_foot_bodies"],
             weight=-0.2,
             zero_during_grace_period=True,
         ),

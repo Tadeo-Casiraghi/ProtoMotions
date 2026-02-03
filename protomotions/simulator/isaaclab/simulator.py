@@ -463,10 +463,6 @@ class IsaacLabSimulator(Simulator):
         for key, value in self.special_settings.items():
             pd_targets[...,key] = value
 
-        # print('suspension_x', ":", )
-        # print('suspension_y', ":", self._robot.joint_names.index("suspension_y"))
-        # print('suspension_z', ":", self._robot.joint_names.index("suspension_z"))
-        # print(pd_targets)
         self._robot.set_joint_position_target(pd_targets, joint_ids=None)
 
     def _apply_simulator_torques(self, torques: torch.Tensor) -> None:

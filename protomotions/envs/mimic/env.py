@@ -673,26 +673,6 @@ class Mimic(BaseEnv):
         )
 
 
-        # contact_buf = self.simulator.get_bodies_contact_buf()
-        # all_forces = contact_buf.rigid_body_contact_forces
-        # skin_forces_world_tensor = all_forces[:, self.skin_body_indices, :]
-        
-        # all_quats = current_state.rigid_body_rot
-        # skin_quats_tensor = all_quats[:, self.skin_body_indices, :]
-
-        # # 3. Convert to Numpy
-        # forces_np = skin_forces_world_tensor[0].detach().cpu().numpy()
-        # quats_np = skin_quats_tensor[0].detach().cpu().numpy()
-
-        # # 4. Rotate to Local Frame (SciPy)
-        # # RobotState uses (x, y, z, w). SciPy uses (x, y, z, w).
-        # # No formatting/rolling needed.
-        # rot = R.from_quat(quats_np)
-        
-        # # Apply Inverse Rotation (World -> Local)
-        # forces_local_np = rot.inv().apply(forces_np)
-
-
         other_log_terms = {
             "gt_err": gt_err,
             "gr_err": gr_err,

@@ -50,14 +50,7 @@ class Smpl9RobotConfig(RobotConfig):
         default_factory=lambda: [
             "all_left_foot_bodies",
             "all_right_foot_bodies",
-            "skin_box_posterior_top",
-            "skin_box_medial_top",
-            "skin_box_anterior_top",
-            "skin_box_lateral_top",
-            "skin_box_posterior_bottom",
-            "skin_box_medial_bottom",
-            "skin_box_anterior_bottom",
-            "skin_box_lateral_bottom",
+            "skin_bodies",
         ]
     )
 
@@ -73,6 +66,24 @@ class Smpl9RobotConfig(RobotConfig):
             "all_right_hand_bodies": ["R_Hand"],
             "head_body_name": ["Head"],
             "torso_body_name": ["Torso"],
+            "skin_bodies": [
+                "skin_box_posterior_top",
+                "skin_box_medial_top",
+                "skin_box_anterior_top",
+                "skin_box_lateral_top",
+                "skin_box_posterior_bottom",
+                "skin_box_medial_bottom",
+                "skin_box_anterior_bottom",
+                "skin_box_lateral_bottom",
+            ],
+            "tracking_bodies": [
+                "Pelvis",
+                "L_Hip", "L_Knee", "L_Ankle", "L_Toe",
+                "R_Hip", "R_Knee",
+                "Torso", "Spine", "Chest", "Neck", "Head",
+                "L_Thorax", "L_Shoulder", "L_Elbow", "L_Wrist", "L_Hand",
+                "R_Thorax", "R_Shoulder", "R_Elbow", "R_Wrist", "R_Hand", 
+            ],
         }
     )
     default_root_height: float = 0.95

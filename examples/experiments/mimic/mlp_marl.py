@@ -59,8 +59,8 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             variables={
                 "contact_forces": "current_state.rigid_body_contact_forces",
                 "body_quats": "current_state.rigid_body_rot",
-                "indices" : "[ 7,  8,  9, 10, 11, 12, 13, 14]",
             },
+            indices_subset=["skin_bodies"],
             weight=-1e-3, 
             min_value=-1.0,
         ),
