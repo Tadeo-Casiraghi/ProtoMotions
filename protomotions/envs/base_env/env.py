@@ -83,6 +83,7 @@ from protomotions.envs.utils.terminations import (
 )
 from protomotions.components.terrains.terrain import Terrain
 from protomotions.envs.obs.humanoid_obs import HumanoidObs
+from protomotions.envs.obs.prosthetic_obs import ProstheticObs
 from protomotions.envs.obs.scene_obs import SceneObs
 from protomotions.envs.obs.terrain_obs import TerrainObs
 from protomotions.envs.base_env.config import EnvConfig
@@ -215,6 +216,7 @@ class BaseEnv:
 
         # Create observation components (need simulator.dt)
         self.self_obs_cb = HumanoidObs(self.config.humanoid_obs, self)
+        self.prosthetic_obs_cb = ProstheticObs(self.config.prosthetic_obs, self) if self.config.secondary_reward_flag else None
         self.terrain_obs_cb = TerrainObs(self.terrain.config, self)
         # Always create scene_obs_cb (it checks if scenes exist internally)
         self.scene_obs_cb = SceneObs(self.config.scene_obs, self)
@@ -237,6 +239,9 @@ class BaseEnv:
             Dictionary of observation tensors from humanoid, terrain, and scene components
         """
         obs = self.self_obs_cb.get_obs()
+        if self.prosthetic_obs_cb is not None:
+            prosthetic_obs = self.prosthetic_obs_cb.get_obs()
+            obs.update(prosthetic_obs)
         terrain_obs = self.terrain_obs_cb.get_obs()
         obs.update(terrain_obs)
         if self.scene_lib.num_scenes() > 0 and self.config.scene_obs.enabled:

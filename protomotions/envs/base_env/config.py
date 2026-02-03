@@ -21,6 +21,7 @@ from protomotions.utils.config_builder import ConfigBuilder
 from protomotions.envs.obs.config import (
     HumanoidObsConfig,
     SceneObsConfig,
+    ProstheticObsConfig,
 )
 
 # Import motion manager config from its proper location
@@ -78,6 +79,7 @@ class EnvConfig(ConfigBuilder):
 
     # Observations
     humanoid_obs: HumanoidObsConfig = field(default_factory=HumanoidObsConfig)
+    prosthetic_obs: ProstheticObsConfig = field(default_factory=ProstheticObsConfig)
     scene_obs: SceneObsConfig = field(default_factory=SceneObsConfig)
 
     # Termination

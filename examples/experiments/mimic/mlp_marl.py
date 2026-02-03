@@ -74,7 +74,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
     return cfg
 
 
-# 3. OVERRIDE: Agent Configuration (The Orchestrator)
+# # 3. OVERRIDE: Agent Configuration (The Orchestrator)
 # def agent_config(
 #     robot_config: RobotConfig, env_config: MimicEnvConfig, args: argparse.Namespace
 # ) -> CoLearningConfig:
@@ -164,10 +164,10 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
 #         training_max_steps=args.training_max_steps,
 #         num_steps=32,
         
-#         # Orchestrator Settings
-#         mapping_info=mapping_info,
-#         agents={
-#             "humanoid": create_ppo_config("humanoid", BODY_DOFS),
-#             "leg":      create_ppo_config("leg", LEG_DOFS)
-#         }
-#     )
+        # Orchestrator Settings
+        mapping_info=mapping_info,
+        agents={
+            "humanoid": create_ppo_config("humanoid", BODY_DOFS),
+            "leg":      create_ppo_config("leg", LEG_DOFS)
+        }
+    )
