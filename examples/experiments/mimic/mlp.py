@@ -96,7 +96,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             variables={
                 "x": "current_actions - previous_actions",
             },
-            weight=-0.02,
+            weight=-0.08,
         ),
         # Mimic tracking rewards
         "gt_rew": RewardComponentConfig(
@@ -152,7 +152,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "ref_state.rigid_body_pos[:, 0, 2]",
                 "coefficient": "-100.0",
             },
-            weight=0.2,
+            weight=0.1,
         ),
         "pow_rew": RewardComponentConfig(
             function=power_consumption_sum,
@@ -161,8 +161,8 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "dof_vel": "current_state.dof_vel",
                 "use_torque_squared": "False",
             },
-            weight=-2e-5,
-            min_value=-0.5,
+            weight=-5e-5,
+            min_value=-0.75,
             zero_during_grace_period=False,
         ),
         "contact_match_rew": RewardComponentConfig(

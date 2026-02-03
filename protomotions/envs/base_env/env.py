@@ -164,7 +164,7 @@ class BaseEnv:
 
         # Buffers
         self.rew_buf = torch.zeros(self.num_envs, device=self.device, dtype=torch.float)
-        self.rew_buf_secondary = torch.zeros(self.num_envs, device=self.device, dtype=torch.float)
+        self.rew_buf_sec = torch.zeros(self.num_envs, device=self.device, dtype=torch.float)
         self.reset_buf = torch.ones(self.num_envs, device=self.device, dtype=torch.bool)
         self.progress_buf = torch.zeros(
             self.num_envs, device=self.device, dtype=torch.long
@@ -459,7 +459,7 @@ class BaseEnv:
         if self.config.secondary_reward_flag:
             rewards = {
                 "humanoid": self.rew_buf,
-                "prosthetic": self.rew_buf_secondary,
+                "prosthetic": self.rew_buf_sec,
             }
         else:
             rewards = self.rew_buf
