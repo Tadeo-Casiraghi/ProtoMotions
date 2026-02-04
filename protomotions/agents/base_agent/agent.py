@@ -621,7 +621,7 @@ class BaseAgent:
         # Note: Root Pos (idx 0) is removed from Pos, but Root Rot is kept in Rot.
         
         # Define Sizes
-        n_bodies = self.num_bodies 
+        n_bodies = self.total_num_bodies 
         dim_pos = (n_bodies - 1) * 3
         dim_rot = n_bodies * 6       # 6D rotation (tan_norm)
         dim_vel = n_bodies * 3
