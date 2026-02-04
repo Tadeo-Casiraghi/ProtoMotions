@@ -116,7 +116,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "body_quats": "current_state.rigid_body_rot",
             },
             indices_subset=["skin_bodies"],
-            weight=-1e-4,  # Negative = Penalty
+            weight=-2e-4,  # Negative = Penalty
             min_value=-0.5,
         ),
         "gr_rew": RewardComponentConfig(

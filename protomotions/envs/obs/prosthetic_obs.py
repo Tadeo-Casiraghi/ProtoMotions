@@ -2,12 +2,12 @@ import torch
 from torch import Tensor
 from protomotions.envs.obs.config import ProstheticObsConfig
 from protomotions.simulator.base_simulator.simulator_state import RobotState
-from protomotions.envs.utils.math import quat_rotate_inverse
+# from protomotions.envs.utils.math import quat_rotate_inverse
 
 # Import HistoryBuffer. If it's in humanoid.py, you might need to move it 
 # to a common utils file or import it from there. 
 # For now, assuming you can import it or paste the class definition here.
-from protomotions.envs.obs.humanoid import HistoryBuffer 
+# from protomotions.envs.obs.humanoid import HistoryBuffer 
 
 def compute_prosthetic_observations(
     dof_pos: Tensor,
@@ -28,18 +28,18 @@ def compute_prosthetic_observations(
     # TODO: Check all of this and maybe add noise, also add torque and motor angle
     # 2. Simulated Gyro: Local Angular Velocity
     # Rotate global angular vel into the shank's local frame
-    global_ang_vel = body_ang_vel[:, shank_body_idx]
-    shank_rot = body_rot[:, shank_body_idx]
-    local_ang_vel = quat_rotate_inverse(shank_rot, global_ang_vel, w_last=w_last)
+    # global_ang_vel = body_ang_vel[:, shank_body_idx]
+    # shank_rot = body_rot[:, shank_body_idx]
+    # local_ang_vel = quat_rotate_inverse(shank_rot, global_ang_vel, w_last=w_last)
 
-    # 3. Simulated Accelerometer: Projected Gravity
-    # Gravity vector [0, 0, -1] in global frame, rotated to local frame
-    # (The sensor feels "up" acceleration equal to 1g)
-    gravity_vec = torch.zeros_like(global_ang_vel)
-    gravity_vec[:, 2] = -1.0 
-    local_gravity = quat_rotate_inverse(shank_rot, gravity_vec, w_last=w_last)
+    # # 3. Simulated Accelerometer: Projected Gravity
+    # # Gravity vector [0, 0, -1] in global frame, rotated to local frame
+    # # (The sensor feels "up" acceleration equal to 1g)
+    # gravity_vec = torch.zeros_like(global_ang_vel)
+    # gravity_vec[:, 2] = -1.0 
+    # local_gravity = quat_rotate_inverse(shank_rot, gravity_vec, w_last=w_last)
 
-    return torch.cat([ankle_angle, local_ang_vel, local_gravity], dim=-1)
+    return torch.cat([ankle_angle, ankle_angle], dim=-1)#, local_ang_vel, local_gravity], dim=-1)
 
 
 class ProstheticObs:
