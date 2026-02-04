@@ -604,11 +604,96 @@ class BaseAgent:
     # Environment Interaction Helpers
     # -----------------------------
     def add_agent_info_to_obs(self, obs: Dict) -> Dict:
-        """Add agent-specific observations to the environment observations.
-
-        This can be used to augment observations from both reset() and step()
-        with agent-specific information (e.g., latent codes, discriminator obs).
         """
+        Takes the full 'max_coords_obs' and removes the prosthetic data 
+        based on indices passed in config.
+        """
+                
+        if "blind_body_obs" in obs or not self.config.use_blind_body_indices:
+            return obs
+
+        full_obs = obs["max_coords_obs"]
+        batch_size = full_obs.shape[0]
+        
+        # 2. DECONSTRUCT THE FLATTENED TENSOR
+        # Based on compute_humanoid_max_coords_observations:
+        # [Root_H (1)] + [Pos (N-1)*3] + [Rot (N)*6] + [Vel (N)*3] + [AngVel (N)*3]
+        # Note: Root Pos (idx 0) is removed from Pos, but Root Rot is kept in Rot.
+        
+        # Define Sizes
+        n_bodies = self.num_bodies 
+        dim_pos = (n_bodies - 1) * 3
+        dim_rot = n_bodies * 6       # 6D rotation (tan_norm)
+        dim_vel = n_bodies * 3
+        dim_ang_vel = n_bodies * 3
+        
+        # Slice pointers
+        start = 0
+        
+        # Root Height (1 dim)
+        root_h = full_obs[..., start : start+1]
+        start += 1
+        
+        # Body Pos (Starts at body 1, because root is removed)
+        # We need to map global body index 'i' to local pos index 'i-1'
+        body_pos = full_obs[..., start : start+dim_pos]
+        start += dim_pos
+        
+        # Body Rot (All bodies including root)
+        body_rot = full_obs[..., start : start+dim_rot]
+        start += dim_rot
+        
+        # Body Vel (All bodies)
+        body_vel = full_obs[..., start : start+dim_vel]
+        start += dim_vel
+        
+        # Body Ang Vel (All bodies)
+        body_ang_vel = full_obs[..., start : start+dim_ang_vel]
+        
+        
+        # 3. FILTERING LOGIC
+        # -------------------
+        # Convert 1D tensors back to [Bodies, Features] to easily mask indices
+        
+        # Helper to filter
+        def filter_bodies(tensor, feature_dim, indices_to_remove, skip_root=False):
+            # Reshape to [Batch, Num_Bodies, Features]
+            shaped = tensor.reshape(batch_size, -1, feature_dim)
+            
+            # Create a boolean mask of bodies to KEEP
+            num_items = shaped.shape[1]
+            keep_mask = torch.ones(num_items, dtype=torch.bool, device=tensor.device)
+            
+            for idx in indices_to_remove:
+                # If we skipped root (like in Pos), index 0 in tensor is actually body 1
+                adjusted_idx = idx - 1 if skip_root else idx
+                
+                if adjusted_idx >= 0 and adjusted_idx < num_items:
+                    keep_mask[adjusted_idx] = False
+            
+            # Filter and Flatten back
+            filtered = shaped[:, keep_mask, :].reshape(batch_size, -1)
+            return filtered
+
+        # Apply filtering
+        # Pos: Skip root (index 0)
+        blind_pos = filter_bodies(body_pos, 3, self.body_indices_to_remove, skip_root=True)
+        # Rot: Keep root
+        blind_rot = filter_bodies(body_rot, 6, self.body_indices_to_remove, skip_root=False)
+        # Vel: Keep root
+        blind_vel = filter_bodies(body_vel, 3, self.body_indices_to_remove, skip_root=False)
+        # AngVel: Keep root
+        blind_ang_vel = filter_bodies(body_ang_vel, 3, self.body_indices_to_remove, skip_root=False)
+        
+        # 4. REASSEMBLE
+        obs["blind_body_obs"] = torch.cat([
+            root_h, 
+            blind_pos, 
+            blind_rot, 
+            blind_vel, 
+            blind_ang_vel
+        ], dim=-1)
+
         return obs
 
     def obs_dict_to_tensordict(self, obs_dict: Dict) -> TensorDict:

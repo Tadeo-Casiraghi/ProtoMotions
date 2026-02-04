@@ -231,14 +231,27 @@ def agent_config(
     from protomotions.agents.base_agent.config import OptimizerConfig
     from protomotions.agents.evaluators.config import MimicEvaluatorConfig
 
+    body_names = robot_config.kinematic_info.body_names
+    body_indices_to_remove = []
+
+    for i, name in enumerate(body_names):
+        n_low = name.lower()
+        if (
+            "prosthetic" in n_low 
+            or "skin" in n_low 
+            or "socket" in n_low 
+            or name in ["R_Ankle", "R_Toe"] # Ensure these match your URDF exact casing
+        ):
+            body_indices_to_remove.append(i)
+
     actor_config = PPOActorConfig(
         num_out=robot_config.kinematic_info.num_dofs,
         actor_logstd=-2.9,
-        in_keys=["max_coords_obs", "mimic_target_poses", "historical_previous_actions"],
+        in_keys=["blind_body_obs", "mimic_target_poses", "historical_previous_actions"],
         mu_key="actor_trunk_out",
         mu_model=MLPWithConcatConfig(
             in_keys=[
-                "max_coords_obs",
+                "blind_body_obs",
                 "mimic_target_poses",
                 "historical_previous_actions",
             ],
@@ -252,7 +265,7 @@ def agent_config(
     )
 
     critic_config = MLPWithConcatConfig(
-        in_keys=["max_coords_obs", "mimic_target_poses", "historical_previous_actions"],
+        in_keys=["blind_body_obs", "mimic_target_poses", "historical_previous_actions"],
         out_keys=["value"],
         normalize_obs=True,
         norm_clamp_value=5,
@@ -262,7 +275,7 @@ def agent_config(
     agent_config: PPOAgentConfig = PPOAgentConfig(
         model=PPOModelConfig(
             in_keys=[
-                "max_coords_obs",
+                "blind_body_obs",
                 "mimic_target_poses",
                 "historical_previous_actions",
             ],
@@ -276,6 +289,11 @@ def agent_config(
         training_max_steps=args.training_max_steps,
         gradient_clip_val=50.0,
         clip_critic_loss=True,
+
+        use_blind_body_indices=True,
+        body_indices_to_remove=body_indices_to_remove,
+        total_num_bodies=len(body_names),
+
         evaluator=MimicEvaluatorConfig(
             eval_metric_keys=[
                 "gt_err",

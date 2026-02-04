@@ -99,6 +99,11 @@ class PPOAgentConfig(BaseAgentConfig):
     # Model configuration
     model: PPOModelConfig = field(default_factory=PPOModelConfig)
 
+    # Bodies to consider for observations and actions
+    body_indices_to_remove: List[int] = field(default_factory=list)
+    total_num_bodies: int = 0
+    use_blind_body_indices: bool = False
+
     # PPO hyperparameters
     tau: float = 0.95
     e_clip: float = 0.2
