@@ -608,7 +608,10 @@ class BaseAgent:
         Takes the full 'max_coords_obs' and removes the prosthetic data 
         based on indices passed in config.
         """
-        print(obs)
+        
+        # print size of all keys in obs for debugging
+        for key in obs:
+            print(f"Obs key: {key}, shape: {obs[key].shape}")
 
 
         if "blind_body_obs" in obs or not self.config.use_blind_body_indices:
@@ -696,7 +699,10 @@ class BaseAgent:
             blind_ang_vel
         ], dim=-1)
 
-        print(obs)
+        print()
+        for key in obs:
+            print(f"Obs key: {key}, shape: {obs[key].shape}")
+        print("----")
         return obs
 
     def obs_dict_to_tensordict(self, obs_dict: Dict) -> TensorDict:
