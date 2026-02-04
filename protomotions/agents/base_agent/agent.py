@@ -621,7 +621,7 @@ class BaseAgent:
         # Note: Root Pos (idx 0) is removed from Pos, but Root Rot is kept in Rot.
         
         # Define Sizes
-        n_bodies = self.total_num_bodies 
+        n_bodies = self.config.total_num_bodies 
         dim_pos = (n_bodies - 1) * 3
         dim_rot = n_bodies * 6       # 6D rotation (tan_norm)
         dim_vel = n_bodies * 3
@@ -677,13 +677,13 @@ class BaseAgent:
 
         # Apply filtering
         # Pos: Skip root (index 0)
-        blind_pos = filter_bodies(body_pos, 3, self.body_indices_to_remove, skip_root=True)
+        blind_pos = filter_bodies(body_pos, 3, self.config.body_indices_to_remove, skip_root=True)
         # Rot: Keep root
-        blind_rot = filter_bodies(body_rot, 6, self.body_indices_to_remove, skip_root=False)
+        blind_rot = filter_bodies(body_rot, 6, self.config.body_indices_to_remove, skip_root=False)
         # Vel: Keep root
-        blind_vel = filter_bodies(body_vel, 3, self.body_indices_to_remove, skip_root=False)
+        blind_vel = filter_bodies(body_vel, 3, self.config.body_indices_to_remove, skip_root=False)
         # AngVel: Keep root
-        blind_ang_vel = filter_bodies(body_ang_vel, 3, self.body_indices_to_remove, skip_root=False)
+        blind_ang_vel = filter_bodies(body_ang_vel, 3, self.config.body_indices_to_remove, skip_root=False)
         
         # 4. REASSEMBLE
         obs["blind_body_obs"] = torch.cat([
