@@ -84,6 +84,7 @@ class ProstheticObsConfig(ConfigBuilder):
     shank_body_index: int = 0  # The index in rigid_body_pos
 
 
+
 @dataclass
 class SceneObsConfig(ConfigBuilder):
     """Configuration for scene observations."""

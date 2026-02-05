@@ -69,7 +69,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
     )
     from protomotions.envs.obs.config import FuturePoseType, MimicTargetPoseConfig
     from protomotions.envs.base_env.config import RewardComponentConfig
-    from protomotions.envs.obs.config import HumanoidObsConfig, ActionHistoryConfig
+    from protomotions.envs.obs.config import HumanoidObsConfig, ActionHistoryConfig, MaxCoordsSelfObsConfig
     from protomotions.envs.utils.rewards import (
         mean_squared_error_exp,
         rotation_error_exp,
@@ -196,6 +196,10 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         ref_contact_smooth_window=7,
         max_episode_length=1000,
         humanoid_obs=HumanoidObsConfig(
+            max_coords_obs=MaxCoordsSelfObsConfig(
+                enabled=True,
+                observe_contacts=True,
+            ),
             action_history=ActionHistoryConfig(
                 enabled=True,
                 num_historical_steps=1,

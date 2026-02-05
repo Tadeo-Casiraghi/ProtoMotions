@@ -654,7 +654,10 @@ class BaseAgent:
         
         # Body Ang Vel (All bodies)
         body_ang_vel = full_obs[..., start : start+dim_ang_vel]
-        
+        start += dim_ang_vel
+
+        # Body Contact Forces (All bodies)
+        contact_forces = full_obs[..., start:]
         
         # 3. FILTERING LOGIC
         # -------------------
@@ -696,8 +699,10 @@ class BaseAgent:
             blind_pos, 
             blind_rot, 
             blind_vel, 
-            blind_ang_vel
+            blind_ang_vel,
+            contact_forces
         ], dim=-1)
+
 
         # print()
         # for key in obs:

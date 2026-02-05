@@ -322,6 +322,7 @@ class HumanoidObs:
                 body_ang_vel=current_state.rigid_body_ang_vel,
                 ground_height=ground_heights,
                 body_contacts=body_contacts,
+                body_contact_forces=current_state.rigid_body_contact_forces,
                 local_obs=self.config.max_coords_obs.local_obs,
                 root_height_obs=self.config.max_coords_obs.root_height_obs,
                 observe_contacts=self.config.max_coords_obs.observe_contacts,

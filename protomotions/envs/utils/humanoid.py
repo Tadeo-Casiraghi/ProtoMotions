@@ -107,6 +107,7 @@ def compute_humanoid_max_coords_observations(
     body_ang_vel: Tensor,
     ground_height: Tensor,
     body_contacts: Tensor,
+    body_contact_forces: Tensor,
     local_obs: bool,
     root_height_obs: bool,
     observe_contacts: bool,
@@ -195,8 +196,14 @@ def compute_humanoid_max_coords_observations(
     if observe_contacts:
         # body_contacts is binary flags: [num_envs, num_contact_bodies]
         # Convert to float for observation
-        contact_obs = body_contacts.float()
-        obs.append(contact_obs)
+        # contact_obs = body_contacts.float()
+        # obs.append(contact_obs)
+
+        rot_inv = rotations.quat_conjugate(body_rot, w_last)
+        local_forces = rotations.quat_rotate(rot_inv, body_contact_forces, w_last)
+
+        flat_local_forces = local_forces.reshape(local_forces.shape[0], -1)
+        obs.append(flat_local_forces)
 
     obs = torch.cat(obs, dim=-1)
     return obs
