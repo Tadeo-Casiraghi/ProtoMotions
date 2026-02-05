@@ -481,6 +481,7 @@ class MimicEvaluator(BaseEvaluator):
 
         # Store actions for plotting (only for single motion evaluation)
         actions_storage = [] if collect_metrics and num_motions == 1 else None
+        observed_skin_forces_data = []
 
         print("Evaluating policy...")
         try:
@@ -568,6 +569,27 @@ class MimicEvaluator(BaseEvaluator):
                 skin_forces_knee_data.append(forces_knee_np)
                 # ------------------------------------------
 
+                blind_obs_tensor = obs["blind_body_obs"][0]
+
+                # 2. Calculate indices
+                # We know forces are appended at the very end.
+                # Size = Num_Bodies * 3 (X, Y, Z per body)
+                num_bodies = self.env.robot_config.kinematic_info.num_bodies
+                force_block_size = num_bodies * 3
+
+                # 3. Slice the tail of the observation
+                # This gives us [All_Bodies_Local_Force_X, All_Bodies_Local_Force_Y, ...]
+                obs_forces_flat = blind_obs_tensor[-force_block_size:]
+                
+                # 4. Reshape to [Num_Bodies, 3]
+                obs_forces_all = obs_forces_flat.reshape(num_bodies, 3)
+
+                # 5. Select only the Skin Indices (to compare apples-to-apples)
+                obs_skin_forces = obs_forces_all[self.env.skin_body_indices, :]
+                
+                # 6. Store
+                observed_skin_forces_data.append(obs_skin_forces.detach().cpu().numpy())
+
                 if len(prismatic_data) % 100 == 0:
                     # Save all data including the new skin_forces
                     np.savez('python-stuff/multiple_arrays.npz', 
@@ -577,7 +599,8 @@ class MimicEvaluator(BaseEvaluator):
                              rotz=rotation_z,
                              skin_forces=skin_forces_data,
                              skin_forces_world=skin_forces_world_data,
-                             skin_forces_knee=skin_forces_knee_data)
+                             skin_forces_knee=skin_forces_knee_data,
+                             skin_forces_obs=observed_skin_forces_data)
                     # Optional: Print a dot so you know it's working without spamming logs
                     print(".", end="", flush=True)
 

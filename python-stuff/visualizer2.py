@@ -22,6 +22,7 @@ def plot_data():
         rot_x = loaded_data['rotx'].flatten() * 180 / np.pi
         rot_y = loaded_data['roty'].flatten() * 180 / np.pi
         rot_z = loaded_data['rotz'].flatten() * 180 / np.pi
+
         
         # --- Load Forces ---
         # 1. Local (Skin) Frame
@@ -37,6 +38,9 @@ def plot_data():
         else:
             print("Warning: 'skin_forces_knee' not found.")
             knee_forces = None
+
+        calc_forces = loaded_data['skin_forces'] if 'skin_forces' in loaded_data else None
+        obs_forces = loaded_data['skin_forces_obs'] if 'skin_forces_obs' in loaded_data else None
 
         # Time Axis
         num_frames = len(prismatic)
@@ -159,6 +163,82 @@ def plot_data():
 
             print(f"Max Net Force (Knee Frame): {np.max(net_mag):.2f} N")
             plt.tight_layout()
+
+    # =========================================================
+        # FIGURE 5: VERIFICATION (CALC vs OBS)
+        # =========================================================
+        if calc_forces is not None and obs_forces is not None:
+            fig5, axes = plt.subplots(4, 2, figsize=(14, 12), sharex=True)
+            fig5.canvas.manager.set_window_title('Fig 5: Verification (Manual Calc vs Network Obs)')
+            fig5.suptitle("Data Integrity Check: Manual Calculation vs Neural Net Input", fontsize=16)
+            axes_flat = axes.flatten()
+
+            for i, name in enumerate(skin_names):
+                if i >= calc_forces.shape[1]: break
+                ax = axes_flat[i]
+                
+                # Plot Z (Normal Force) Comparison
+                c_z = calc_forces[:, i, 2]
+                o_z = obs_forces[:, i, 2]
+                
+                # Plot X (Shear Force) Comparison
+                c_x = calc_forces[:, i, 0]
+                o_x = obs_forces[:, i, 0]
+
+                # Solid Line = Manual Calculation
+                ax.plot(time_axis, c_z, 'b-', linewidth=2.0, alpha=0.6, label='Calc Z (Manual)')
+                # Dashed Line = Network Observation
+                ax.plot(time_axis, o_z, 'y--', linewidth=1.5, label='Obs Z (Network)')
+                
+                # Check Error
+                mse = np.mean((c_z - o_z)**2)
+                ax.set_title(f"{name} (MSE: {mse:.1e})", fontsize=10, fontweight='bold')
+                
+                ax.grid(True, linestyle=':', alpha=0.5)
+                if i == 0: ax.legend(loc='upper right', fontsize='small')
+
+            plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+            print(f"Verification Plot Generated. If yellow dashes overlap blue lines perfectly, data is correct.")
+
+            fig6, axes = plt.subplots(4, 2, figsize=(14, 12), sharex=True)
+            fig6.canvas.manager.set_window_title('Fig 6: Verification (Manual Calc vs Network Obs)')
+            fig6.suptitle("Data Integrity Check: Manual Calculation vs Neural Net Input", fontsize=16)
+            axes_flat = axes.flatten()
+
+            for i, name in enumerate(skin_names):
+                if i >= calc_forces.shape[1]: break
+                ax = axes_flat[i]
+                
+                # Plot Z (Normal Force) Comparison
+                c_z = calc_forces[:, i, 2]
+                o_z = obs_forces[:, i, 2]
+                
+                # Plot X (Shear Force) Comparison
+                c_x = calc_forces[:, i, 0]
+                o_x = obs_forces[:, i, 0]
+
+                c_y = calc_forces[:, i, 1]
+                o_y = obs_forces[:, i, 1]
+
+                # Solid Line = Manual Calculation
+                ax.plot(time_axis, c_x, 'b-', linewidth=2.0, alpha=0.6, label='Calc X (Manual)')
+                # Dashed Line = Network Observation
+                ax.plot(time_axis, o_x, 'y--', linewidth=1.5, label='Obs X (Network)')
+
+                # Solid Line = Manual Calculation
+                ax.plot(time_axis, c_y, 'k-', linewidth=2.0, alpha=0.6, label='Calc Y (Manual)')
+                # Dashed Line = Network Observation
+                ax.plot(time_axis, o_y, 'r--', linewidth=1.5, label='Obs Y (Network)')
+                
+                # Check Error
+                mse = np.mean((c_x - o_x)**2 + (c_y - o_y)**2)
+                ax.set_title(f"{name} (MSE: {mse:.1e})", fontsize=10, fontweight='bold')
+                
+                ax.grid(True, linestyle=':', alpha=0.5)
+                if i == 0: ax.legend(loc='upper right', fontsize='small')
+
+            plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+            print(f"Verification Plot Generated. If yellow dashes overlap blue lines perfectly, data is correct.")
 
         print("Displaying plots...")
         plt.show()
