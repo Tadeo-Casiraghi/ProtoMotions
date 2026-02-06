@@ -183,6 +183,12 @@ class BaseEnv:
             self.config.skip_correct_terrain_height_on_flat and self.terrain.is_flat()
         )
 
+        if self.config.passive_dof_defaults is not None:
+             # Just attach the dict to the simulator object
+             self.simulator.passive_dof_defaults = self.config.passive_dof_defaults
+        else:
+             self.simulator.passive_dof_defaults = None
+
         # Initialize simulator with visualization markers and complete setup
         self.initialize_simulator()
 
@@ -446,7 +452,6 @@ class BaseEnv:
             terminated: Termination flags [num_envs]
             info: Dictionary containing step metadata (extras)
         """
-
         self.extras = {}
 
         actions = self.process_actions(actions)

@@ -459,9 +459,19 @@ class IsaacLabSimulator(Simulator):
     def _apply_simulator_pd_targets(self, pd_targets: torch.Tensor) -> None:
         """Applies PD position targets using IsaacLab's internal PD controller."""
         # TEMPORARY
-        # print(self._robot.joint_names)
+        if getattr(self, "passive_dof_defaults", None) is not None:
+             for dof_idx, physical_val in self.passive_dof_defaults.items():
+                 # Overwrite the target with the EXACT physical value from your config.
+                 # e.g., -0.025 meters
+                 pd_targets[..., dof_idx] = physical_val
+
         for key, value in self.special_settings.items():
+            # First print its current value
+            print(f"Overriding DOF index {key} to value {value}")
+            print("Current value:", pd_targets[...,key].clone())
             pd_targets[...,key] = value
+            print("New value:", pd_targets[...,key].clone())
+            print()
 
         self._robot.set_joint_position_target(pd_targets, joint_ids=None)
 

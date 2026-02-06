@@ -80,6 +80,32 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         skin_pressure_penalty,
     )
 
+    all_dof_names = robot_cfg.kinematic_info.dof_names
+
+    passive_dofs = ["suspension_slide",
+                      "suspension_x",
+                      "suspension_y",
+                      "suspension_z",
+                      "R_Ankle_y"]
+    
+    active_indices = []
+    passive_defaults = {} # Map index -> default value
+    
+    # Your settings for passive joints
+    defaults_map = {
+        "suspension_slide": -0.025,
+        "default": 0.0
+    }
+
+    for i, name in enumerate(all_dof_names):
+        if name in passive_dofs:
+            # It's passive: Assign default value
+            val = defaults_map.get(name, defaults_map["default"])
+            passive_defaults[i] = val
+        else:
+            # It's active: Humanoid controls this
+            active_indices.append(i)
+
     mimic_early_termination = [
         MimicEarlyTerminationEntry(
             mimic_early_termination_key="max_joint_err",
@@ -218,6 +244,8 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             init_start_prob=0.2,
             resample_on_reset=True,
         ),
+        active_dof_indices=active_indices,
+        passive_dof_defaults=passive_defaults,
     )
 
     return env_config
@@ -247,29 +275,31 @@ def agent_config(
             or name in ["R_Ankle", "R_Toe"] # Ensure these match your URDF exact casing
         ):
             body_indices_to_remove.append(i)
+    
+    num_active_actions = len(env_config.active_dof_indices) if env_config.active_dof_indices is not None else robot_config.kinematic_info.num_dofs
 
     actor_config = PPOActorConfig(
-        num_out=robot_config.kinematic_info.num_dofs,
+        num_out=num_active_actions,
         actor_logstd=-2.9,
-        in_keys=["blind_body_obs", "mimic_target_poses", "historical_previous_actions"],
+        in_keys=["blind_body_obs", "mimic_target_poses", "agent_action_history"],
         mu_key="actor_trunk_out",
         mu_model=MLPWithConcatConfig(
             in_keys=[
                 "blind_body_obs",
                 "mimic_target_poses",
-                "historical_previous_actions",
+                "agent_action_history",
             ],
             normalize_obs=True,
             norm_clamp_value=5,
             out_keys=["actor_trunk_out"],
-            num_out=robot_config.number_of_actions,
+            num_out=num_active_actions,
             layers=[MLPLayerConfig(units=1024, activation="relu") for _ in range(6)],
             output_activation="tanh",
         ),
     )
 
     critic_config = MLPWithConcatConfig(
-        in_keys=["blind_body_obs", "mimic_target_poses", "historical_previous_actions"],
+        in_keys=["blind_body_obs", "mimic_target_poses", "agent_action_history"],
         out_keys=["value"],
         normalize_obs=True,
         norm_clamp_value=5,
@@ -281,7 +311,7 @@ def agent_config(
             in_keys=[
                 "blind_body_obs",
                 "mimic_target_poses",
-                "historical_previous_actions",
+                "agent_action_history",
             ],
             out_keys=["action", "mean_action", "neglogp", "value"],
             actor=actor_config,

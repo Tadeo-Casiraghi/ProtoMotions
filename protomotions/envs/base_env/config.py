@@ -104,3 +104,6 @@ class EnvConfig(ConfigBuilder):
 
     secondary_reward_flag: bool = False
     secondary_reward_config: Dict[str, RewardComponentConfig] = field(default_factory=dict)
+
+    active_dof_indices: Optional[List[int]] = None
+    passive_dof_defaults: Optional[Dict[int, float]] = None

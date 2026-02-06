@@ -180,6 +180,9 @@ class SimulatorConfig(ConfigBuilder):
     camera: Optional[Any] = None
     record_viewer: bool = False
     viewer_record_dir: str = "output/recordings/viewer"
+
+    passive_dof_defaults: Optional[Dict[int, float]] = None
+
     domain_randomization: Optional[DomainRandomizationConfig] = None
     """Domain randomization configuration.
 

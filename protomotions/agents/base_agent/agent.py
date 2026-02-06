@@ -482,8 +482,34 @@ class BaseAgent:
                     action = self.collect_rollout_step(obs_td, step)
                     self.check_obs_for_nans(obs_td, action)
 
+                    env_action = action  # Default to pass-through
+                    
+                    if (
+                        hasattr(self.env.config, "active_dof_indices") 
+                        and self.env.config.active_dof_indices is not None
+                    ):
+                        # 1. Get dimensions
+                        batch_size = action.shape[0]
+                        total_dofs = self.env.robot_config.kinematic_info.num_dofs
+                        
+                        # 2. Create full zero-tensor [Num Envs, Total DOFs]
+                        # This implicitly sets passive joints to 0.0 (which the Simulator Hardware Lock will later ignore/overwrite)
+                        full_action = torch.zeros(
+                            batch_size, total_dofs, 
+                            dtype=action.dtype, 
+                            device=action.device
+                        )
+                        
+                        # 3. Scatter active actions into the correct slots
+                        # We use the indices we defined in the EnvConfig
+                        active_indices = self.env.config.active_dof_indices
+                        full_action[:, active_indices] = action
+                        
+                        env_action = full_action
+                    # ------------------------------
+
                     # Step the environment
-                    next_obs, rewards, dones, terminated, extras = self.env.step(action)
+                    next_obs, rewards, dones, terminated, extras = self.env.step(env_action)
 
                     # WILL DELETE LATER
                     if isinstance(rewards, dict):
@@ -702,6 +728,25 @@ class BaseAgent:
             blind_ang_vel,
             contact_forces
         ], dim=-1)
+
+        # --- NEW: FILTER ACTION HISTORY ---
+        # We read the full history but save the filtered version to a NEW key.
+        if "historical_previous_actions" in obs and self.config.active_dof_indices is not None:
+            full_history = obs["historical_previous_actions"]
+            
+            # 1. Reshape: [Batch, History_Steps * Total_DOFs] -> [Batch, History_Steps, Total_DOFs]
+            batch_size = full_history.shape[0]
+            num_total_dofs = self.env.robot_config.kinematic_info.num_dofs # Ensure this matches robot DOFs
+            hist_steps = full_history.shape[1] // num_total_dofs
+            
+            shaped_hist = full_history.reshape(batch_size, hist_steps, num_total_dofs)
+            
+            # 2. Slice: Keep only Active Indices
+            # We assume self.config.active_dof_indices is a list of ints [0, 1, 2, 5...]
+            filtered_hist = shaped_hist[..., self.config.active_dof_indices]
+            
+            # 3. Flatten & Save to NEW Key
+            obs["agent_action_history"] = filtered_hist.reshape(batch_size, -1)
 
 
         # print()
