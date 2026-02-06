@@ -279,7 +279,7 @@ class MimicEvaluator(BaseEvaluator):
             else:
                 actions = model_outs["action"]
 
-            env_action = self.expand_action_to_env(actions)
+            env_action = self.agent.expand_action_to_env(actions)
 
             # Step the environment
             obs, rewards, dones, terminated, extras = self.env.step(env_action)
@@ -515,7 +515,7 @@ class MimicEvaluator(BaseEvaluator):
                         actions[0].detach().cpu().numpy()
                     )  # Store first env's actions
 
-                env_action = self.expand_action_to_env(actions)
+                env_action = self.agent.expand_action_to_env(actions)
 
                 # Step the environment
                 obs, rewards, dones, terminated, extras = self.env.step(env_action)
