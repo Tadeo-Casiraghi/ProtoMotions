@@ -278,8 +278,11 @@ class MimicEvaluator(BaseEvaluator):
                 actions = model_outs["mean_action"]
             else:
                 actions = model_outs["action"]
+
+            env_action = self.expand_action_to_env(actions)
+
             # Step the environment
-            obs, rewards, dones, terminated, extras = self.env.step(actions)
+            obs, rewards, dones, terminated, extras = self.env.step(env_action)
             obs = self.agent.add_agent_info_to_obs(obs)
 
             obs_td = self.agent.obs_dict_to_tensordict(obs)
@@ -512,9 +515,10 @@ class MimicEvaluator(BaseEvaluator):
                         actions[0].detach().cpu().numpy()
                     )  # Store first env's actions
 
+                env_action = self.expand_action_to_env(actions)
 
                 # Step the environment
-                obs, rewards, dones, terminated, extras = self.env.step(actions)
+                obs, rewards, dones, terminated, extras = self.env.step(env_action)
                 obs = self.agent.add_agent_info_to_obs(obs)
                 obs_td = self.agent.obs_dict_to_tensordict(obs)
 

@@ -183,14 +183,56 @@ class BaseEnv:
             self.config.skip_correct_terrain_height_on_flat and self.terrain.is_flat()
         )
 
-        if self.config.passive_dof_defaults is not None:
-             # Just attach the dict to the simulator object
-             self.simulator.passive_dof_defaults = self.config.passive_dof_defaults
-        else:
-             self.simulator.passive_dof_defaults = None
-
         # Initialize simulator with visualization markers and complete setup
         self.initialize_simulator()
+
+        if hasattr(self.config, "passive_dof_names") and self.config.passive_dof_names is not None:
+            sim_dof_names = self.simulator._robot.joint_names 
+            env_dof_names = self.robot_config.kinematic_info.dof_names
+            
+            # 3. CALCULATE INDICES DYNAMICALLY
+            active_indices = []
+            passive_defaults_indices = {}
+            passive_defaults_indices_env = {}
+
+            # Get our instructions from config
+            # (Handle case where these might be None)
+            target_passive_names = getattr(self.config, "passive_dof_names", [])
+            target_defaults_map = getattr(self.config, "passive_defaults_map", {})
+
+            print("\n--- RESOLVING JOINT INDICES ---")
+            for i, (name_sim, name_env) in enumerate(zip(sim_dof_names, env_dof_names)):
+                if name_sim in target_passive_names:
+                    # It is PASSIVE
+                    val = target_defaults_map.get(name_sim, target_defaults_map.get("default", 0.0))
+                    passive_defaults_indices[i] = val
+                    print(f"Locked Joint '{name_sim}' (Index {i}) -> {val}")
+                if name_env in target_passive_names:
+                    # It is PASSIVE
+                    val = target_defaults_map.get(name_env, target_defaults_map.get("default", 0.0))
+                    passive_defaults_indices_env[i] = val
+                    print(f"Locked Joint '{name_env}' (Index {i}) -> {val}")
+                else:
+                    active_indices.append(i)
+
+            # 4. UPDATE COMPONENTS WITH CORRECT INDICES
+            
+            # A. Update Simulator (Hardware Lock)
+            self.simulator.passive_dof_defaults = passive_defaults_indices
+            
+            # B. Update Config (So Agent/Orchestrator know active indices)
+            self.config.active_dof_indices = active_indices
+            # print("Set Active DOF indices to", self.config.active_dof_indices)
+            self.config.passive_dof_defaults = passive_defaults_indices_env # For reference
+            
+            # C. CRITICAL: SYNC ROBOT CONFIG
+            # Your Observation code reads robot_config.kinematic_info.dof_names.
+            # We must update it to match the Sim, or observations will be scrambled!
+            # self.robot_config.kinematic_info.dof_names = sim_dof_names
+            
+            print(f"Total DOFs: {len(sim_dof_names)}")
+            print(f"Active Indices Count: {len(active_indices)}")
+            print("-------------------------------\n")
 
     def initialize_simulator(self):
         """Initialize simulator with task-specific visualization markers.

@@ -80,31 +80,22 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         skin_pressure_penalty,
     )
 
-    all_dof_names = robot_cfg.kinematic_info.dof_names
+    # all_dof_names = robot_cfg.kinematic_info.dof_names # This is UNRELIABLE for indices
 
-    passive_dofs = ["suspension_slide",
-                      "suspension_x",
-                      "suspension_y",
-                      "suspension_z",
-                      "R_Ankle_y"]
+    passive_dof_names = [
+        "suspension_slide",
+        "suspension_x",
+        "suspension_y",
+        "suspension_z",
+        "R_Ankle_y"
+    ]
     
-    active_indices = []
-    passive_defaults = {} # Map index -> default value
-    
-    # Your settings for passive joints
-    defaults_map = {
+    # Store the defaults by NAME
+    passive_defaults_by_name = {
         "suspension_slide": -0.025,
         "default": 0.0
     }
 
-    for i, name in enumerate(all_dof_names):
-        if name in passive_dofs:
-            # It's passive: Assign default value
-            val = defaults_map.get(name, defaults_map["default"])
-            passive_defaults[i] = val
-        else:
-            # It's active: Humanoid controls this
-            active_indices.append(i)
 
     mimic_early_termination = [
         MimicEarlyTerminationEntry(
@@ -244,8 +235,10 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             init_start_prob=0.2,
             resample_on_reset=True,
         ),
-        active_dof_indices=active_indices,
-        passive_dof_defaults=passive_defaults,
+        passive_dof_names=passive_dof_names,
+        passive_defaults_map=passive_defaults_by_name,
+        active_dof_indices=None,
+        passive_dof_defaults=None,
     )
 
     return env_config
@@ -276,7 +269,22 @@ def agent_config(
         ):
             body_indices_to_remove.append(i)
     
-    num_active_actions = len(env_config.active_dof_indices) if env_config.active_dof_indices is not None else robot_config.kinematic_info.num_dofs
+    total_dofs = robot_config.kinematic_info.num_dofs
+
+    # Check if we have a list of passive names in the config
+    if hasattr(env_config, "passive_dof_names") and env_config.passive_dof_names:
+        # 68 - 5 = 63
+        num_passive = len(env_config.passive_dof_names)
+        num_active_actions = total_dofs - num_passive
+        print(f"Agent Config: Detected {num_passive} passive joints by name. Output size: {num_active_actions}")
+        
+    elif env_config.active_dof_indices is not None:
+        # Fallback to explicit indices if provided
+        num_active_actions = len(env_config.active_dof_indices)
+        
+    else:
+        # Default: Agent controls all joints
+        num_active_actions = total_dofs
 
     actor_config = PPOActorConfig(
         num_out=num_active_actions,

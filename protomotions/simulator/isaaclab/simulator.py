@@ -360,11 +360,11 @@ class IsaacLabSimulator(Simulator):
         self._apply_domain_randomization_if_needed()
 
         # TEMPORARY
-        self.special_settings = {self._robot.joint_names.index("suspension_slide"): -0.025,
-                                 self._robot.joint_names.index("suspension_x"): 0,
-                                 self._robot.joint_names.index("suspension_y"): 0,
-                                 self._robot.joint_names.index("suspension_z"): 0,
-                                 self._robot.joint_names.index("R_Ankle_y"): 0}
+        # self.special_settings = {self._robot.joint_names.index("suspension_slide"): -0.025,
+        #                          self._robot.joint_names.index("suspension_x"): 0,
+        #                          self._robot.joint_names.index("suspension_y"): 0,
+        #                          self._robot.joint_names.index("suspension_z"): 0,
+        #                          self._robot.joint_names.index("R_Ankle_y"): 0}
 
     def _apply_domain_randomization_if_needed(self) -> None:
         all_env_ids = torch.arange(self.config.num_envs, dtype=torch.int)
@@ -460,18 +460,19 @@ class IsaacLabSimulator(Simulator):
         """Applies PD position targets using IsaacLab's internal PD controller."""
         # TEMPORARY
         if getattr(self, "passive_dof_defaults", None) is not None:
-             for dof_idx, physical_val in self.passive_dof_defaults.items():
-                 # Overwrite the target with the EXACT physical value from your config.
-                 # e.g., -0.025 meters
-                 pd_targets[..., dof_idx] = physical_val
+            for dof_idx, physical_val in self.passive_dof_defaults.items():
+                # Overwrite the target with the EXACT physical value from your config.
+                # e.g., -0.025 meters
+                #  print('CHanging value for index', dof_idx)
+                pd_targets[..., dof_idx] = physical_val
 
-        for key, value in self.special_settings.items():
-            # First print its current value
-            print(f"Overriding DOF index {key} to value {value}")
-            print("Current value:", pd_targets[...,key].clone())
-            pd_targets[...,key] = value
-            print("New value:", pd_targets[...,key].clone())
-            print()
+        # for key, value in self.special_settings.items():
+        #     # First print its current value
+        #     print(f"Overriding DOF index {key} to value {value}")
+        #     print("Current value:", pd_targets[0,key].clone())
+        #     pd_targets[...,key] = value
+        #     print("New value:", pd_targets[0,key].clone())
+        #     print()
 
         self._robot.set_joint_position_target(pd_targets, joint_ids=None)
 

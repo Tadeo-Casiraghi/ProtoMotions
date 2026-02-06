@@ -116,16 +116,16 @@ class SceneCfg(InteractiveSceneCfg):
             else IdealPDActuatorCfg
         )
 
-        def printout(dof_name, stiffness, damping, armature, effort_limit, velocity_limit, friction):
-            print()
-            print(dof_name, ":")
-            print('    stiffness:', stiffness)
-            print('    damping:', damping)
-            print('    armature:', armature)
-            print('    effort_limit:', effort_limit)
-            print('    velocity_limit:', velocity_limit)
-            print('    friction:', friction)
-            print()
+        # def printout(dof_name, stiffness, damping, armature, effort_limit, velocity_limit, friction):
+        #     print()
+        #     print(dof_name, ":")
+        #     print('    stiffness:', stiffness)
+        #     print('    damping:', damping)
+        #     print('    armature:', armature)
+        #     print('    effort_limit:', effort_limit)
+        #     print('    velocity_limit:', velocity_limit)
+        #     print('    friction:', friction)
+        #     print()
 
         for dof_name, control_info in robot_config.control.control_info.items():
             stiffness = control_info.stiffness
@@ -134,42 +134,43 @@ class SceneCfg(InteractiveSceneCfg):
                 stiffness = 0.0
                 damping = 0.0
             
-            if dof_name == "R_Ankle_y":
-                stiffness = 3000.0
-                damping = 300.0
-                control_info.armature = 0.02
-                control_info.effort_limit = 10000.0
-                control_info.velocity_limit = 10000.0
-                control_info.friction = 0.0
-                printout(dof_name, stiffness, damping, control_info.armature, control_info.effort_limit, control_info.velocity_limit, control_info.friction)
-            if dof_name == "suspension_slide":
-                # TEMPORARY
-                stiffness = 2000.0
-                damping = 2000.0
-                control_info.armature = 0.0
-                control_info.effort_limit = 100000.0
-                control_info.velocity_limit = 1000000.0
-                control_info.friction = 0.0
-                printout(dof_name, stiffness, damping, control_info.armature, control_info.effort_limit, control_info.velocity_limit, control_info.friction)
-            if dof_name == "suspension_y":
-                # TEMPORARY
-                stiffness = 5000.0
-                damping = 500.0
-                control_info.armature = 0.0
-                control_info.effort_limit = 10000.0
-                control_info.velocity_limit = 10000.0
-                control_info.friction = 0.0
-                printout(dof_name, stiffness, damping, control_info.armature, control_info.effort_limit, control_info.velocity_limit, control_info.friction)
+            # if dof_name == "R_Ankle_y":
+            #     printout(dof_name, stiffness, damping, control_info.armature, control_info.effort_limit, control_info.velocity_limit, control_info.friction)
+            #     stiffness = 3000.0
+            #     damping = 300.0
+            #     control_info.armature = 0.02
+            #     control_info.effort_limit = 10000.0
+            #     control_info.velocity_limit = 10000.0
+            #     control_info.friction = 0.0
+            #     printout(dof_name, stiffness, damping, control_info.armature, control_info.effort_limit, control_info.velocity_limit, control_info.friction)
+            # if dof_name == "suspension_slide":
+            #     # TEMPORARY
+            #     stiffness = 2000.0
+            #     damping = 2000.0
+            #     control_info.armature = 0.0
+            #     control_info.effort_limit = 100000.0
+            #     control_info.velocity_limit = 1000000.0
+            #     control_info.friction = 0.0
+            #     printout(dof_name, stiffness, damping, control_info.armature, control_info.effort_limit, control_info.velocity_limit, control_info.friction)
+            # if dof_name == "suspension_y":
+            #     # TEMPORARY
+            #     stiffness = 5000.0
+            #     damping = 500.0
+            #     control_info.armature = 0.0
+            #     control_info.effort_limit = 10000.0
+            #     control_info.velocity_limit = 10000.0
+            #     control_info.friction = 0.0
+            #     printout(dof_name, stiffness, damping, control_info.armature, control_info.effort_limit, control_info.velocity_limit, control_info.friction)
             
-            if dof_name in ["suspension_x", "suspension_z"]:
-                # TEMPORARY
-                stiffness = 5000.0
-                damping = 500.0
-                control_info.armature = 0.0
-                control_info.effort_limit = 10000.0
-                control_info.velocity_limit = 10000.0
-                control_info.friction = 0.0
-                printout(dof_name, stiffness, damping, control_info.armature, control_info.effort_limit, control_info.velocity_limit, control_info.friction)
+            # if dof_name in ["suspension_x", "suspension_z"]:
+            #     # TEMPORARY
+            #     stiffness = 5000.0
+            #     damping = 500.0
+            #     control_info.armature = 0.0
+            #     control_info.effort_limit = 10000.0
+            #     control_info.velocity_limit = 10000.0
+            #     control_info.friction = 0.0
+            #     printout(dof_name, stiffness, damping, control_info.armature, control_info.effort_limit, control_info.velocity_limit, control_info.friction)
             
             actuators[dof_name] = ActuatorConfig(
                 joint_names_expr=[dof_name],

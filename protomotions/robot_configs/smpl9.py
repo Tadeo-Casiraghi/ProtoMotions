@@ -110,6 +110,14 @@ class Smpl9RobotConfig(RobotConfig):
                     effort_limit=500,
                     velocity_limit=100,
                 ),
+                "R_Ankle_y": ControlInfo(
+                    stiffness=3000.0,
+                    damping=300.0,
+                    effort_limit=10000.0,
+                    velocity_limit=10000.0,
+                    armature= 0.02,
+                    friction=0.0
+                ),
                 "L_Toe_.*": ControlInfo(
                     stiffness=500,
                     damping=50,
@@ -133,6 +141,39 @@ class Smpl9RobotConfig(RobotConfig):
                     damping=30,
                     effort_limit=500,
                     velocity_limit=100,
+                ),
+
+                "suspension_slide": ControlInfo(
+                   stiffness = 2000.0,
+                   damping = 2000.0,
+                   armature = 0.0,
+                   effort_limit = 100000.0,
+                   velocity_limit = 1000000.0,
+                   friction = 0.0
+                ),
+                "suspension_y": ControlInfo(
+                    stiffness = 5000.0,
+                    damping = 500.0,
+                    armature = 0.0,
+                    effort_limit = 10000.0,
+                    velocity_limit = 10000.0,
+                    friction = 0.0
+                ),
+                "suspension_x": ControlInfo(
+                    stiffness = 5000.0,
+                    damping = 500.0,
+                    armature = 0.0,
+                    effort_limit = 10000.0,
+                    velocity_limit = 10000.0,
+                    friction = 0.0
+                ),
+                "suspension_z": ControlInfo(
+                    stiffness = 5000.0,
+                    damping = 500.0,
+                    armature = 0.0,
+                    effort_limit = 10000.0,
+                    velocity_limit = 10000.0,
+                    friction = 0.0
                 ),
             },
         )
