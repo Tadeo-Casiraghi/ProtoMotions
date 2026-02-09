@@ -129,3 +129,13 @@ class BaseAgentConfig(ConfigBuilder):
     # Reward normalization
     normalize_rewards: bool = True
     normalized_reward_clamp_value: float = 5.0
+
+    # Bodies to consider for observations and actions
+    body_indices_to_remove: List[int] = field(default_factory=list)
+    contact_indices_to_remove: List[int] = field(default_factory=list)
+    total_num_bodies: int = 0
+    use_blind_body_indices: bool = False
+
+    action_indices: Optional[List[int]] = None  # Indices of action dimensions to control (for partial control scenarios)
+
+    dof_to_get: Optional[List[int]] = None  # For partial control, specify which DOFs to include in the observations

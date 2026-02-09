@@ -272,22 +272,22 @@ def agent_config(
         if (name in ["R_Ankle", "R_Toe"]):
             contact_indices_to_remove.append(i)
     
-    total_dofs = robot_config.kinematic_info.num_dofs
+    dofs = robot_config.kinematic_info.dof_names
+    action_indices = []
 
-    # Check if we have a list of passive names in the config
-    if hasattr(env_config, "passive_dof_names") and env_config.passive_dof_names:
-        # 68 - 5 = 63
-        num_passive = len(env_config.passive_dof_names)
-        num_active_actions = total_dofs - num_passive
-        print(f"Agent Config: Detected {num_passive} passive joints by name. Output size: {num_active_actions}")
-        
-    elif env_config.active_dof_indices is not None:
-        # Fallback to explicit indices if provided
-        num_active_actions = len(env_config.active_dof_indices)
-        
-    else:
-        # Default: Agent controls all joints
-        num_active_actions = total_dofs
+    for i, dof_name in enumerate(dofs):
+        n_low = dof_name.lower()
+        if (
+            "prosthetic" in n_low 
+            or "skin" in n_low 
+            or "socket" in n_low 
+            or dof_name in ["R_Ankle_y"] # Ensure these match your URDF exact casing
+        ):
+            continue  # Skip this DOF
+        action_indices.append(i)
+
+
+    num_active_actions = len(action_indices)
 
     actor_config = PPOActorConfig(
         num_out=num_active_actions,

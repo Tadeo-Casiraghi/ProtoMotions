@@ -1,54 +1,215 @@
+# SPDX-FileCopyrightText: Copyright (c) 2025 The ProtoMotions Developers
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 from protomotions.robot_configs.base import RobotConfig
+from protomotions.simulator.base_simulator.config import SimulatorConfig
 from protomotions.envs.mimic.config import MimicEnvConfig
+from protomotions.agents.ppo.config import PPOAgentConfig
 from protomotions.agents.multi_agent_orchestrator.config import CoLearningConfig
-from protomotions.agents.base_agent.config import OptimizerConfig
-from protomotions.agents.ppo.config import PPOAgentConfig, PPOModelConfig, PPOActorConfig, AdvantageNormalizationConfig
-from protomotions.agents.common.config import MLPWithConcatConfig, MLPLayerConfig
-from protomotions.agents.evaluators.config import MimicEvaluatorConfig
-from protomotions.envs.base_env.config import RewardComponentConfig
-from protomotions.envs.utils.rewards import norm, skin_pressure_penalty
-
 import argparse
-import copy
 
-# 1. INHERIT: Import everything from your base experiment
-#    (Assumes mlp.py is in the same folder or python path)
-try:
-    from examples.experiments.mimic.mlp import (
-        configure_robot_and_simulator,
-        terrain_config,
-        scene_lib_config,
-        motion_lib_config,
-        apply_inference_overrides,
-        env_config as base_env_config,  # Rename to avoid conflict
-        agent_config
-    )
-except ImportError:
-    # Fallback if running as script
-    from mlp import (
-        configure_robot_and_simulator,
-        terrain_config,
-        scene_lib_config,
-        motion_lib_config,
-        apply_inference_overrides,
-        env_config as base_env_config
-    )
 
-# 2. OVERRIDE: Environment Configuration
+"""
+Mimic Environment Configuration
+================================
+
+Full-body motion tracking environment with pose and velocity tracking.
+Uses early termination on tracking error and bootstrapping at episode end.
+"""
+
+
+def configure_robot_and_simulator(
+    robot_cfg: RobotConfig, simulator_cfg: SimulatorConfig, args: argparse.Namespace
+):
+    """Configure robot to add contact sensors for foot contact tracking."""
+    # robot_cfg.update_fields(
+    #     contact_bodies=["all_left_foot_bodies", "all_right_foot_bodies"]
+    # )
+    pass
+
+def terrain_config(args: argparse.Namespace):
+    """Build terrain configuration."""
+    from protomotions.components.terrains.config import TerrainConfig
+
+    return TerrainConfig()
+
+
+def scene_lib_config(args: argparse.Namespace):
+    """Build scene library configuration."""
+    from protomotions.components.scene_lib import SceneLibConfig
+
+    scene_file = args.scenes_file if hasattr(args, "scenes_file") else None
+    return SceneLibConfig(scene_file=scene_file)
+
+
+def motion_lib_config(args: argparse.Namespace):
+    """Build motion library configuration."""
+    from protomotions.components.motion_lib import MotionLibConfig
+
+    return MotionLibConfig(motion_file=args.motion_file)
+
+
 def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConfig:
-    """
-    Inherits the base environment but adds the Secondary Reward Config
-    for the prosthetic agent.
-    """
-    # A. Get the standard configuration
-    cfg = base_env_config(robot_cfg, args)
+    """Build environment configuration (training defaults)."""
+    from protomotions.envs.mimic.config import (
+        MimicEarlyTerminationEntry,
+        MimicObsConfig,
+        MimicMotionManagerConfig,
+    )
+    from protomotions.envs.obs.config import FuturePoseType, MimicTargetPoseConfig
+    from protomotions.envs.base_env.config import RewardComponentConfig
+    from protomotions.envs.obs.config import HumanoidObsConfig, ActionHistoryConfig, MaxCoordsSelfObsConfig
+    from protomotions.envs.utils.rewards import (
+        mean_squared_error_exp,
+        rotation_error_exp,
+        power_consumption_sum,
+        norm,
+        contact_mismatch_sum,
+        impact_force_penalty,
+        skin_pressure_penalty,
+    )
 
-    # B. Activate Secondary Rewards
-    cfg.secondary_reward_flag = True
+    # all_dof_names = robot_cfg.kinematic_info.dof_names # This is UNRELIABLE for indices
 
-    # C. Define Prosthetic-Specific Rewards
-    #    (This dict will be used by the "leg" agent)
-    cfg.secondary_reward_config = {
+    passive_dof_names = [
+        "suspension_slide",
+        "suspension_x",
+        "suspension_y",
+        "suspension_z",
+    ]
+    
+    # Store the defaults by NAME
+    passive_defaults_by_name = {
+        "suspension_slide": -0.025,
+        "default": 0.0
+    }
+
+
+    mimic_early_termination = [
+        MimicEarlyTerminationEntry(
+            mimic_early_termination_key="max_joint_err",
+            mimic_early_termination_thresh=0.5,
+            less_than=False,
+        )
+    ]
+
+    # Unified reward configuration - all components in one dict
+    reward_config = {
+        # Base rewards
+        "action_smoothness": RewardComponentConfig(
+            function=norm,
+            variables={
+                "x": "current_actions - previous_actions",
+            },
+            weight=-0.08,
+        ),
+        # Mimic tracking rewards
+        "gt_rew": RewardComponentConfig(
+            function=mean_squared_error_exp,
+            variables={
+                "x": "current_state.rigid_body_pos",
+                "ref_x": "ref_state.rigid_body_pos",
+                "coefficient": "-100.0",
+            },
+            indices_subset=["tracking_bodies"],
+            weight=0.4,
+        ),
+        "skin_rew": RewardComponentConfig(
+            function=skin_pressure_penalty,
+            variables={
+                "contact_forces": "current_state.rigid_body_contact_forces",
+                "body_quats": "current_state.rigid_body_rot",
+            },
+            indices_subset=["skin_bodies"],
+            weight=-1e-4,  # Negative = Penalty
+            min_value=-0.5,
+        ),
+        "gr_rew": RewardComponentConfig(
+            function=rotation_error_exp,
+            variables={
+                "q": "current_state.rigid_body_rot",
+                "ref_q": "ref_state.rigid_body_rot",
+                "coefficient": "-5.0",
+            },
+            indices_subset=["tracking_bodies"],
+            weight=0.3,
+        ),
+        "gv_rew": RewardComponentConfig(
+            function=mean_squared_error_exp,
+            variables={
+                "x": "current_state.rigid_body_vel",
+                "ref_x": "ref_state.rigid_body_vel",
+                "coefficient": "-0.5",
+            },
+            indices_subset=["tracking_bodies"],
+            weight=0.1,
+        ),
+        "gav_rew": RewardComponentConfig(
+            function=mean_squared_error_exp,
+            variables={
+                "x": "current_state.rigid_body_ang_vel",
+                "ref_x": "ref_state.rigid_body_ang_vel",
+                "coefficient": "-0.1",
+            },
+            indices_subset=["tracking_bodies"],
+            weight=0.1,
+        ),
+        "rh_rew": RewardComponentConfig(
+            function=mean_squared_error_exp,
+            variables={
+                "x": "current_state.rigid_body_pos[:, 0, 2]",  # Root height (z-coord of body 0)
+                "ref_x": "ref_state.rigid_body_pos[:, 0, 2]",
+                "coefficient": "-100.0",
+            },
+            weight=0.1,
+        ),
+        "pow_rew": RewardComponentConfig(
+            function=power_consumption_sum,
+            variables={
+                "dof_forces": "current_state.dof_forces",
+                "dof_vel": "current_state.dof_vel",
+                "use_torque_squared": "False",
+            },
+            weight=-7.5e-5,
+            min_value=-0.75,
+            zero_during_grace_period=False,
+        ),
+        "contact_match_rew": RewardComponentConfig(
+            function=contact_mismatch_sum,
+            variables={
+                "sim_contacts": "current_state.rigid_body_contacts",
+                "ref_contacts": "ref_state.rigid_body_contacts",
+            },
+            indices_subset=["all_left_foot_bodies"], #, "all_right_foot_bodies"],
+            weight=-0.2,
+            zero_during_grace_period=True,
+        ),
+        "contact_force_change_rew": RewardComponentConfig(
+            function=impact_force_penalty,
+            variables={
+                "current_forces": "current_contact_force_magnitudes",
+                "previous_forces": "prev_contact_force_magnitudes",
+            },
+            indices_subset=["all_left_foot_bodies", "all_right_foot_bodies"],
+            weight=-1e-5,
+            min_value=-0.5,
+            zero_during_grace_period=True,
+        ),
+    }
+
+    secondary_reward_config = {
         "action_smoothness": RewardComponentConfig(
             function=norm,
             variables={"x": "current_actions - previous_actions"},
@@ -66,108 +227,269 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         ),
     }
 
-    # # D. (Optional) Modify the Base (Humanoid) Rewards
-    # #    Example: Remove skin reward from the main body if it only applies to the leg
-    # if "skin_rew" in cfg.reward_config:
-    #     del cfg.reward_config["skin_rew"]
+    env_config: MimicEnvConfig = MimicEnvConfig(
+        ref_contact_smooth_window=7,
+        max_episode_length=1000,
+        humanoid_obs=HumanoidObsConfig(
+            max_coords_obs=MaxCoordsSelfObsConfig(
+                enabled=True,
+                observe_contacts=True,
+            ),
+            action_history=ActionHistoryConfig(
+                enabled=True,
+                num_historical_steps=1,
+            ),
+        ),
+        reward_config=reward_config,
+        mimic_early_termination=mimic_early_termination,
+        mimic_bootstrap_on_episode_end=True,
+        mimic_obs=MimicObsConfig(
+            enabled=True,
+            mimic_target_pose=MimicTargetPoseConfig(
+                enabled=True, type=FuturePoseType.MAX_COORDS, with_velocities=True
+            ),
+        ),
+        motion_manager=MimicMotionManagerConfig(
+            init_start_prob=0.2,
+            resample_on_reset=True,
+        ),
+        passive_dof_names=passive_dof_names,
+        passive_defaults_map=passive_defaults_by_name,
+        active_dof_indices=None,
+        passive_dof_defaults=None,
 
-    return cfg
+        secondary_reward_flag=True,
+        secondary_reward_config=secondary_reward_config,
+    )
+    return env_config
 
 
-# # 3. OVERRIDE: Agent Configuration (The Orchestrator)
-# def agent_config(
-#     robot_config: RobotConfig, env_config: MimicEnvConfig, args: argparse.Namespace
-# ) -> CoLearningConfig:
+def humanoid_agent_config(
+    robot_config: RobotConfig, env_config: MimicEnvConfig, args: argparse.Namespace, agent_type: str
+) -> PPOAgentConfig:
+    from protomotions.agents.common.config import MLPWithConcatConfig, MLPLayerConfig
+    from protomotions.agents.ppo.config import (
+        PPOActorConfig,
+        PPOModelConfig,
+        AdvantageNormalizationConfig,
+    )
+    from protomotions.agents.base_agent.config import OptimizerConfig
+    from protomotions.agents.evaluators.config import MimicEvaluatorConfig
+
+    body_names = robot_config.kinematic_info.body_names
+    body_indices_to_remove = []
+    contact_indices_to_remove = []
+
+    for i, name in enumerate(body_names):
+        n_low = name.lower()
+        if (
+            "prosthetic" in n_low 
+            or "skin" in n_low 
+            or "socket" in n_low 
+            or name in ["R_Ankle", "R_Toe"] # Ensure these match your URDF exact casing
+        ):
+            body_indices_to_remove.append(i)
+        if (name in ["R_Ankle", "R_Toe"]):
+            contact_indices_to_remove.append(i)
     
-#     # --- Define Split ---
-#     total_dofs = robot_config.kinematic_info.num_dofs
-#     LEG_DOFS = 2  # Update this to match your actual prosthetic joints
-#     BODY_DOFS = total_dofs - LEG_DOFS
+    dofs = robot_config.kinematic_info.dof_names
+    action_indices = []
 
-#     mapping_info = {
-#         "humanoid": {
-#             "obs": [0, 1000],        
-#             "act": [0, BODY_DOFS]    
-#         },
-#         "leg": {
-#             "obs": [0, 1000],             
-#             "act": [BODY_DOFS, total_dofs] 
-#         }
-#     }
+    for i, dof_name in enumerate(dofs):
+        n_low = dof_name.lower()
+        if (
+            "prosthetic" in n_low 
+            or "skin" in n_low 
+            or "socket" in n_low 
+            or dof_name in ["R_Ankle_y"] # Ensure these match your URDF exact casing
+        ):
+            continue  # Skip this DOF
+        action_indices.append(i)
 
-#     def create_ppo_config(agent_name, num_output_actions):
-        
-#         # Network config (Same architecture as mlp.py)
-#         actor_config = PPOActorConfig(
-#             num_out=num_output_actions, # <--- Specific to this agent
-#             actor_logstd=-2.9,
-#             in_keys=["max_coords_obs", "mimic_target_poses", "historical_previous_actions"],
-#             mu_key="actor_trunk_out",
-#             mu_model=MLPWithConcatConfig(
-#                 in_keys=[
-#                     "max_coords_obs",
-#                     "mimic_target_poses",
-#                     "historical_previous_actions",
-#                 ],
-#                 normalize_obs=True,
-#                 norm_clamp_value=5,
-#                 out_keys=["actor_trunk_out"],
-#                 num_out=num_output_actions, # <--- Specific to this agent
-#                 layers=[MLPLayerConfig(units=1024, activation="relu") for _ in range(6)],
-#                 output_activation="tanh",
-#             ),
-#         )
+    num_active_actions = len(action_indices)
 
-#         critic_config = MLPWithConcatConfig(
-#             in_keys=["max_coords_obs", "mimic_target_poses", "historical_previous_actions"],
-#             out_keys=["value"],
-#             normalize_obs=True,
-#             norm_clamp_value=5,
-#             num_out=1,
-#             layers=[MLPLayerConfig(units=1024, activation="relu") for _ in range(4)],
-#         )
+    actor_config = PPOActorConfig(
+        num_out=num_active_actions,
+        actor_logstd=-2.9,
+        in_keys=["blind_body_obs", "mimic_target_poses", "agent_action_history"],
+        mu_key="actor_trunk_out",
+        mu_model=MLPWithConcatConfig(
+            in_keys=[
+                "blind_body_obs",
+                "mimic_target_poses",
+                "agent_action_history",
+            ],
+            normalize_obs=True,
+            norm_clamp_value=5,
+            out_keys=["actor_trunk_out"],
+            num_out=num_active_actions,
+            layers=[MLPLayerConfig(units=1024, activation="relu") for _ in range(6)],
+            output_activation="tanh",
+        ),
+    )
 
-#         return PPOAgentConfig(
-#             model=PPOModelConfig(
-#                 in_keys=[
-#                     "max_coords_obs",
-#                     "mimic_target_poses",
-#                     "historical_previous_actions",
-#                 ],
-#                 out_keys=["action", "mean_action", "neglogp", "value"],
-#                 actor=actor_config,
-#                 critic=critic_config,
-#                 actor_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=2e-5),
-#                 critic_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=1e-4),
-#             ),
-#             batch_size=args.batch_size, 
-#             training_max_steps=args.training_max_steps,
-#             gradient_clip_val=50.0,
-#             clip_critic_loss=True,
-#             # Evaluator runs per-agent metrics
-#             evaluator=MimicEvaluatorConfig(
-#                 eval_metric_keys=[
-#                     "gt_err", "gr_rew", "pow_rew"
-#                 ],
-#             ),
-#             advantage_normalization=AdvantageNormalizationConfig(
-#                 enabled=True, shift_mean=True
-#             ),
-#         )
+    critic_config = MLPWithConcatConfig(
+        in_keys=["blind_body_obs", "mimic_target_poses", "agent_action_history"],
+        out_keys=["value"],
+        normalize_obs=True,
+        norm_clamp_value=5,
+        num_out=1,
+        layers=[MLPLayerConfig(units=1024, activation="relu") for _ in range(4)],
+    )
+    agent_config: PPOAgentConfig = PPOAgentConfig(
+        model=PPOModelConfig(
+            in_keys=[
+                "blind_body_obs",
+                "mimic_target_poses",
+                "agent_action_history",
+            ],
+            out_keys=["action", "mean_action", "neglogp", "value"],
+            actor=actor_config,
+            critic=critic_config,
+            actor_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=2e-5),
+            critic_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=1e-4),
+        ),
+        batch_size=args.batch_size,
+        training_max_steps=args.training_max_steps,
+        gradient_clip_val=50.0,
+        clip_critic_loss=True,
 
-#     # -----------------------------------------------------------
-#     # C. Return the Co-Learning Config
-#     # -----------------------------------------------------------
-#     return CoLearningConfig(
-#         # Global Settings
-#         batch_size=args.batch_size,
-#         training_max_steps=args.training_max_steps,
-#         num_steps=32,
-        
-#         # Orchestrator Settings
-#         mapping_info=mapping_info,
-#         agents={
-#             "humanoid": create_ppo_config("humanoid", BODY_DOFS),
-#             "leg":      create_ppo_config("leg", LEG_DOFS)
-#         }
-#     )
+        use_blind_body_indices=True,
+        body_indices_to_remove=body_indices_to_remove,
+        contact_indices_to_remove=contact_indices_to_remove,
+        total_num_bodies=len(body_names),
+
+        evaluator=MimicEvaluatorConfig(
+            eval_metric_keys=[
+                "gt_err",
+                "gr_err",
+                "gr_err_degrees",
+                "lr_err_degrees",
+                "gt_rew",
+                "gr_rew",
+                "pow_rew",
+                "contact_force_change_rew",
+            ],
+        ),
+        advantage_normalization=AdvantageNormalizationConfig(
+            enabled=True, shift_mean=True
+        ),
+        action_indices=action_indices,
+    )
+
+    print(f"[{agent_type.upper()}] Config: Controlling {num_active_actions} DOFs")
+    return agent_config
+
+def prosthetic_agent_config(
+    robot_config: RobotConfig, env_config: MimicEnvConfig, args: argparse.Namespace, agent_type: str
+) -> PPOAgentConfig:
+    from protomotions.agents.common.config import MLPWithConcatConfig, MLPLayerConfig
+    from protomotions.agents.ppo.config import (
+        PPOActorConfig,
+        PPOModelConfig,
+        AdvantageNormalizationConfig,
+    )
+    from protomotions.agents.base_agent.config import OptimizerConfig
+    from protomotions.agents.evaluators.config import MimicEvaluatorConfig
+
+    body_names = robot_config.kinematic_info.body_names
+    dof_to_get = []
+    
+    for i, name in enumerate(body_names):
+        if (name == "R_Ankle_y"):
+            dof_to_get.append(i)
+    
+    num_active_actions = 1
+
+    actor_config = PPOActorConfig(
+        num_out=num_active_actions,
+        actor_logstd=-2.9,
+        in_keys=["get_dof", "agent_action_history"],
+        mu_key="actor_trunk_out",
+        mu_model=MLPWithConcatConfig(
+            in_keys=[
+                "get_dof",
+                "agent_action_history",
+            ],
+            normalize_obs=True,
+            norm_clamp_value=5,
+            out_keys=["actor_trunk_out"],
+            num_out=num_active_actions,
+            layers=[MLPLayerConfig(units=1024, activation="relu") for _ in range(6)],
+            output_activation="tanh",
+        ),
+    )
+
+    critic_config = MLPWithConcatConfig(
+        in_keys=["get_dof", "agent_action_history"],
+        out_keys=["value"],
+        normalize_obs=True,
+        norm_clamp_value=5,
+        num_out=1,
+        layers=[MLPLayerConfig(units=1024, activation="relu") for _ in range(4)],
+    )
+    agent_config: PPOAgentConfig = PPOAgentConfig(
+        model=PPOModelConfig(
+            in_keys=[
+                "get_dof",
+                "agent_action_history",
+            ],
+            out_keys=["action", "mean_action", "neglogp", "value"],
+            actor=actor_config,
+            critic=critic_config,
+            actor_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=2e-5),
+            critic_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=1e-4),
+        ),
+        batch_size=args.batch_size,
+        training_max_steps=args.training_max_steps,
+        gradient_clip_val=50.0,
+        clip_critic_loss=True,
+
+        use_blind_body_indices=True,
+
+        advantage_normalization=AdvantageNormalizationConfig(
+            enabled=True, shift_mean=True
+        ),
+    )
+    return agent_config
+
+def agent_config(
+    robot_config: RobotConfig, env_config: MimicEnvConfig, args: argparse.Namespace
+) -> PPOAgentConfig:
+
+
+    humanoid_agent_cfg = humanoid_agent_config(robot_config, env_config, args)
+    prosthetic_agent_cfg = prosthetic_agent_config(robot_config, env_config, args)
+
+    agent_config = CoLearningConfig(
+        agents={
+            "humanoid": humanoid_agent_cfg,
+            "prosthetic": prosthetic_agent_cfg,
+        },
+        sync_updates=True,
+    )
+
+    return agent_config
+
+
+def apply_inference_overrides(
+    robot_cfg: RobotConfig,
+    simulator_cfg: SimulatorConfig,
+    env_cfg,
+    agent_cfg,
+    args: argparse.Namespace,
+):
+    """Apply evaluation-specific overrides."""
+    # For mimic: disable early termination during evaluation
+    if env_cfg is not None:
+        if hasattr(env_cfg, "mimic_early_termination"):
+            env_cfg.mimic_early_termination = None
+        if hasattr(env_cfg, "max_episode_length"):
+            env_cfg.max_episode_length = 1000000
+        if hasattr(env_cfg, "motion_manager"):
+            if hasattr(env_cfg.motion_manager, "resample_on_reset"):
+                env_cfg.motion_manager.resample_on_reset = True
+            if hasattr(env_cfg.motion_manager, "init_start_prob"):
+                env_cfg.motion_manager.init_start_prob = 1.0
+
+

@@ -465,21 +465,35 @@ def try_log_hyperparams_to_wandb(
     fabric_config,
 ):
     """Try to log hyperparameters to wandb (non-critical)."""
+    
+    # Helper to safely convert any config object to a dict
+    def safe_to_dict(obj):
+        if hasattr(obj, "to_dict"):
+            return obj.to_dict()
+        elif hasattr(obj, "keys"):  # Dict or DictConfig
+            from omegaconf import OmegaConf, DictConfig
+            if isinstance(obj, DictConfig):
+                return OmegaConf.to_container(obj, resolve=True)
+            return dict(obj)
+        return str(obj) # Fallback
+
     for logger in fabric.loggers:
-        if isinstance(logger, WandbLogger):
+        # Check if it's a WandbLogger (handling import if not available)
+        if hasattr(logger, "log_hyperparams") and "WandbLogger" in str(type(logger)):
             try:
                 hyper_params = {
-                    "robot": robot_config.to_dict(),
-                    "simulator": simulator_config.to_dict(),
-                    "terrain": terrain_config.to_dict(),
-                    "scene_lib": scene_lib_config.to_dict(),
-                    "motion_lib": motion_lib_config.to_dict(),
-                    "env": env_config.to_dict(),
-                    "agent": agent_config.to_dict(),
-                    "fabric": fabric_config.to_dict(),
+                    "robot": safe_to_dict(robot_config),
+                    "simulator": safe_to_dict(simulator_config),
+                    "terrain": safe_to_dict(terrain_config),
+                    "scene_lib": safe_to_dict(scene_lib_config),
+                    "motion_lib": safe_to_dict(motion_lib_config),
+                    "env": safe_to_dict(env_config),
+                    "agent": safe_to_dict(agent_config), # Safe for nested Orchestrator config
+                    "fabric": safe_to_dict(fabric_config),
                 }
 
                 log.info("Preparing configs for wandb logging...")
+                # Assuming make_json_serializable is defined elsewhere
                 serializable_params = make_json_serializable(hyper_params)
                 logger.log_hyperparams(serializable_params)
                 log.info("Successfully logged hyperparams to wandb")
@@ -867,7 +881,7 @@ def main():
         from protomotions.utils.inference_utils import apply_all_inference_overrides
         from copy import deepcopy
 
-        # Copy all configs to avoid eval parameters leaking into the training
+        # Copy all configs
         robot_config_inference = deepcopy(robot_config)
         simulator_config_inference = deepcopy(simulator_config)
         terrain_config_inference = deepcopy(terrain_config)
@@ -875,14 +889,34 @@ def main():
         motion_lib_config_inference = deepcopy(motion_lib_config)
         env_config_inference = deepcopy(env_config)
         agent_config_inference = deepcopy(agent_config)
-        apply_all_inference_overrides(
-            robot_config_inference,
-            simulator_config_inference,
-            env_config_inference,
-            agent_config_inference,
-            experiment_module=experiment_module,
-            args=args,
-        )
+
+        # --- ORCHESTRATOR COMPATIBILITY FIX ---
+        # Check if this is an Orchestrator config (has 'agents' dict)
+        if hasattr(agent_config_inference, "agents"):
+            # We must apply overrides to EACH sub-agent config individually
+            for sub_agent_name, sub_agent_cfg in agent_config_inference.agents.items():
+                
+                # Apply overrides to the sub-agent config as if it were the main agent
+                apply_all_inference_overrides(
+                    robot_config_inference,
+                    simulator_config_inference,
+                    env_config_inference,
+                    sub_agent_cfg, # <--- Pass sub-agent config here
+                    experiment_module=experiment_module,
+                    args=args,
+                )
+        else:
+            # Standard single-agent path
+            apply_all_inference_overrides(
+                robot_config_inference,
+                simulator_config_inference,
+                env_config_inference,
+                agent_config_inference,
+                experiment_module=experiment_module,
+                args=args,
+            )
+        # --------------------------------------
+
         save_configs(
             save_dir,
             args,

@@ -393,8 +393,8 @@ class BaseAgent:
     def expand_action_to_env(self, action):
         env_action = action  # Default to pass-through
         if (
-            hasattr(self.env.config, "active_dof_indices") 
-            and self.env.config.active_dof_indices is not None
+            hasattr(self.config, "action_indices") 
+            and self.config.action_indices is not None
         ):
             # 1. Get dimensions
             batch_size = action.shape[0]
@@ -409,9 +409,7 @@ class BaseAgent:
             )
             
             # 3. Scatter active actions into the correct slots
-            # We use the indices we defined in the EnvConfig
-            active_indices = self.env.config.active_dof_indices
-            full_action[:, active_indices] = action
+            full_action[:, self.config.action_indices] = action
             
             env_action = full_action
 
