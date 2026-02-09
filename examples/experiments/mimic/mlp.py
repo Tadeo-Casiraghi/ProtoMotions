@@ -124,7 +124,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "coefficient": "-100.0",
             },
             indices_subset=["tracking_bodies"],
-            weight=0.5,
+            weight=0.4,
         ),
         "skin_rew": RewardComponentConfig(
             function=skin_pressure_penalty,
@@ -133,7 +133,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "body_quats": "current_state.rigid_body_rot",
             },
             indices_subset=["skin_bodies"],
-            weight=-2e-4,  # Negative = Penalty
+            weight=-1e-4,  # Negative = Penalty
             min_value=-0.5,
         ),
         "gr_rew": RewardComponentConfig(
