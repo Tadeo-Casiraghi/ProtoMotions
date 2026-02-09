@@ -101,6 +101,7 @@ class PPOAgentConfig(BaseAgentConfig):
 
     # Bodies to consider for observations and actions
     body_indices_to_remove: List[int] = field(default_factory=list)
+    contact_indices_to_remove: List[int] = field(default_factory=list)
     total_num_bodies: int = 0
     use_blind_body_indices: bool = False
 

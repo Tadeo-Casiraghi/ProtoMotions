@@ -858,11 +858,20 @@ class Simulator(ABC):
         """
         Apply control based on control type.
 
-        All three control modes (BUILT_IN_PD, PROPORTIONAL, TORQUE) are co-located here.
+        All four control modes (BUILT_IN_PD_HYBRID, BUILT_IN_PD, PROPORTIONAL, TORQUE) are co-located here.
         Child simulators call this method from _physics_step() instead of branching
         on control_type themselves.
         """
-        if self.control_type == ControlType.BUILT_IN_PD:
+        if self.control_type == ControlType.BUILT_IN_PD_HYBRID:
+            # PATCH
+            # First save the torque commands so they are not affected by the actions to pd
+            torque_targets = self._common_actions[:, self.common_torque_joints]
+            pd_targets = self._action_to_pd_targets(self._common_actions)
+            # Now put them back unchanged
+            pd_targets[:, self.common_torque_joints] = torque_targets
+            sim_targets = pd_targets[:, self.data_conversion.dof_convert_to_sim]
+            self._apply_hybrid_control(sim_targets)
+        elif self.control_type == ControlType.BUILT_IN_PD:
             pd_targets = self._action_to_pd_targets(self._common_actions)
             sim_targets = pd_targets[:, self.data_conversion.dof_convert_to_sim]
             self._apply_simulator_pd_targets(sim_targets)

@@ -258,6 +258,7 @@ def agent_config(
 
     body_names = robot_config.kinematic_info.body_names
     body_indices_to_remove = []
+    contact_indices_to_remove = []
 
     for i, name in enumerate(body_names):
         n_low = name.lower()
@@ -268,6 +269,8 @@ def agent_config(
             or name in ["R_Ankle", "R_Toe"] # Ensure these match your URDF exact casing
         ):
             body_indices_to_remove.append(i)
+        if (name in ["R_Ankle", "R_Toe"]):
+            contact_indices_to_remove.append(i)
     
     total_dofs = robot_config.kinematic_info.num_dofs
 
@@ -334,6 +337,7 @@ def agent_config(
 
         use_blind_body_indices=True,
         body_indices_to_remove=body_indices_to_remove,
+        contact_indices_to_remove=contact_indices_to_remove,
         total_num_bodies=len(body_names),
 
         evaluator=MimicEvaluatorConfig(

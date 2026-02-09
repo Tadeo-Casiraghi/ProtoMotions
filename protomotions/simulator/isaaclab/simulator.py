@@ -456,6 +456,37 @@ class IsaacLabSimulator(Simulator):
                 self._sim.render()
             self._scene.update(dt=self._sim.get_physics_dt())
 
+    def _apply_hybrid_control(self, pd_targets: torch.Tensor) -> None:
+        """
+        Args:
+            pd_targets: [Num Envs, Num DOFs] - Position targets for ALL joints.
+            custom_torques: [Num Envs, Num DOFs] - Feed-forward torques.
+        """
+        
+        if getattr(self, "passive_dof_defaults", None) is not None:
+            for dof_idx, physical_val in self.passive_dof_defaults.items():
+                # Overwrite the target with the EXACT physical value from your config.
+                # e.g., -0.025 meters
+                #  print('CHanging value for index', dof_idx)
+                pd_targets[..., dof_idx] = physical_val
+
+        # 2. SEND POSITIONS (Drivers: Body + Passive)
+        # For the Prosthetic (if Stiffness=0), this command is ignored by physics.
+        self._robot.set_joint_position_target(pd_targets) 
+
+        # 3. SEND TORQUES (Drivers: Prosthetic)
+        # Isaac/PhysX sums this with the internal PD force.
+        if hasattr(self, "sim_torque_joints") and self.sim_torque_joints is not None:
+            # If sim_torque_joints is defined, use it to determine which joints get torques
+            torque_targets = torch.zeros_like(pd_targets)
+            torque_targets[:, self.sim_torque_joints] = self.pd_targets[:, self.sim_torque_joints]
+            # torque_targets = torch.clip(
+            #     torque_targets, -self._torque_limits_common, self._torque_limits_common
+            # )
+            self._robot.set_joint_effort_target(torque_targets)
+        else:
+            print("Warning: sim_torque_joints not defined for BUILT_IN_PD_HYBRID control. No torques applied.")
+
     def _apply_simulator_pd_targets(self, pd_targets: torch.Tensor) -> None:
         """Applies PD position targets using IsaacLab's internal PD controller."""
         # TEMPORARY

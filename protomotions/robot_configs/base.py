@@ -74,6 +74,7 @@ class ControlType(Enum):
     BUILT_IN_PD = "built_in_pd"
     TORQUE = "torque"
     PROPORTIONAL = "proportional"
+    BUILT_IN_PD_HYBRID = "built_in_pd_hybrid"
 
     @classmethod
     def from_str(cls, value: str) -> "ControlType":
@@ -128,6 +129,8 @@ class ControlConfig(ConfigBuilder):
 
     # Control info overrides for specific joints instead of the values from the MJCF asset
     override_control_info: Optional[Dict[str, ControlInfo]] = None
+
+    torque_joints: Optional[List[str]] = None
 
     # Can be "built_in_pd" or "proportional"/"velocity"/"torque" for Proportional, Velocity, Torque control
     control_type: ControlType = ControlType.BUILT_IN_PD

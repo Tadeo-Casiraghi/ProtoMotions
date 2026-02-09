@@ -102,7 +102,8 @@ class Smpl9RobotConfig(RobotConfig):
 
     control: ControlConfig = field(
         default_factory=lambda: ControlConfig(
-            control_type=ControlType.BUILT_IN_PD,
+            control_type=ControlType.BUILT_IN_PD_HYBRID,
+            torque_joints = ["R_Ankle_y"],
             override_control_info={
                 ".*_(Hip|Knee|Ankle)_.*": ControlInfo(
                     stiffness=800,
@@ -111,8 +112,8 @@ class Smpl9RobotConfig(RobotConfig):
                     velocity_limit=100,
                 ),
                 "R_Ankle_y": ControlInfo(
-                    stiffness=3000.0,
-                    damping=300.0,
+                    stiffness=0.0,
+                    damping=0.0,
                     effort_limit=10000.0,
                     velocity_limit=10000.0,
                     armature= 0.02,

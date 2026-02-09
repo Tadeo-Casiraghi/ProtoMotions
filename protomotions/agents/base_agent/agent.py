@@ -724,6 +724,8 @@ class BaseAgent:
         blind_vel = filter_bodies(body_vel, 3, self.config.body_indices_to_remove, skip_root=False)
         # AngVel: Keep root
         blind_ang_vel = filter_bodies(body_ang_vel, 3, self.config.body_indices_to_remove, skip_root=False)
+        # Contact Forces: Keep root
+        blind_contact_forces = filter_bodies(contact_forces, 3, self.config.contact_indices_to_remove, skip_root=False)
         
         # 4. REASSEMBLE
         obs["blind_body_obs"] = torch.cat([
@@ -732,7 +734,7 @@ class BaseAgent:
             blind_rot, 
             blind_vel, 
             blind_ang_vel,
-            contact_forces
+            blind_contact_forces
         ], dim=-1)
 
         # --- NEW: FILTER ACTION HISTORY ---

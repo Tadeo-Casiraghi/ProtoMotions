@@ -186,6 +186,21 @@ class BaseEnv:
         # Initialize simulator with visualization markers and complete setup
         self.initialize_simulator()
 
+        if hasattr(self.robot_config, "torque_joints") and self.robot_config.torque_joints is not None:
+            if self.simulator.control_type != self.simulator.control_type.BUILT_IN_PD_HYBRID:
+                raise ValueError("torque_joints specified in robot_config but simulator control type is not BUILT_IN_PD_HYBRID")
+            sim_dof_names = self.simulator._robot.joint_names
+            env_dof_names = self.robot_config.kinematic_info.dof_names
+            sim_torque_joints = []
+            common_torque_joints = []
+            for i, (name_sim, name_env) in enumerate(zip(sim_dof_names, env_dof_names)):
+                if name_sim in self.robot_config.control.torque_joints:
+                    sim_torque_joints.append(i)
+                if name_env in self.robot_config.control.torque_joints:
+                    common_torque_joints.append(i)
+            self.simulator.sim_torque_joints = sim_torque_joints
+            self.simulator.common_torque_joints = common_torque_joints
+
         if hasattr(self.config, "passive_dof_names") and self.config.passive_dof_names is not None:
             sim_dof_names = self.simulator._robot.joint_names 
             env_dof_names = self.robot_config.kinematic_info.dof_names

@@ -112,7 +112,7 @@ class SceneCfg(InteractiveSceneCfg):
         actuators = {}
         ActuatorConfig = (
             ImplicitActuatorCfg
-            if robot_config.control.control_type == ControlType.BUILT_IN_PD
+            if robot_config.control.control_type == ControlType.BUILT_IN_PD or robot_config.control.control_type == ControlType.BUILT_IN_PD_HYBRID
             else IdealPDActuatorCfg
         )
 
@@ -130,7 +130,7 @@ class SceneCfg(InteractiveSceneCfg):
         for dof_name, control_info in robot_config.control.control_info.items():
             stiffness = control_info.stiffness
             damping = control_info.damping
-            if robot_config.control.control_type != ControlType.BUILT_IN_PD:
+            if robot_config.control.control_type != ControlType.BUILT_IN_PD and robot_config.control.control_type != ControlType.BUILT_IN_PD_HYBRID:
                 stiffness = 0.0
                 damping = 0.0
             
