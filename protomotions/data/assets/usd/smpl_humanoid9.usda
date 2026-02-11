@@ -432,6 +432,14 @@ over "Flattened_Prototype_106"
 {
 }
 
+over "Flattened_Prototype_169"
+{
+}
+
+over "Flattened_Prototype_170"
+{
+}
+
 over "Flattened_Prototype_107"
 {
     def Xform "_geom_10" (
@@ -3231,6 +3239,7 @@ def Xform "smpl_humanoid9" (
             </smpl_humanoid9/joints/socket_box_medial_bottom>,
             </smpl_humanoid9/joints/socket_box_anterior_bottom>,
             </smpl_humanoid9/joints/socket_box_lateral_bottom>,
+            </smpl_humanoid9/joints/R_Ankle_Motor>,
             </smpl_humanoid9/joints/R_Ankle>,
             </smpl_humanoid9/joints/Torso>,
             </smpl_humanoid9/joints/Spine>,
@@ -3274,6 +3283,7 @@ def Xform "smpl_humanoid9" (
             </smpl_humanoid9/bodies/socket_box_medial_bottom>,
             </smpl_humanoid9/bodies/socket_box_anterior_bottom>,
             </smpl_humanoid9/bodies/socket_box_lateral_bottom>,
+            </smpl_humanoid9/bodies/R_Ankle_Motor>,
             </smpl_humanoid9/bodies/R_Ankle>,
             </smpl_humanoid9/bodies/R_Toe>,
             </smpl_humanoid9/bodies/Torso>,
@@ -3358,6 +3368,7 @@ def Xform "smpl_humanoid9" (
             float physics:density = 1234.5679
             rel physics:filteredPairs = [
                 </smpl_humanoid9/bodies/L_Toe>,
+                </smpl_humanoid9/bodies/R_Ankle_Motor>,
                 </smpl_humanoid9/bodies/R_Ankle>,
                 </smpl_humanoid9/bodies/R_Toe>,
             ]
@@ -3807,6 +3818,36 @@ def Xform "smpl_humanoid9" (
             }
         }
 
+        def Xform "R_Ankle_Motor" (
+            apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "IsaacLinkAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (0, 0, 0)
+            float3 physics:diagonalInertia = (0.001, 0.001, 0.001)
+            float physics:mass = 0.1
+            rel physics:simulationOwner
+            
+            quatd xformOp:orient = (1, 0, 0, 0)
+            double3 xformOp:scale = (1, 1, 1)
+            double3 xformOp:translate = (-0.05730000138282776, -0.3135000169277191, -0.8432999849319458)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+            def Xform "visuals" (
+                instanceable = false
+                add references = </Flattened_Prototype_169>
+            )
+            {
+            }
+
+            def Xform "collisions" (
+                instanceable = false
+                add references = </Flattened_Prototype_170>
+            )
+            {
+                token visibility = "invisible"
+            }
+        }
+
         def Xform "socket_box_posterior_top" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
@@ -4032,7 +4073,7 @@ def Xform "smpl_humanoid9" (
             rel physics:simulationOwner
             quatd xformOp:orient = (1, 0, 0, 0)
             double3 xformOp:scale = (1, 1, 1)
-            double3 xformOp:translate = (-0.05730000138282776, -0.3135000169277191, -0.8432999849319458)
+            double3 xformOp:translate = (0.0, 0.0, 0.0)
             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
             def Xform "visuals" (
@@ -5038,6 +5079,41 @@ def Xform "smpl_humanoid9" (
             quatf physics:localRot1 = (1, 0, 0, 0)
         }
 
+        def PhysicsJoint "R_Ankle_Motor" (
+            apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
+        )
+        {
+            float drive:rotY:physics:damping = 0
+            float drive:rotY:physics:maxForce = 3000
+            float drive:rotY:physics:stiffness = 0
+            uniform token drive:rotY:physics:type = "force"
+            int isaac:physics:Rot_X:DofOffset
+            int isaac:physics:Rot_Y:DofOffset
+            int isaac:physics:Rot_Z:DofOffset
+            float limit:rotX:physics:high = -1
+            float limit:rotX:physics:low = 1
+            float limit:rotY:physics:high = 180
+            float limit:rotY:physics:low = -180
+            float limit:rotZ:physics:high = -1
+            float limit:rotZ:physics:low = 1
+            float limit:transX:physics:high = -1
+            float limit:transX:physics:low = 1
+            float limit:transY:physics:high = -1
+            float limit:transY:physics:low = 1
+            float limit:transZ:physics:high = -1
+            float limit:transZ:physics:low = 1
+            custom token mjcf:rotY:name = "Motor"
+            rel physics:body0 = </smpl_humanoid9/bodies/prosthetic_assembly2>
+            rel physics:body1 = </smpl_humanoid9/bodies/R_Ankle_Motor>
+            float physics:breakForce = 3.4028235e38
+            float physics:breakTorque = 3.4028235e38
+            point3f physics:localPos0 = (0.000065267086, 0.26060516, 0.00006251037)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (0.5348341, 0.46255, 0.48321173, -0.5162426)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+            float physxJoint:armature = 0.02
+        }
+
         def PhysicsJoint "R_Ankle" (
             apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:transX", "PhysicsLimitAPI:transY", "PhysicsLimitAPI:transZ", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
@@ -5062,13 +5138,13 @@ def Xform "smpl_humanoid9" (
             float limit:transZ:physics:high = -1
             float limit:transZ:physics:low = 1
             custom token mjcf:rotY:name = "R_Ankle_y"
-            rel physics:body0 = </smpl_humanoid9/bodies/prosthetic_assembly2>
+            rel physics:body0 = </smpl_humanoid9/bodies/R_Ankle_Motor>
             rel physics:body1 = </smpl_humanoid9/bodies/R_Ankle>
             float physics:breakForce = 3.4028235e38
             float physics:breakTorque = 3.4028235e38
-            point3f physics:localPos0 = (0.000065267086, 0.26060516, 0.00006251037)
+            point3f physics:localPos0 = (0, 0, 0)
             point3f physics:localPos1 = (0, 0, 0)
-            quatf physics:localRot0 = (0.5348341, 0.46255, 0.48321173, -0.5162426)
+            quatf physics:localRot0 = (1, 0, 0, 0)
             quatf physics:localRot1 = (1, 0, 0, 0)
             float physxJoint:armature = 0.02
         }

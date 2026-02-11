@@ -587,6 +587,7 @@ class IsaacLabSimulator(Simulator):
         isaacsim_bodies_rotations = self._robot.data.body_quat_w.clone()
         isaacsim_bodies_velocities = self._robot.data.body_lin_vel_w.clone()
         isaacsim_bodies_ang_velocities = self._robot.data.body_ang_vel_w.clone()
+        isaacsim_bodies_acc = self._robot.data.body_lin_acc_w.clone()
 
         isaacsim_bodies_positions = isaacsim_bodies_positions.view(
             self.num_envs, self._num_bodies, 3
@@ -600,16 +601,21 @@ class IsaacLabSimulator(Simulator):
         isaacsim_bodies_ang_velocities = isaacsim_bodies_ang_velocities.view(
             self.num_envs, self._num_bodies, 3
         )
+        isaacsim_bodies_acc = isaacsim_bodies_acc.view(
+            self.num_envs, self._num_bodies, 3
+        )
         if env_ids is not None:
             isaacsim_bodies_positions = isaacsim_bodies_positions[env_ids]
             isaacsim_bodies_rotations = isaacsim_bodies_rotations[env_ids]
             isaacsim_bodies_velocities = isaacsim_bodies_velocities[env_ids]
             isaacsim_bodies_ang_velocities = isaacsim_bodies_ang_velocities[env_ids]
+            isaacsim_bodies_acc = isaacsim_bodies_acc[env_ids]
         return RobotState(
             rigid_body_pos=isaacsim_bodies_positions,
             rigid_body_rot=isaacsim_bodies_rotations,
             rigid_body_vel=isaacsim_bodies_velocities,
             rigid_body_ang_vel=isaacsim_bodies_ang_velocities,
+            root_acc=isaacsim_bodies_acc,
             state_conversion=StateConversion.SIMULATOR,
         )
 

@@ -135,6 +135,8 @@ class BaseAgentConfig(ConfigBuilder):
     contact_indices_to_remove: List[int] = field(default_factory=list)
     total_num_bodies: int = 0
     use_blind_body_indices: bool = False
+    save_actions: bool = False  # Whether to save actions in the replay buffer for use in future observations
+    action_history_length: int = 0  # Number of previous actions to include in the observations (for historical action conditioning)
 
     action_indices: Optional[List[int]] = None  # Indices of action dimensions to control (for partial control scenarios)
 

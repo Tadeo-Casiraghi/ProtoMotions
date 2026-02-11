@@ -70,7 +70,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
     )
     from protomotions.envs.obs.config import FuturePoseType, MimicTargetPoseConfig
     from protomotions.envs.base_env.config import RewardComponentConfig
-    from protomotions.envs.obs.config import HumanoidObsConfig, ActionHistoryConfig, MaxCoordsSelfObsConfig
+    from protomotions.envs.obs.config import HumanoidObsConfig, ActionHistoryConfig, MaxCoordsSelfObsConfig, ProstheticObsConfig
     from protomotions.envs.utils.rewards import (
         mean_squared_error_exp,
         rotation_error_exp,
@@ -81,14 +81,24 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         skin_pressure_penalty,
     )
 
-    # all_dof_names = robot_cfg.kinematic_info.dof_names # This is UNRELIABLE for indices
+    all_dof_names = robot_cfg.kinematic_info.dof_names # This is UNRELIABLE for indices
 
     passive_dof_names = [
         "suspension_slide",
         "suspension_x",
         "suspension_y",
         "suspension_z",
+        "R_Ankle_y",
     ]
+
+    for i, name in enumerate(all_dof_names):
+        if name == "R_Ankle_y":
+            ankle_dof_index = i
+        elif name == "Motor":
+            motor_dof_index = i
+        elif name == "prosthetic_assembly2":
+            shank_body_index = i
+    
     
     # Store the defaults by NAME
     passive_defaults_by_name = {
@@ -227,6 +237,9 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         ),
     }
 
+
+
+
     env_config: MimicEnvConfig = MimicEnvConfig(
         ref_contact_smooth_window=7,
         max_episode_length=1000,
@@ -239,6 +252,13 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 enabled=True,
                 num_historical_steps=1,
             ),
+        ),
+        prosthetic_obs=ProstheticObsConfig(
+            enabled = True,
+            num_historical_steps = 5,
+            ankle_dof_index = ankle_dof_index,
+            motor_dof_index = motor_dof_index,
+            shank_body_index = shank_body_index,
         ),
         reward_config=reward_config,
         mimic_early_termination=mimic_early_termination,
@@ -392,36 +412,35 @@ def prosthetic_agent_config(
     from protomotions.agents.base_agent.config import OptimizerConfig
     from protomotions.agents.evaluators.config import MimicEvaluatorConfig
 
-    body_names = robot_config.kinematic_info.body_names
-    dof_to_get = []
-    
-    for i, name in enumerate(body_names):
-        if (name == "R_Ankle_y"):
-            dof_to_get.append(i)
-    
-    num_active_actions = 1
+    dofs = robot_config.kinematic_info.dof_names
+    action_indices = []
+
+    for i, dof_name in enumerate(dofs):
+        if dof_name == "Motor":
+            action_indices.append(i)
 
     actor_config = PPOActorConfig(
-        num_out=num_active_actions,
+        num_out=3,
         actor_logstd=-2.9,
-        in_keys=["get_dof", "agent_action_history"],
+        in_keys=["prosthetic_obs", "prosthetic_previous_actions", "historical_prosthetic_obs"],
         mu_key="actor_trunk_out",
         mu_model=MLPWithConcatConfig(
             in_keys=[
-                "get_dof",
-                "agent_action_history",
+                "prosthetic_obs",
+                "prosthetic_previous_actions",
+                "historical_prosthetic_obs",
             ],
             normalize_obs=True,
             norm_clamp_value=5,
             out_keys=["actor_trunk_out"],
-            num_out=num_active_actions,
+            num_out=3,
             layers=[MLPLayerConfig(units=1024, activation="relu") for _ in range(6)],
             output_activation="tanh",
         ),
     )
 
     critic_config = MLPWithConcatConfig(
-        in_keys=["get_dof", "agent_action_history"],
+        in_keys=["prosthetic_obs", "prosthetic_previous_actions", "historical_prosthetic_obs"],
         out_keys=["value"],
         normalize_obs=True,
         norm_clamp_value=5,
@@ -431,8 +450,9 @@ def prosthetic_agent_config(
     agent_config: PPOAgentConfig = PPOAgentConfig(
         model=PPOModelConfig(
             in_keys=[
-                "get_dof",
-                "agent_action_history",
+                "prosthetic_obs",
+                "prosthetic_previous_actions",
+                "historical_prosthetic_obs",
             ],
             out_keys=["action", "mean_action", "neglogp", "value"],
             actor=actor_config,
@@ -447,9 +467,13 @@ def prosthetic_agent_config(
 
         use_blind_body_indices=True,
 
+        save_actions = True,
+        action_history_length = 5,
+
         advantage_normalization=AdvantageNormalizationConfig(
             enabled=True, shift_mean=True
         ),
+        action_indices=action_indices,
     )
     return agent_config
 

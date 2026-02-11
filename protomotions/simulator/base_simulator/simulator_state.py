@@ -299,6 +299,9 @@ class RobotState(BaseBatchedState):
         rigid_body_ang_vel (Optional[torch.Tensor]): Angular velocities of rigid bodies.
             Expected shape: [batch_size, num_bodies, 3].
 
+        rigid_body_acc (Optional[torch.Tensor]): Linear accelerations of rigid bodies.
+            Expected shape: [batch_size, num_bodies, 3].
+
         rigid_body_contacts (Optional[torch.Tensor]): Contacts of rigid bodies.
             Expected shape: [batch_size, num_bodies], True if in contact, False otherwise.
         rigid_body_contact_forces (Optional[torch.Tensor]): Contact forces of rigid bodies.
@@ -317,6 +320,7 @@ class RobotState(BaseBatchedState):
     rigid_body_rot: Optional[torch.Tensor] = None
     rigid_body_vel: Optional[torch.Tensor] = None
     rigid_body_ang_vel: Optional[torch.Tensor] = None
+    rigid_body_acc: Optional[torch.Tensor] = None
     rigid_body_contacts: Optional[torch.Tensor] = None
     rigid_body_contact_forces: Optional[torch.Tensor] = None
 
@@ -399,6 +403,7 @@ class RobotState(BaseBatchedState):
                 "rigid_body_rot": (num_bodies * 4,),
                 "rigid_body_vel": (num_bodies * 3,),
                 "rigid_body_ang_vel": (num_bodies * 3,),
+                "rigid_body_acc": (num_bodies * 3,),
             }
         else:
             return {
@@ -409,6 +414,7 @@ class RobotState(BaseBatchedState):
                 "rigid_body_rot": (num_bodies, 4),
                 "rigid_body_vel": (num_bodies, 3),
                 "rigid_body_ang_vel": (num_bodies, 3),
+                "rigid_body_acc": (num_bodies, 3),
             }
 
     def merge_fields_from(
@@ -442,6 +448,7 @@ class RobotState(BaseBatchedState):
         self._convert_helper(body_conv_map, "rigid_body_rot")
         self._convert_helper(body_conv_map, "rigid_body_vel")
         self._convert_helper(body_conv_map, "rigid_body_ang_vel")
+        self._convert_helper(body_conv_map, "rigid_body_acc")
         self._convert_helper(body_conv_map, "rigid_body_contacts")
         self._convert_helper(body_conv_map, "rigid_body_contact_forces")
 
@@ -573,6 +580,10 @@ class RobotState(BaseBatchedState):
             assert torch.all(
                 torch.isfinite(self.rigid_body_ang_vel)
             ), f"rigid_body_ang_vel is not finite: {self.rigid_body_ang_vel}"
+        if self.rigid_body_acc is not None:
+            assert torch.all(
+                torch.isfinite(self.rigid_body_acc)
+            ), f"rigid_body_acc is not finite: {self.rigid_body_acc}"
         if self.dof_pos is not None:
             assert torch.all(
                 torch.isfinite(self.dof_pos)
@@ -604,6 +615,7 @@ class RootOnlyState(BaseBatchedState):
     root_rot: Optional[torch.Tensor] = None
     root_vel: Optional[torch.Tensor] = None
     root_ang_vel: Optional[torch.Tensor] = None
+    root_acc: Optional[torch.Tensor] = None
 
     @property
     def motion_num_frames(self) -> Optional[torch.Tensor]:
@@ -641,6 +653,10 @@ class RootOnlyState(BaseBatchedState):
             assert torch.all(
                 torch.isfinite(self.root_ang_vel)
             ), f"root_ang_vel is not finite: {self.root_ang_vel}"
+        if self.root_acc is not None:
+            assert torch.all(
+                torch.isfinite(self.root_acc)
+            ), f"root_acc is not finite: {self.root_acc}"
 
 
 @dataclass
@@ -660,6 +676,7 @@ class ResetState(BaseBatchedState):
         root_rot: Root rotation quaternion [batch_size, 4] (xyzw for common)
         root_vel: Root linear velocity [batch_size, 3]
         root_ang_vel: Root angular velocity [batch_size, 3]
+        root_acc: Root linear acceleration [batch_size, 3]
         dof_pos: Joint positions [batch_size, num_dof]
         dof_vel: Joint velocities [batch_size, num_dof]
     """
@@ -668,6 +685,7 @@ class ResetState(BaseBatchedState):
     root_rot: Optional[torch.Tensor] = None
     root_vel: Optional[torch.Tensor] = None
     root_ang_vel: Optional[torch.Tensor] = None
+    root_acc: Optional[torch.Tensor] = None
     dof_pos: Optional[torch.Tensor] = None
     dof_vel: Optional[torch.Tensor] = None
 
@@ -703,6 +721,7 @@ class ResetState(BaseBatchedState):
             root_rot=robot_state.root_rot,
             root_vel=robot_state.root_vel,
             root_ang_vel=robot_state.root_ang_vel,
+            root_acc=robot_state.root_acc,
             dof_pos=robot_state.dof_pos,
             dof_vel=robot_state.dof_vel,
             state_conversion=robot_state.state_conversion,
@@ -726,6 +745,10 @@ class ResetState(BaseBatchedState):
             assert torch.all(
                 torch.isfinite(self.root_ang_vel)
             ), f"root_ang_vel is not finite: {self.root_ang_vel}"
+        if self.root_acc is not None:
+            assert torch.all(
+                torch.isfinite(self.root_acc)
+            ), f"root_acc is not finite: {self.root_acc}"
         if self.dof_pos is not None:
             assert torch.all(
                 torch.isfinite(self.dof_pos)
@@ -752,12 +775,15 @@ class ObjectState(BaseBatchedState):
             Expected shape: [batch_size, num_objects, 3].
         root_ang_vel (Optional[torch.Tensor]): Angular velocities of object roots.
             Expected shape: [batch_size, num_objects, 3].
+        root_acc (Optional[torch.Tensor]): Linear accelerations of object roots.
+            Expected shape: [batch_size, num_objects, 3].
     """
 
     root_pos: Optional[torch.Tensor] = None
     root_rot: Optional[torch.Tensor] = None
     root_vel: Optional[torch.Tensor] = None
     root_ang_vel: Optional[torch.Tensor] = None
+    root_acc: Optional[torch.Tensor] = None
     contact_forces: Optional[torch.Tensor] = None
 
     @property
@@ -796,3 +822,7 @@ class ObjectState(BaseBatchedState):
             assert torch.all(
                 torch.isfinite(self.root_ang_vel)
             ), f"root_ang_vel is not finite: {self.root_ang_vel}"
+        if self.root_acc is not None:
+            assert torch.all(
+                torch.isfinite(self.root_acc)
+            ), f"root_acc is not finite: {self.root_acc}"

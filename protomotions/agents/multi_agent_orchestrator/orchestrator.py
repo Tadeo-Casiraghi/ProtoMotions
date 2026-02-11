@@ -37,15 +37,38 @@ class CoLearningOrchestrator:
 
     def _setup_agent_buffers(self):
         """Initialize buffers using the agent's own logic."""
-        # 1. Get initial observations (Full Global Obs)
-        global_obs, _ = self.env.reset()
-        
-        for name, agent in self.agents.items():
-            # A. Process Obs (Agent filters what it needs internally)
-            # We copy global_obs so one agent doesn't mutate it for the other
-            obs = agent.add_agent_info_to_obs(global_obs.copy())
-            obs_td = agent.obs_dict_to_tensordict(obs)
+        # 1. Get initial observations (Full Global Obs)     
 
+        
+        if self.agents['prosthetic'].save_actions:
+            # Create a zero tensor matching the action shape from the buffer
+            zero_action = torch.zeros(
+                self.agents['prosthetic'].num_envs, 
+                self.agents['prosthetic'].action_history.data.shape[-1], 
+                device=self.agents['prosthetic'].device
+            )
+            self.agents['prosthetic'].action_history.set_all(zero_action)
+
+            if hasattr(self.agents['prosthetic'], 'prev_command_buffer'):
+                self.agents['prosthetic'].prev_command_buffer.zero_()
+
+        global_obs, _ = self.env.reset()
+
+        current_obs = global_obs.copy()
+
+        # --- 3. Chain the Augmentations ---
+        # A. Humanoid adds "blind_body_obs" to current_obs
+        current_obs = self.agents['humanoid'].add_agent_info_to_obs(current_obs)
+        
+        # B. Prosthetic adds "history" and "torque" to THE SAME current_obs
+        current_obs = self.agents['prosthetic'].add_agent_history_to_obs(current_obs)
+        
+        # C. Convert to TensorDict
+        # (Assuming both agents share the same tensordict logic, calling it from one is fine)
+        obs_td = self.agents['humanoid'].obs_dict_to_tensordict(current_obs)
+
+
+        for name, agent in self.agents.items():
             # B. Initialize Buffer
             agent.experience_buffer = ExperienceBuffer(
                 agent.num_envs, agent.num_steps, device=agent.device
@@ -81,8 +104,15 @@ class CoLearningOrchestrator:
             self.fabric.call("on_fit_start", agent)
 
     def fit(self):
-        # TODO: Check if its correct
         self._setup_agent_buffers()
+
+        if self.agents['prosthetic'].save_actions:
+            # Create a zero tensor matching the action shape from the buffer
+            zero_action = torch.zeros(
+                self.agents['prosthetic'].num_envs, 
+                self.agents['prosthetic'].action_history.data.shape[-1], 
+                device=self.agents['prosthetic'].device
+            )
         
         # Force reset on fit start
         done_indices = torch.arange(self.env.num_envs, device=self.device, dtype=torch.long)
@@ -108,81 +138,118 @@ class CoLearningOrchestrator:
                     # --- A. Global Reset ---
                     # Reset gives us the FULL observation dict
                     global_obs, _ = self.env.reset(done_indices)
+
+                    # --- 3. Chain the Augmentations ---
+                    # A. Humanoid adds "blind_body_obs" to current_obs
+                    obs = self.agents['humanoid'].add_agent_info_to_obs(global_obs)
+
+                    # B. Prosthetic adds "history" and "torque" to THE SAME current_obs
+                    obs = self.agents['prosthetic'].add_agent_history_to_obs(obs)
+        
+                    # C. Convert to TensorDict
+                    # (Assuming both agents share the same tensordict logic, calling it from one is fine)
+                    obs_td = self.agents['humanoid'].obs_dict_to_tensordict(obs)
                     
-                    expanded_actions_list = []
-                    agent_specific_data = {} # To store data needed for recording later
 
                     # --- B. Query Agents (Parallel) ---
                     for name, agent in self.agents.items():
-                        # 1. Process Obs: Pass the FULL global_obs. 
-                        # agent.add_agent_info_to_obs will filter out the blind bodies.
-                        obs = agent.add_agent_info_to_obs(global_obs.copy())
-                        obs_td = agent.obs_dict_to_tensordict(obs)
-
                         # 2. Store to Buffer
                         for key, env_tensor in obs_td.items():
                             agent.experience_buffer.update_data(key, step, env_tensor)
 
                         # 3. Get Action (Small dimension, e.g., 10)
-                        action = agent.collect_rollout_step(obs_td, step)
-                        agent.check_obs_for_nans(obs_td, action)
+                    action_h = self.agents['humanoid'].collect_rollout_step(obs_td, step)
+                    self.agents['humanoid'].check_obs_for_nans(obs_td, action_h)
 
-                        # 4. Expand Action (Full dimension, e.g., 50, mostly zeros)
-                        # This uses the helper function you provided!
-                        full_env_action = agent.expand_action_to_env(action)
-                        expanded_actions_list.append(full_env_action)
+                    env_action = self.agents['humanoid'].expand_action_to_env(action_h)
 
-                        # 5. Store temp data for the record phase
-                        agent_specific_data[name] = {
-                            "obs_td": obs_td,  # Needed for next step recording? Usually we record *next* obs or current? 
-                            # Standard PPO records (next_obs, action, reward, done)
-                            "action": action 
+                    action_p = self.agents['prosthetic'].collect_rollout_step_withcalc(obs_td, step)
+                    env_action += self.agents['prosthetic'].expand_action_to_env(action_p)
+
+                    # --- D. Step Environment ---
+                    next_global_obs, rewards, raw_dones, raw_terminated, extras = self.env.step(env_action)
+
+                    # -----------------------------------------------------------
+                    # FUTURE-PROOFING: SYNCHRONIZED TERMINATION
+                    # -----------------------------------------------------------
+                    # 1. Start with Environment's decision (Physics/Time)
+                    combined_dones = raw_dones.clone()
+                    combined_terminated = raw_terminated.clone()
+
+                    # 2. Collect Agent-Specific Terminations (e.g., AMP)
+                    # We store these temporarily so we don't have to compute them twice
+                    agent_modifications = {}
+
+                    for name, agent in self.agents.items():
+                        # Ask agent: "Do YOU want to terminate?"
+                        # We pass clones so they don't modify the source tensors in-place yet
+                        a_dones, a_terminated, a_extras = agent.post_env_step_modifications(
+                            raw_dones.clone(), raw_terminated.clone(), extras.copy()
+                        )
+                        
+                        # Store for later recording
+                        agent_modifications[name] = {
+                            "dones": a_dones,
+                            "terminated": a_terminated,
+                            "extras": a_extras
                         }
 
-                    # --- C. Merge Actions ---
-                    # Since expand_action_to_env puts 0.0 in non-active joints, we can just SUM them.
-                    # e.g. Agent A: [1, 1, 0, 0] + Agent B: [0, 0, 1, 1] = [1, 1, 1, 1]
-                    global_action = torch.stack(expanded_actions_list).sum(dim=0)
+                        # 3. LOGICAL OR: If ANYONE says "Done", we are ALL Done.
+                        combined_dones = combined_dones | a_dones
+                        combined_terminated = combined_terminated | a_terminated
+
+                    # 4. Update the Master Reset List
+                    # This ensures the Environment ACTUALLY resets these indices at the start of the next loop
+                    done_indices = combined_dones.nonzero(as_tuple=False).squeeze(-1)
+
                     
-                    # --- D. Step Environment ---
-                    next_global_obs, rewards, dones, terminated, extras = self.env.step(global_action)
-                    
-                    # Handle Reward Distribution
-                    # If rewards is a dict {'humanoid': ..., 'prosthetic': ...}, split it.
-                    # If it's a single tensor, share it.
+                    # -----------------------------------------------------------
+                    # HANDLE REWARDS & OBSERVATIONS
+                    # -----------------------------------------------------------
+                    # Broadcast raw rewards (unless distinct)
                     if isinstance(rewards, dict):
                         reward_map = rewards
                     else:
-                        # Broadcast shared reward to all agents
                         reward_map = {name: rewards for name in self.agents.keys()}
 
-                    done_indices = dones.nonzero(as_tuple=False).squeeze(-1)
-
-                    # --- E. Record Experience ---
-                    for name, agent in self.agents.items():
-                        # 1. Process NEXT Obs
-                        next_obs = agent.add_agent_info_to_obs(next_global_obs.copy())
-                        next_obs_td = agent.obs_dict_to_tensordict(next_obs)
-
-                        # 2. Agent-specific modifications (AMP etc)
-                        a_dones, a_terminated, a_extras = agent.post_env_step_modifications(
-                            dones.clone(), terminated.clone(), extras.copy()
+                    # Handle History Reset (using the SYNCHRONIZED done indices)
+                    if self.agents['prosthetic'].save_actions and len(done_indices) > 0:
+                        self.agents['prosthetic'].action_history.set_all(
+                            zero_action[done_indices], 
+                            env_ids=done_indices
                         )
+                        # Future-proof: Reset prev_command if it exists
+                        if hasattr(self.agents['prosthetic'], 'prev_command_buffer'):
+                            self.agents['prosthetic'].prev_command_buffer[done_indices] = 0
+
+                    # Construct Next Observations
+                    next_obs = self.agents['humanoid'].add_agent_info_to_obs(next_global_obs)
+                    next_obs = self.agents['prosthetic'].add_agent_history_to_obs(next_obs)
+                    next_obs_td = self.agents['humanoid'].obs_dict_to_tensordict(next_obs)
+
+                    # -----------------------------------------------------------
+                    # RECORD EXPERIENCE (SYNCHRONIZED)
+                    # -----------------------------------------------------------
+                    for name, agent in self.agents.items():
+                        # Use the extras we calculated earlier (so we get the specific AMP stats)
+                        current_extras = agent_modifications[name]["extras"]
                         
-                        # 3. Record
-                        # Note: We use the *small* action here (agent_specific_data[name]["action"])
-                        # because PPO needs to calculate log_prob of the *small* action later.
+                        # Select correct action
+                        curr_action = action_h if name == "humanoid" else action_p
+
+                        # CRITICAL: Record using 'combined_dones' and 'combined_terminated'
+                        # This ensures the Prosthetic buffer knows the Humanoid forced a reset.
                         agent.record_rollout_step(
                             next_obs_td,
-                            agent_specific_data[name]["action"],
-                            reward_map.get(name, reward_map.get('humanoid')), # Fallback safely
-                            a_dones,
-                            a_terminated,
+                            curr_action,
+                            reward_map.get(name, reward_map.get('humanoid')), 
+                            combined_dones,      # <--- The Shared Decision
+                            combined_terminated, # <--- The Shared Decision
                             done_indices,
-                            a_extras,
+                            current_extras,
                             step,
                         )
-                        
+                    
                         agent.step_count += agent.get_step_count_increment()
 
                 # End of Rollout: Calculate Returns
@@ -213,17 +280,53 @@ class CoLearningOrchestrator:
             self.current_epoch += 1
             aggregated_log_dict["epoch"] = self.current_epoch
 
+            if getattr(self, "evaluator", None) is not None:
+                if (
+                    self.current_epoch > 0 
+                    and self.current_epoch % self.evaluator.config.eval_metrics_every == 0
+                ):
+                    self.fabric.call("on_eval_start", self)
+                    
+                    # Run the test loop (You need to implement this for multi-agent!)
+                    # It looks just like the training loop but without .backward()
+                    eval_log_dict, evaluated_score = self.evaluate() 
+                    
+                    self.fabric.call("on_eval_end", self)
+
+                    # Save the "Best" model if this score is a new record
+                    if evaluated_score is not None:
+                        if (
+                            self.best_evaluated_score is None
+                            or evaluated_score >= self.best_evaluated_score
+                        ):
+                            self.best_evaluated_score = evaluated_score
+                            self._save_all("best.ckpt") # Save as 'humanoid_best.ckpt'
+                    
+                    # Log the test results
+                    aggregated_log_dict.update(eval_log_dict)
+
             # ===============================================================
-            # 3. Checkpointing & Logging
+            # RESTORED FEATURE 2: CURRICULUM
             # ===============================================================
+            # Check if we have a manager that handles episode length growing
+            if getattr(self.config, "max_episode_length_manager", None) is not None:
+                # Ask the manager: "How long should episodes be at this epoch?"
+                new_max_len = self.config.max_episode_length_manager.current_max_episode_length(
+                    self.current_epoch
+                )
+                
+                # Update the environment
+                if hasattr(self.env, "max_episode_length"):
+                     self.env.max_episode_length = new_max_len
+            
+            # Standard End-of-Epoch stuff
+            self.env.on_epoch_end(self.current_epoch)
             self._handle_checkpointing()
             self._handle_logging(aggregated_log_dict)
-            
-            self.env.on_epoch_end(self.current_epoch)
 
             if self.should_stop:
-                self._save_all("last.ckpt")
                 break
+
 
         self.time_report.end_timer('Main Timer')
         self.time_report.report()
@@ -355,3 +458,110 @@ class CoLearningOrchestrator:
         """
         for agent in self.agents.values():
             agent._skip_next_policy_update = value
+
+    def evaluate(self):
+        # TODO: Check what the heck
+        """
+        Runs a Multi-Agent evaluation loop.
+        Returns:
+            log_dict (dict): Metrics to log (e.g. average reward).
+            score (float): The primary score used to determine 'best.ckpt'.
+        """
+        # 1. Set all agents to Eval mode (Deterministic)
+        for agent in self.agents.values():
+            agent.eval()
+        
+        # 2. Setup Metrics
+        total_reward = 0.0
+        num_episodes = 0
+        num_steps = 0
+        
+        # We'll run for a fixed number of steps or episodes
+        # (e.g., 2000 steps roughly equals 5-10 seconds of walking)
+        eval_steps = getattr(self.config, "eval_steps", 2000)
+        
+        # Force a fresh reset for evaluation
+        # We typically use a specific subset of environments or just all of them
+        done_indices = torch.arange(self.env.num_envs, device=self.device, dtype=torch.long)
+        
+        # Zero out history for the prosthetic
+        if self.agents['prosthetic'].save_actions:
+             zero_action = torch.zeros(
+                self.agents['prosthetic'].num_envs, 
+                self.agents['prosthetic'].action_history.data.shape[-1], 
+                device=self.agents['prosthetic'].device
+            )
+             self.agents['prosthetic'].action_history.set_all(zero_action)
+             if hasattr(self.agents['prosthetic'], 'prev_command_buffer'):
+                self.agents['prosthetic'].prev_command_buffer.zero_()
+
+        with torch.no_grad():
+            # Initial Reset
+            global_obs, _ = self.env.reset(done_indices)
+            
+            # Chain Augmentations (Same as training)
+            obs = self.agents['humanoid'].add_agent_info_to_obs(global_obs)
+            obs = self.agents['prosthetic'].add_agent_history_to_obs(obs)
+            obs_td = self.agents['humanoid'].obs_dict_to_tensordict(obs)
+
+            for step in range(eval_steps):
+                # --- Get Deterministic Actions ---
+                # Humanoid (Mode = Mean Action usually)
+                # Note: collect_rollout_step usually samples. 
+                # For eval, we often want the MEAN (deterministic).
+                # If your agent doesn't have a 'get_action_mean' method, 
+                # standard sampling with eval() mode (std=0) works too.
+                action_h = self.agents['humanoid'].collect_rollout_step(obs_td, step) 
+                
+                # Prosthetic
+                action_p = self.agents['prosthetic'].collect_rollout_step_withcalc(obs_td, step)
+                
+                # Merge
+                env_action = self.agents['humanoid'].expand_action_to_env(action_h)
+                env_action += self.agents['prosthetic'].expand_action_to_env(action_p)
+                
+                # --- Step ---
+                next_global_obs, rewards, raw_dones, raw_terminated, extras = self.env.step(env_action)
+                
+                # Update Metrics
+                # If rewards is dict, sum them up or pick a primary one
+                if isinstance(rewards, dict):
+                    step_reward = sum(r.mean().item() for r in rewards.values())
+                else:
+                    step_reward = rewards.mean().item()
+                total_reward += step_reward
+
+                # Handle Resets (Logic from Training)
+                combined_dones = raw_dones.clone()
+                for name, agent in self.agents.items():
+                    a_dones, _, _ = agent.post_env_step_modifications(
+                        raw_dones.clone(), raw_terminated.clone(), extras.copy()
+                    )
+                    combined_dones = combined_dones | a_dones
+                
+                done_indices = combined_dones.nonzero(as_tuple=False).squeeze(-1)
+                num_episodes += len(done_indices)
+                
+                # Reset History if needed
+                if self.agents['prosthetic'].save_actions and len(done_indices) > 0:
+                     self.agents['prosthetic'].action_history.set_all(zero_action[done_indices], env_ids=done_indices)
+                     if hasattr(self.agents['prosthetic'], 'prev_command_buffer'):
+                        self.agents['prosthetic'].prev_command_buffer[done_indices] = 0
+
+                # Prepare for next step
+                next_obs = self.agents['humanoid'].add_agent_info_to_obs(next_global_obs)
+                next_obs = self.agents['prosthetic'].add_agent_history_to_obs(next_obs)
+                obs_td = self.agents['humanoid'].obs_dict_to_tensordict(next_obs)
+                
+                num_steps += 1
+
+        # Calculate Results
+        avg_reward = total_reward / num_steps
+        
+        log_dict = {
+            "eval/avg_reward": avg_reward,
+            "eval/num_episodes": num_episodes
+        }
+        
+        # Return log_dict and the score (avg_reward) for checkpointing
+        return log_dict, avg_reward

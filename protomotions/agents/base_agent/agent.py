@@ -57,7 +57,26 @@ from protomotions.agents.evaluators.base_evaluator import BaseEvaluator
 from protomotions.agents.base_agent.config import BaseAgentConfig
 from protomotions.agents.utils.training import aggregate_scalar_metrics
 
+from protomotions.envs.obs.humanoid_obs import HistoryBuffer
+
 log = logging.getLogger(__name__)
+
+@torch.jit.script
+def compute_torques(
+    kp: Tensor,
+    kd: Tensor,
+    desired_angle: Tensor,
+    current_angle: Tensor,
+    current_vel: Tensor
+) -> Tensor:
+
+    
+    torque = kp * (desired_angle - current_angle) - kd * current_vel
+    
+    # Optional: Clamp torque to motor limits if needed
+    # torque = torch.clamp(torque, -50.0, 50.0)
+    
+    return torque
 
 
 class BaseAgent:
@@ -125,6 +144,24 @@ class BaseAgent:
 
         self.time_report.add_timer('Main Timer')
         self.time_report.start_timer('Main Timer')
+
+        self.save_actions = getattr(self.config, "save_actions", False)
+        self.action_history = None
+
+        if self.save_actions:
+            # Get dimensions directly from the Actor config as requested
+            action_dim = self.config.model.actor.num_out
+            
+            # Default history length (can be added to config later if needed)
+            history_steps = getattr(self.config, "action_history_length", 15)
+
+            self.action_history = HistoryBuffer(
+                num_steps=history_steps,
+                num_envs=self.num_envs,
+                shape=(action_dim+1,), # +1 for calculated torque
+                dtype=torch.float,
+                device=self.device  
+            )
 
         self.current_lengths = torch.zeros(
             self.num_envs, dtype=torch.long, device=self.device
@@ -203,6 +240,8 @@ class BaseAgent:
         self.fabric.call("on_optimizer_init_start")
         self.create_optimizers(model)
         self.fabric.call("on_optimizer_init_end")
+
+
 
     @abstractmethod
     def create_model(self):
@@ -360,6 +399,57 @@ class BaseAgent:
         """
         pass
 
+    def collect_rollout_step_withcalc(self, obs_td: TensorDict, step):
+        # 1. Get raw actions (theta_des, kp, kd) from the policy
+        raw_action = self.collect_rollout_step(obs_td, step) 
+        
+        # 2. Extract components for calculation
+        # Assuming action order: [desired_angle, kp, kd]
+
+        # Example: Map [-1, 1] -> [0, 2000] for Kp
+        kp_scale = 1000.0
+        kp_offset = 1000.0 
+        
+        # Example: Map [-1, 1] -> [0, 10] for Kd
+        kd_scale = 5
+        kd_offset = 5
+        
+        # Example: Map [-1, 1] -> [-pi, pi] for Angle
+        angle_scale = 3.14
+        angle_offset = 0.0
+
+
+        desired_angle = raw_action[:, 0] * angle_scale + angle_offset
+        kp_phys       = raw_action[:, 1] * kp_scale + kp_offset
+        kd_phys       = raw_action[:, 2] * kd_scale + kd_offset
+
+        # 3. Get current state from observations
+        # Assuming index 0 is angle and index 1 is velocity in 'prosthetic_obs'
+        # Note: Use slices [:, 0] to keep it 1D, or keep dims if your JIT expects it
+        current_angle = obs_td["prosthetic_obs"][:, 0]
+        current_vel   = obs_td["prosthetic_obs"][:, 1]
+
+        # 4. Calculate Torque using JIT
+        torque = compute_torques(
+            desired_angle, kp_phys, kd_phys, current_angle, current_vel
+        )
+
+        # 5. Update History Buffer
+        if self.save_actions and self.action_history is not None:
+            # We need to combine Action (3 dims) + Torque (1 dim)
+            # Reshape torque to [batch_size, 1] to match action's dimensions for cat
+            torque_expanded = torque.unsqueeze(-1)
+            
+            # Combine: [kp, kd, theta, torque]
+            combined_entry = torch.cat([raw_action, torque_expanded], dim=-1)
+            
+            # Now update the buffer with the full 4D vector
+            self.action_history.update(combined_entry)
+
+        return torque
+
+
+
     def collect_rollout_step(self, obs_td: TensorDict, step):
         """Collect experience data during rollout at current timestep.
 
@@ -417,6 +507,8 @@ class BaseAgent:
             # print('Full action size', full_action.size())
         # ------------------------------
         return env_action
+    
+
 
     def fit(self):
         """Main training loop for the agent.
@@ -440,6 +532,15 @@ class BaseAgent:
         self.experience_buffer = ExperienceBuffer(
             self.num_envs, self.num_steps, device=self.device
         )
+
+        if self.save_actions:
+            # Create a zero tensor matching the action shape from the buffer
+            zero_action = torch.zeros(
+                self.num_envs, 
+                self.action_history.data.shape[-1], 
+                device=self.device
+            )
+            self.action_history.set_all(zero_action)
 
         # Get initial observations from environment
         obs, _ = self.env.reset()
@@ -514,6 +615,15 @@ class BaseAgent:
 
                     # Step the environment
                     next_obs, rewards, dones, terminated, extras = self.env.step(env_action)
+
+                    if self.save_actions:
+                        done_indices = dones.nonzero(as_tuple=False).squeeze(-1)
+                        if len(done_indices) > 0:
+                            # Reset history to zeros for finished envs
+                            self.action_history.set_all(
+                                zero_action[done_indices], 
+                                env_ids=done_indices
+                            )
 
                     # WILL DELETE LATER
                     if isinstance(rewards, dict):
@@ -633,6 +743,17 @@ class BaseAgent:
     # -----------------------------
     # Environment Interaction Helpers
     # -----------------------------
+    def add_agent_history_to_obs(self, obs: Dict) -> Dict:
+        """Injects the agent's past action history into the observations."""
+        if self.save_actions and self.action_history is not None:
+            # Get flattened history [num_envs, num_steps * action_dim]
+            history = self.action_history.get_all_flattened()
+            
+            # Key matches 'in_keys' from your prosthetic_agent_config
+            obs["prosthetic_previous_actions"] = history
+        return obs
+
+
     def add_agent_info_to_obs(self, obs: Dict) -> Dict:
         """
         Takes the full 'max_coords_obs' and removes the prosthetic data 
