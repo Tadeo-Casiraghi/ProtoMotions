@@ -721,7 +721,7 @@ def main():
                 "_target_": "lightning.pytorch.loggers.WandbLogger",
                 "name": args.experiment_name,
                 "save_dir": save_dir,
-                "project": "physical_animation",
+                "project": "multi-agent-prosthetics",
                 "tags": None,
                 "group": None,
                 "id": wandb_id,
