@@ -350,6 +350,12 @@ class RobotState(BaseBatchedState):
         if self.rigid_body_ang_vel is not None:
             return self.rigid_body_ang_vel[:, 0, :]
         return None
+    
+    @property
+    def root_acc(self) -> Optional[torch.Tensor]:
+        if self.rigid_body_acc is not None:
+            return self.rigid_body_acc[:, 0, :]
+        return None
 
     @property
     def motion_num_frames(self) -> Optional[torch.Tensor]:

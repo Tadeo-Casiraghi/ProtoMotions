@@ -615,7 +615,7 @@ class IsaacLabSimulator(Simulator):
             rigid_body_rot=isaacsim_bodies_rotations,
             rigid_body_vel=isaacsim_bodies_velocities,
             rigid_body_ang_vel=isaacsim_bodies_ang_velocities,
-            root_acc=isaacsim_bodies_acc,
+            rigid_body_acc=isaacsim_bodies_acc,
             state_conversion=StateConversion.SIMULATOR,
         )
 

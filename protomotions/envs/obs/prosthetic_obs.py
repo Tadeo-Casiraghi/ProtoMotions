@@ -1,5 +1,5 @@
 import torch
-from torch import Tensor
+from torch import Tensor, nn
 from protomotions.envs.obs.config import ProstheticObsConfig
 from protomotions.simulator.base_simulator.simulator_state import RobotState
 from protomotions.utils import rotations
@@ -152,7 +152,6 @@ def compute_prosthetic_observations(
     body_lin_acc: Tensor,
     body_rot: Tensor,
     body_ang_vel: Tensor,
-    prev_actions: Tensor,
     w_last: bool = True,
 ) -> Tensor:
         """

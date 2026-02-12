@@ -81,6 +81,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         skin_pressure_penalty,
     )
 
+    body_names = robot_cfg.kinematic_info.body_names
     all_dof_names = robot_cfg.kinematic_info.dof_names # This is UNRELIABLE for indices
 
     passive_dof_names = [
@@ -93,10 +94,15 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
 
     for i, name in enumerate(all_dof_names):
         if name == "R_Ankle_y":
+            print(f"Found ankle DOF at index {i}")
             ankle_dof_index = i
         elif name == "Motor":
+            print(f"Found motor DOF at index {i}")
             motor_dof_index = i
-        elif name == "prosthetic_assembly2":
+    
+    for i, name in enumerate(body_names):
+        if name == "prosthetic_assembly2":
+            print(f"Found shank body at index {i}")
             shank_body_index = i
     
     
@@ -482,8 +488,8 @@ def agent_config(
 ) -> PPOAgentConfig:
 
 
-    humanoid_agent_cfg = humanoid_agent_config(robot_config, env_config, args)
-    prosthetic_agent_cfg = prosthetic_agent_config(robot_config, env_config, args)
+    humanoid_agent_cfg = humanoid_agent_config(robot_config, env_config, args, agent_type="humanoid")
+    prosthetic_agent_cfg = prosthetic_agent_config(robot_config, env_config, args, agent_type="prosthetic")
 
     agent_config = CoLearningConfig(
         agents={
@@ -491,6 +497,8 @@ def agent_config(
             "prosthetic": prosthetic_agent_cfg,
         },
         sync_updates=True,
+        batch_size=args.batch_size,
+        training_max_steps=args.training_max_steps,
     )
 
     return agent_config

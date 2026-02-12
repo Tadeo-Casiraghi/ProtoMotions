@@ -13,7 +13,7 @@ class CoLearningConfig(BaseAgentConfig):
     """
     
     # 1. Point to your new Orchestrator class
-    _target_: str = "protomotions.runners.co_learning.CoLearningOrchestrator"
+    _target_: str = "protomotions.agents.multi_agent_orchestrator.orchestrator.CoLearningOrchestrator"
 
     # 2. The sub-agents. 
     # The keys (e.g., 'humanoid', 'prosthetic') will act as IDs.

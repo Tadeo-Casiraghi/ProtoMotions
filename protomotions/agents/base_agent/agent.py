@@ -211,6 +211,9 @@ class BaseAgent:
         return self.fabric.broadcast(self._should_stop)
 
     def setup(self):
+
+        # TODO TADEO: make sure it handles multiple agents and the different observations
+
         self.fabric.call("on_model_init_start")
         model = self.create_model()
 
@@ -778,6 +781,7 @@ class BaseAgent:
         
         # Define Sizes
         n_bodies = self.config.total_num_bodies 
+        print("Number of bodies:", n_bodies)
         dim_pos = (n_bodies - 1) * 3
         dim_rot = n_bodies * 6       # 6D rotation (tan_norm)
         dim_vel = n_bodies * 3

@@ -12,6 +12,8 @@ from protomotions.agents.utils.training import aggregate_scalar_metrics
 
 from protomotions.agents.evaluators.mimic_evaluator import MimicEvaluator
 
+from protomotions.agents.ppo.agent import PPO 
+
 log = logging.getLogger(__name__)
 
 @torch.jit.script
@@ -164,20 +166,42 @@ class CoLearningOrchestrator:
         self,
         fabric,
         env,
-        agents: Dict[str, Any],
         config: Any,
         # REMOVED: agent_mappings (The agents know their own indices!)
     ):
         self.fabric = fabric
         self.env = env
-        self.agents = agents
         self.config = config
         self.device = fabric.device
 
+        # --- 1. Instantiate Sub-Agents Here ---
+        # We read the configs you created in 'agent_config' and spawn PPOAgents
+        self.agents = {}
+        
+        # config.agents is the dictionary: {'humanoid': cfg, 'prosthetic': cfg}
+        for agent_name, agent_cfg in config.agents.items():
+            print(f"[Orchestrator] Initializing sub-agent: {agent_name}")
+            # We assume both are PPOAgents based on your config
+            self.agents[agent_name] = PPO(
+                config=agent_cfg, 
+                env=env, 
+                fabric=fabric
+            )
+
+        self.num_envs: int = self.env.num_envs
+        self.num_steps: int = self.config.num_steps
+        self.num_mini_epochs: int = self.config.num_mini_epochs
+        self.gamma: float = self.config.gamma
+        self._should_stop: bool = False
+        self.max_epochs: int = (
+            self.config.training_max_steps
+            // self.fabric.world_size
+            // self.num_envs
+            // self.num_steps
+        )
+
         # Shared Training Parameters
         self.current_epoch = 0
-        self.max_epochs = config.max_epochs 
-        self.num_steps = config.num_steps
         self.should_stop = False
 
         self.time_report = TimeReport()
