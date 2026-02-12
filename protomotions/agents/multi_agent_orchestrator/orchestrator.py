@@ -1,4 +1,5 @@
 import torch
+from torch import Tensor
 import time
 import logging
 from typing import Dict, Any
@@ -9,7 +10,154 @@ from protomotions.agents.utils.data import ExperienceBuffer
 from protomotions.agents.utils.metering import TimeReport
 from protomotions.agents.utils.training import aggregate_scalar_metrics
 
+from protomotions.agents.evaluators.mimic_evaluator import MimicEvaluator
+
 log = logging.getLogger(__name__)
+
+@torch.jit.script
+def compute_torques(
+    kp: Tensor,
+    kd: Tensor,
+    desired_angle: Tensor,
+    current_angle: Tensor,
+    current_vel: Tensor
+) -> Tensor:
+
+    
+    torque = kp * (desired_angle - current_angle) - kd * current_vel
+    
+    # Optional: Clamp torque to motor limits if needed
+    # torque = torch.clamp(torque, -50.0, 50.0)
+    
+    return torque
+
+class CoLearningMimicEvaluator(MimicEvaluator):
+    """
+    A wrapper around MimicEvaluator that knows how to step TWO agents
+    simultaneously during the evaluation loop.
+    """
+    def __init__(self, humanoid_agent, prosthetic_agent, fabric, config):
+        # Initialize the base MimicEvaluator with the Humanoid (primary)
+        super().__init__(humanoid_agent, fabric, config)
+        self.prosthetic_agent = prosthetic_agent
+
+    def evaluate_episode(
+        self,
+        metrics: dict,
+        active_env_ids: torch.Tensor,
+        active_motion_ids: torch.Tensor,
+    ) -> None:
+        """
+        Overrides the single-agent evaluation loop to support Co-Learning.
+        """
+        assert len(active_env_ids) == len(active_motion_ids)
+
+        # 1. Setup Motion Manager (Same as original)
+        self.motion_manager.motion_ids[active_env_ids] = active_motion_ids
+        max_len = self.motion_lib.get_motion_num_frames(active_motion_ids).max().item()
+        max_len = min(max_len, self.config.max_eval_steps)
+        self.motion_manager.motion_times[active_env_ids] = 0.0
+
+        # 2. Reset Environment (Same as original)
+        obs, _ = self.env.reset(
+            active_env_ids, sample_flat=True, disable_motion_resample=True
+        )
+        
+        # --- MULTI-AGENT OBSERVATION CHAIN ---
+        obs = self.agent.add_agent_info_to_obs(obs)                  # Humanoid
+        obs = self.prosthetic_agent.add_agent_history_to_obs(obs)    # Prosthetic
+        obs_td = self.agent.obs_dict_to_tensordict(obs)
+        
+        # Zero out prosthetic history for these envs
+        if self.prosthetic_agent.save_actions:
+            # Create a zero tensor matching the action shape from the buffer
+            zero_action = torch.zeros(
+                self.prosthetic_agent.num_envs, 
+                self.prosthetic_agent.action_history.data.shape[-1], 
+                device=self.prosthetic_agent.device
+            )
+            self.prosthetic_agent.action_history.set_all(zero_action)
+            
+            if hasattr(self.prosthetic_agent, 'prev_command_buffer'):
+                self.prosthetic_agent.prev_command_buffer.zero_()
+
+        # 3. Evaluation Loop
+        for step in range(max_len):
+            
+            # --- A. Humanoid Action (Deterministic) ---
+            # We prefer 'mean_action' for evaluation if available
+            h_outs = self.agent.model(obs_td)
+            action_h = h_outs.get("mean_action", h_outs.get("action"))
+            
+            # --- B. Prosthetic Action (Deterministic + Torque Calc) ---
+            # We need to manually do the 'collect_rollout_step_withcalc' logic 
+            # but forcing Deterministic (Mean) actions.
+            
+            p_outs = self.prosthetic_agent.model(obs_td)
+            
+            # 1. Get Mean Raw Actions
+            raw_action_p = p_outs.get("mean_action", p_outs.get("action"))
+            
+            # 2. Re-implement torque calculation (Deterministic)
+            # (Copying the logic from your collect_rollout_step_withcalc)
+            # NOTE: We can't call collect_rollout_step_withcalc directly because 
+            # it might sample stochastic actions.
+            
+            # Extract raw params
+            raw_theta = raw_action_p[:, 0]
+            raw_kp    = raw_action_p[:, 1]
+            raw_kd    = raw_action_p[:, 2]
+
+            kp_scale = 1000.0
+            kp_offset = 1000.0 
+            
+            # Example: Map [-1, 1] -> [0, 10] for Kd
+            kd_scale = 5
+            kd_offset = 5
+            
+            # Example: Map [-1, 1] -> [-pi, pi] for Angle
+            angle_scale = 3.14
+            angle_offset = 0.0
+
+            desired_angle = raw_theta * angle_scale + angle_offset
+            kp_phys       = raw_kp * kp_scale + kp_offset
+            kd_phys       = raw_kd * kd_scale + kd_offset
+
+            # Get State
+            current_angle = obs_td["prosthetic_obs"][:, 0]
+            current_vel   = obs_td["prosthetic_obs"][:, 1]
+            
+            # JIT Torque Calc
+            # We need to import the JIT function or access it from the agent module
+            # Assuming compute_torques_jit is available here
+            torque = compute_torques(
+                desired_angle, kp_phys, kd_phys, current_angle, current_vel
+            )
+            
+            # Construct Final Prosthetic Action
+            action_p = torque.unsqueeze(-1)
+            
+            # --- C. Merge Actions ---
+            env_action = self.agent.expand_action_to_env(action_h)
+            env_action += self.prosthetic_agent.expand_action_to_env(action_p)
+
+            # --- D. Step Environment ---
+            obs, rewards, dones, terminated, extras = self.env.step(env_action)
+            
+            # --- E. Prepare Next Step ---
+            obs = self.agent.add_agent_info_to_obs(obs)
+            obs = self.prosthetic_agent.add_agent_history_to_obs(obs)
+            obs_td = self.agent.obs_dict_to_tensordict(obs)
+            
+            # Update Prosthetic History (with the deterministic actions)
+            if self.prosthetic_agent.save_actions:
+                 combined_entry = torch.cat([raw_action_p, torque.unsqueeze(-1)], dim=-1)
+                 self.prosthetic_agent.action_history.update(combined_entry)
+
+            # --- F. Update Metrics ---
+            self.update_metrics_from_env_extras(
+                metrics, extras, active_env_ids, active_motion_ids
+            )
 
 class CoLearningOrchestrator:
     def __init__(
@@ -34,6 +182,13 @@ class CoLearningOrchestrator:
 
         self.time_report = TimeReport()
         self.time_report.add_timer("Main Timer")
+
+        self.evaluator = CoLearningMimicEvaluator(
+            humanoid_agent=self.agents['humanoid'],
+            prosthetic_agent=self.agents['prosthetic'],
+            fabric=self.fabric,
+            config=self.agents['humanoid'].config.evaluator # Use humanoid config
+        )
 
     def _setup_agent_buffers(self):
         """Initialize buffers using the agent's own logic."""
@@ -280,16 +435,15 @@ class CoLearningOrchestrator:
             self.current_epoch += 1
             aggregated_log_dict["epoch"] = self.current_epoch
 
-            if getattr(self, "evaluator", None) is not None:
+            if self.evaluator is not None:
                 if (
                     self.current_epoch > 0 
                     and self.current_epoch % self.evaluator.config.eval_metrics_every == 0
                 ):
                     self.fabric.call("on_eval_start", self)
                     
-                    # Run the test loop (You need to implement this for multi-agent!)
-                    # It looks just like the training loop but without .backward()
-                    eval_log_dict, evaluated_score = self.evaluate() 
+                    # This now calls your Custom Multi-Agent Evaluator
+                    eval_log_dict, evaluated_score = self.evaluator.evaluate() 
                     
                     self.fabric.call("on_eval_end", self)
 
@@ -458,110 +612,3 @@ class CoLearningOrchestrator:
         """
         for agent in self.agents.values():
             agent._skip_next_policy_update = value
-
-    def evaluate(self):
-        # TODO: Check what the heck
-        """
-        Runs a Multi-Agent evaluation loop.
-        Returns:
-            log_dict (dict): Metrics to log (e.g. average reward).
-            score (float): The primary score used to determine 'best.ckpt'.
-        """
-        # 1. Set all agents to Eval mode (Deterministic)
-        for agent in self.agents.values():
-            agent.eval()
-        
-        # 2. Setup Metrics
-        total_reward = 0.0
-        num_episodes = 0
-        num_steps = 0
-        
-        # We'll run for a fixed number of steps or episodes
-        # (e.g., 2000 steps roughly equals 5-10 seconds of walking)
-        eval_steps = getattr(self.config, "eval_steps", 2000)
-        
-        # Force a fresh reset for evaluation
-        # We typically use a specific subset of environments or just all of them
-        done_indices = torch.arange(self.env.num_envs, device=self.device, dtype=torch.long)
-        
-        # Zero out history for the prosthetic
-        if self.agents['prosthetic'].save_actions:
-             zero_action = torch.zeros(
-                self.agents['prosthetic'].num_envs, 
-                self.agents['prosthetic'].action_history.data.shape[-1], 
-                device=self.agents['prosthetic'].device
-            )
-             self.agents['prosthetic'].action_history.set_all(zero_action)
-             if hasattr(self.agents['prosthetic'], 'prev_command_buffer'):
-                self.agents['prosthetic'].prev_command_buffer.zero_()
-
-        with torch.no_grad():
-            # Initial Reset
-            global_obs, _ = self.env.reset(done_indices)
-            
-            # Chain Augmentations (Same as training)
-            obs = self.agents['humanoid'].add_agent_info_to_obs(global_obs)
-            obs = self.agents['prosthetic'].add_agent_history_to_obs(obs)
-            obs_td = self.agents['humanoid'].obs_dict_to_tensordict(obs)
-
-            for step in range(eval_steps):
-                # --- Get Deterministic Actions ---
-                # Humanoid (Mode = Mean Action usually)
-                # Note: collect_rollout_step usually samples. 
-                # For eval, we often want the MEAN (deterministic).
-                # If your agent doesn't have a 'get_action_mean' method, 
-                # standard sampling with eval() mode (std=0) works too.
-                action_h = self.agents['humanoid'].collect_rollout_step(obs_td, step) 
-                
-                # Prosthetic
-                action_p = self.agents['prosthetic'].collect_rollout_step_withcalc(obs_td, step)
-                
-                # Merge
-                env_action = self.agents['humanoid'].expand_action_to_env(action_h)
-                env_action += self.agents['prosthetic'].expand_action_to_env(action_p)
-                
-                # --- Step ---
-                next_global_obs, rewards, raw_dones, raw_terminated, extras = self.env.step(env_action)
-                
-                # Update Metrics
-                # If rewards is dict, sum them up or pick a primary one
-                if isinstance(rewards, dict):
-                    step_reward = sum(r.mean().item() for r in rewards.values())
-                else:
-                    step_reward = rewards.mean().item()
-                total_reward += step_reward
-
-                # Handle Resets (Logic from Training)
-                combined_dones = raw_dones.clone()
-                for name, agent in self.agents.items():
-                    a_dones, _, _ = agent.post_env_step_modifications(
-                        raw_dones.clone(), raw_terminated.clone(), extras.copy()
-                    )
-                    combined_dones = combined_dones | a_dones
-                
-                done_indices = combined_dones.nonzero(as_tuple=False).squeeze(-1)
-                num_episodes += len(done_indices)
-                
-                # Reset History if needed
-                if self.agents['prosthetic'].save_actions and len(done_indices) > 0:
-                     self.agents['prosthetic'].action_history.set_all(zero_action[done_indices], env_ids=done_indices)
-                     if hasattr(self.agents['prosthetic'], 'prev_command_buffer'):
-                        self.agents['prosthetic'].prev_command_buffer[done_indices] = 0
-
-                # Prepare for next step
-                next_obs = self.agents['humanoid'].add_agent_info_to_obs(next_global_obs)
-                next_obs = self.agents['prosthetic'].add_agent_history_to_obs(next_obs)
-                obs_td = self.agents['humanoid'].obs_dict_to_tensordict(next_obs)
-                
-                num_steps += 1
-
-        # Calculate Results
-        avg_reward = total_reward / num_steps
-        
-        log_dict = {
-            "eval/avg_reward": avg_reward,
-            "eval/num_episodes": num_episodes
-        }
-        
-        # Return log_dict and the score (avg_reward) for checkpointing
-        return log_dict, avg_reward
