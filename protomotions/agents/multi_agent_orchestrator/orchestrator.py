@@ -572,6 +572,8 @@ class CoLearningOrchestrator:
         # 1. Global callbacks (Optional, if you want to signal start of init)
         self.fabric.call("on_model_init_start") 
 
+        self._inject_obs_pipelines()
+
         for name, agent in self.agents.items():
             log.info(f"Setting up Agent: {name}")
             
@@ -593,6 +595,32 @@ class CoLearningOrchestrator:
             
         self.fabric.call("on_model_init_end")
         self.fabric.call("on_optimizer_init_end")
+
+    def _inject_obs_pipelines(self):
+        """
+        Wires up the correct obs augmentation chain per agent, mirroring
+        exactly what fit() does at every rollout step:
+
+            obs = humanoid.add_agent_info_to_obs(global_obs)      # step A
+            obs = prosthetic.add_agent_history_to_obs(obs)        # step B
+            obs_td = humanoid.obs_dict_to_tensordict(obs)         # step C
+
+        Each agent gets a lambda that produces the obs dict it would
+        actually see during training, so lazy modules (LazyLinear,
+        RunningMeanStd) materialize with the right shapes.
+        """
+        humanoid   = self.agents['humanoid']
+        prosthetic = self.agents['prosthetic']
+
+        humanoid._obs_pipeline = lambda raw_obs: (
+            humanoid.add_agent_info_to_obs(raw_obs)
+        )
+
+        prosthetic._obs_pipeline = lambda raw_obs: (
+            prosthetic.add_agent_history_to_obs(
+                humanoid.add_agent_info_to_obs(raw_obs)
+            )
+        )
 
     def load(self, path: str):
         """

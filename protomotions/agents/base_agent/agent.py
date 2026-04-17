@@ -139,6 +139,8 @@ class BaseAgent:
             // self.num_steps
         )
 
+        self._obs_pipeline = None  # Injected externally for multi-agent setups
+
         # timer
         self.time_report = TimeReport()
 
@@ -212,8 +214,6 @@ class BaseAgent:
 
     def setup(self):
 
-        # TODO TADEO: make sure it handles multiple agents and the different observations
-
         self.fabric.call("on_model_init_start")
         model = self.create_model()
 
@@ -233,9 +233,7 @@ class BaseAgent:
         # by running a dummy forward pass before wrapping with DDP
         log.info("Materializing lazy modules...")
         with torch.no_grad():
-            dummy_obs = self.env.get_obs()
-            dummy_obs = self.add_agent_info_to_obs(dummy_obs)
-            dummy_obs_td = self.obs_dict_to_tensordict(dummy_obs)
+            dummy_obs_td = self._build_dummy_obs_td()
             _ = self.model(dummy_obs_td)
 
         self.fabric.call("on_model_init_end")
@@ -244,7 +242,27 @@ class BaseAgent:
         self.create_optimizers(model)
         self.fabric.call("on_optimizer_init_end")
 
+    def _build_dummy_obs_td(self) -> TensorDict:
+        """
+        Builds the dummy observation TensorDict for lazy module materialization.
+        
+        By default, applies only this agent's own augmentation.
+        In multi-agent settings, override `_obs_pipeline` externally before
+        calling setup() so the full augmentation chain is replicated correctly.
+        
+        The pipeline callable must have signature:
+            obs_pipeline(raw_obs: dict) -> dict
+        """
+        raw_obs = self.env.get_obs()
 
+        if self._obs_pipeline is not None:
+            # Multi-agent case: externally injected pipeline handles the full chain
+            augmented_obs = self._obs_pipeline(raw_obs)
+        else:
+            # Single-agent case: default to own augmentation only
+            augmented_obs = self.add_agent_info_to_obs(raw_obs)
+
+        return self.obs_dict_to_tensordict(augmented_obs)
 
     @abstractmethod
     def create_model(self):
