@@ -288,7 +288,7 @@ class MimicEvaluator(BaseEvaluator):
             obs_td = self.agent.obs_dict_to_tensordict(obs)
             # Update metrics
             self.update_metrics_from_env_extras(
-                metrics, extras, active_env_ids, active_motion_ids
+                metrics, extras, active_env_ids, active_motion_ids, prefix=True,
             )
 
     def add_extra_obs_to_agent(self, obs: Tensor):
@@ -300,6 +300,7 @@ class MimicEvaluator(BaseEvaluator):
         extras: Dict,
         active_env_ids: Tensor,
         active_motion_ids: Tensor,
+        prefix=False,
     ) -> None:
         """
         Update metrics from env.extras.
@@ -313,19 +314,48 @@ class MimicEvaluator(BaseEvaluator):
         assert len(active_env_ids) == len(active_motion_ids)
 
         # Use metrics dict as source of truth for which keys to update
+        candidate_prefixes = (
+            ["humanoid/", "prosthetic/", ""] if prefix else [""]
+        )
+
+        # print([k for k in metrics.keys()])
+        # # Add these:
+        # print("\n=== extras keys containing known patterns ===")
+        # for k in sorted(extras.keys()):
+        #     if any(x in k for x in ["mimic_other", "raw_r/", "raw/"]):
+        #         print(k)
+
+        # print("\n=== ALL extras keys ===")
+        # for k in sorted(extras.keys()):
+        #     print(k)
+
         for k in metrics.keys():
-            if f"mimic_other/{k}" in extras:
-                value = extras[f"mimic_other/{k}"].detach()
-            elif f"raw_r/{k}" in extras:
-                value = extras[f"raw_r/{k}"].detach()
-            # getting raw robot states in metrics for computation e.g. smoothness, etc.
-            elif f"raw/{k}" in extras:
-                value = extras[f"raw/{k}"].detach()
-            else:
-                raise ValueError(f"Key {k} not found in env.extras")
+            value = None
 
-            metric = value[active_env_ids]  # in case there are more envs than motions
+            for p in candidate_prefixes:
 
+                # full candidate keys (flat, not nested)
+                candidates = [
+                    f"{p}mimic_other/{k}",
+                    f"{p}raw_r/{k}",
+                    f"{p}raw/{k}",
+                ]
+
+                for key in candidates:
+                    if key in extras:
+                        value = extras[key].detach()
+                        break
+
+                if value is not None:
+                    break
+
+            if value is None:
+                raise ValueError(
+                    f"Key {k} not found in env.extras. "
+                    f"Checked prefixes={candidate_prefixes}"
+                )
+
+            metric = value[active_env_ids]
             metrics[k].update(active_motion_ids, metric)
 
     def process_eval_results(self, metrics: Dict) -> Tuple[Dict, Optional[float]]:
@@ -618,7 +648,7 @@ class MimicEvaluator(BaseEvaluator):
                         device=self.device
                     )
                     self.update_metrics_from_env_extras(
-                        metrics, extras, cur_env_ids, cur_motion_ids
+                        metrics, extras, cur_env_ids, cur_motion_ids, prefix=True,
                     )
 
                 done_indices = dones.nonzero(as_tuple=False).squeeze(-1)

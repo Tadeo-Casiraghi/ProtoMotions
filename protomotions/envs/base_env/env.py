@@ -186,7 +186,7 @@ class BaseEnv:
         # Initialize simulator with visualization markers and complete setup
         self.initialize_simulator()
 
-        if hasattr(self.robot_config, "torque_joints") and self.robot_config.torque_joints is not None:
+        if (hasattr(self.robot_config, "control") and self.robot_config.control.torque_joints is not None):
             if self.simulator.control_type != self.simulator.control_type.BUILT_IN_PD_HYBRID:
                 raise ValueError("torque_joints specified in robot_config but simulator control type is not BUILT_IN_PD_HYBRID")
             sim_dof_names = self.simulator._robot.joint_names

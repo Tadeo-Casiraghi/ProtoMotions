@@ -520,6 +520,9 @@ class BaseAgent:
             )
             
             # 3. Scatter active actions into the correct slots
+            if action.dim() == 1:
+                action = action.unsqueeze(1)
+
             full_action[:, self.config.action_indices] = action
             
             env_action = full_action
@@ -799,7 +802,7 @@ class BaseAgent:
         
         # Define Sizes
         n_bodies = self.config.total_num_bodies 
-        print("Number of bodies:", n_bodies)
+        # print("Number of bodies:", n_bodies)
         dim_pos = (n_bodies - 1) * 3
         dim_rot = n_bodies * 6       # 6D rotation (tan_norm)
         dim_vel = n_bodies * 3

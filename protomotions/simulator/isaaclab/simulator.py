@@ -479,7 +479,7 @@ class IsaacLabSimulator(Simulator):
         if hasattr(self, "sim_torque_joints") and self.sim_torque_joints is not None:
             # If sim_torque_joints is defined, use it to determine which joints get torques
             torque_targets = torch.zeros_like(pd_targets)
-            torque_targets[:, self.sim_torque_joints] = self.pd_targets[:, self.sim_torque_joints]
+            torque_targets[:, self.sim_torque_joints] = pd_targets[:, self.sim_torque_joints]
             # torque_targets = torch.clip(
             #     torque_targets, -self._torque_limits_common, self._torque_limits_common
             # )

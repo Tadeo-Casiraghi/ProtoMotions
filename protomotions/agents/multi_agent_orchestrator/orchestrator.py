@@ -158,7 +158,7 @@ class CoLearningMimicEvaluator(MimicEvaluator):
 
             # --- F. Update Metrics ---
             self.update_metrics_from_env_extras(
-                metrics, extras, active_env_ids, active_motion_ids
+                metrics, extras, active_env_ids, active_motion_ids, prefix=True,
             )
 
 class CoLearningOrchestrator:
@@ -167,12 +167,17 @@ class CoLearningOrchestrator:
         fabric,
         env,
         config: Any,
+        root_dir=None,
+        **kwargs
         # REMOVED: agent_mappings (The agents know their own indices!)
     ):
         self.fabric = fabric
         self.env = env
         self.config = config
         self.device = fabric.device
+        
+        self.just_loaded_checkpoint_should_evaluate = False
+        self.best_evaluated_score = None
 
         # --- 1. Instantiate Sub-Agents Here ---
         # We read the configs you created in 'agent_config' and spawn PPOAgents
@@ -185,7 +190,8 @@ class CoLearningOrchestrator:
             self.agents[agent_name] = PPO(
                 config=agent_cfg, 
                 env=env, 
-                fabric=fabric
+                fabric=fabric,
+                root_dir=root_dir  # ← pass it through
             )
 
         self.num_envs: int = self.env.num_envs
@@ -213,6 +219,85 @@ class CoLearningOrchestrator:
             fabric=self.fabric,
             config=self.agents['humanoid'].config.evaluator # Use humanoid config
         )
+
+    def load(self, checkpoint: Path, load_env: bool = True):
+        """Load checkpoints for all sub-agents.
+
+        Expects checkpoints to be named per-agent, e.g.:
+            /path/to/run/humanoid.ckpt
+            /path/to/run/prosthetic.ckpt
+
+        Falls back to a single shared checkpoint path if agent-specific
+        files are not found (useful for resuming from a single snapshot).
+
+        Args:
+            checkpoint: Path to a checkpoint file OR a directory containing
+                        per-agent checkpoint files.
+            load_env:   Whether to also restore environment state after loading.
+        """
+        if checkpoint is None:
+            return
+
+        checkpoint = Path(checkpoint).resolve()
+
+        for agent_name, agent in self.agents.items():
+            # --- Resolve per-agent checkpoint path ---
+            if checkpoint.is_dir():
+                # Directory mode: look for <dir>/<agent_name>.ckpt
+                agent_ckpt_path = checkpoint / f"{agent_name}.ckpt"
+            else:
+                # File mode: look for <stem>_<agent_name><suffix>, e.g. checkpoint_humanoid.ckpt
+                agent_ckpt_path = checkpoint.with_name(
+                    f"{agent_name}_{checkpoint.name}"  # humanoid_ + last.ckpt
+                )
+
+            # Fall back to the exact path provided if neither variant exists
+            if not agent_ckpt_path.exists():
+                if checkpoint.exists():
+                    print(
+                        f"[Orchestrator] No agent-specific checkpoint found for "
+                        f"'{agent_name}', falling back to: {checkpoint}"
+                    )
+                    agent_ckpt_path = checkpoint
+                else:
+                    print(
+                        f"[Orchestrator] WARNING: No checkpoint found for "
+                        f"'{agent_name}', skipping."
+                    )
+                    continue
+
+            print(f"[Orchestrator] Loading '{agent_name}' from: {agent_ckpt_path}")
+            state_dict = torch.load(
+                agent_ckpt_path, map_location=self.device, weights_only=False
+            )
+            agent.load_parameters(state_dict)
+
+        # --- Restore shared orchestrator-level state ---
+        # Pull epoch/step from the first agent that has them, so the orchestrator
+        # resumes at the right point rather than restarting from 0.
+        first_agent = next(iter(self.agents.values()))
+        self.current_epoch = first_agent.current_epoch
+
+        # --- Restore environment state (once, shared across all agents) ---
+        if load_env:
+            task_id = self.env.get_task_id()
+            # Root dir is taken from the checkpoint's parent directory
+            env_ckpt_dir = checkpoint if checkpoint.is_dir() else checkpoint.parent
+            env_checkpoint = env_ckpt_dir / f"env_{task_id}.ckpt"
+
+            if env_checkpoint.exists():
+                print(f"[Orchestrator] Loading env checkpoint: {env_checkpoint}")
+                env_state_dict = torch.load(
+                    env_checkpoint, map_location=self.device, weights_only=False
+                )
+                self.env.load_state_dict(env_state_dict)
+            else:
+                print(
+                    f"[Orchestrator] No env checkpoint found at {env_checkpoint}, "
+                    f"skipping env restore."
+                )
+
+        self.just_loaded_checkpoint_should_evaluate = True
 
     def _setup_agent_buffers(self):
         """Initialize buffers using the agent's own logic."""
@@ -245,6 +330,7 @@ class CoLearningOrchestrator:
         # C. Convert to TensorDict
         # (Assuming both agents share the same tensordict logic, calling it from one is fine)
         obs_td = self.agents['humanoid'].obs_dict_to_tensordict(current_obs)
+        print("obs_td keys:", list(obs_td.keys()))
 
 
         for name, agent in self.agents.items():
@@ -261,8 +347,9 @@ class CoLearningOrchestrator:
 
             # D. Register Keys (Model Output)
             with torch.no_grad():
-                output_td = agent.model(obs_td)
+                output_td = agent.model(obs_td.clone())
                 agent.model_output_keys = agent.model.out_keys
+                print(f"[{name}] model out_keys:", agent.model_output_keys)
                 for key in agent.model_output_keys:
                     value = output_td[key]
                     if isinstance(value, torch.Tensor):
@@ -622,30 +709,30 @@ class CoLearningOrchestrator:
             )
         )
 
-    def load(self, path: str):
-        """
-        Loads checkpoints for all agents. 
-        Assumes 'path' points to a specific file (e.g. '.../last.ckpt')
-        and that agents saved files with prefixes (e.g. '.../humanoid_last.ckpt').
-        """
-        if not path:
-            return
+    # def load(self, path: str):
+    #     """
+    #     Loads checkpoints for all agents. 
+    #     Assumes 'path' points to a specific file (e.g. '.../last.ckpt')
+    #     and that agents saved files with prefixes (e.g. '.../humanoid_last.ckpt').
+    #     """
+    #     if not path:
+    #         return
 
-        import os
-        path_obj = Path(path)
-        parent_dir = path_obj.parent
-        filename = path_obj.name  # e.g., "last.ckpt" or "epoch_100.ckpt"
+    #     import os
+    #     path_obj = Path(path)
+    #     parent_dir = path_obj.parent
+    #     filename = path_obj.name  # e.g., "last.ckpt" or "epoch_100.ckpt"
 
-        for name, agent in self.agents.items():
-            # Construct the expected filename: "humanoid_" + "last.ckpt"
-            agent_specific_filename = f"{name}_{filename}"
-            agent_path = parent_dir / agent_specific_filename
+    #     for name, agent in self.agents.items():
+    #         # Construct the expected filename: "humanoid_" + "last.ckpt"
+    #         agent_specific_filename = f"{name}_{filename}"
+    #         agent_path = parent_dir / agent_specific_filename
             
-            if agent_path.exists():
-                log.info(f"Loading {name} from {agent_path}")
-                agent.load(str(agent_path))
-            else:
-                log.warning(f"Checkpoint for {name} not found at {agent_path}. Starting fresh.")
+    #         if agent_path.exists():
+    #             log.info(f"Loading {name} from {agent_path}")
+    #             agent.load(str(agent_path))
+    #         else:
+    #             log.warning(f"Checkpoint for {name} not found at {agent_path}. Starting fresh.")
         
     @property
     def _skip_next_policy_update(self):
