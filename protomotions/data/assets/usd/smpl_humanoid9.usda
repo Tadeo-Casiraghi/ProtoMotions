@@ -3230,6 +3230,7 @@ def Xform "smpl_humanoid9" (
             </smpl_humanoid9/joints/skin_box_medial_bottom>,
             </smpl_humanoid9/joints/skin_box_anterior_bottom>,
             </smpl_humanoid9/joints/skin_box_lateral_bottom>,
+            </smpl_humanoid9/joints/suspension_slide>,
             </smpl_humanoid9/joints/prosthetic_assembly2>,
             </smpl_humanoid9/joints/socket_box_posterior_top>,
             </smpl_humanoid9/joints/socket_box_medial_top>,
