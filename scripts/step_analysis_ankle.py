@@ -20,6 +20,104 @@ from pathlib import Path
 import numpy as np
 from typing import Dict, List, Any, Optional, Tuple
 
+def save_robot_configuration(robot: Articulation, filename="data.txt"):
+    with open(filename, "w") as f:
+
+        f.write("========== ROBOT CONFIGURATION ==========\n\n")
+
+        # -------------------------------------------------
+        # JOINT INFORMATION
+        # -------------------------------------------------
+        f.write("JOINTS\n")
+        f.write("----------------------------------------\n")
+
+        for joint_id, joint_name in enumerate(robot.joint_names):
+
+            f.write(f"Joint {joint_id}: {joint_name}\n")
+
+            # Joint limits
+            try:
+                lower = robot.data.soft_joint_pos_limits[0, joint_id, 0].item()
+                upper = robot.data.soft_joint_pos_limits[0, joint_id, 1].item()
+
+                f.write(f"  Position Limits: [{lower:.4f}, {upper:.4f}]\n")
+            except:
+                pass
+
+            # Velocity limits
+            try:
+                vel_limit = robot.data.joint_vel_limits[0, joint_id].item()
+                f.write(f"  Velocity Limit: {vel_limit:.4f}\n")
+            except:
+                pass
+
+            # Effort limits
+            try:
+                effort_limit = robot.data.joint_effort_limits[0, joint_id].item()
+                f.write(f"  Effort Limit: {effort_limit:.4f}\n")
+            except:
+                pass
+
+            f.write("\n")
+
+        # -------------------------------------------------
+        # ACTUATOR INFORMATION
+        # -------------------------------------------------
+        f.write("\nACTUATORS\n")
+        f.write("----------------------------------------\n")
+
+        for actuator_name, actuator in robot.actuators.items():
+
+            f.write(f"Actuator: {actuator_name}\n")
+
+            cfg = actuator.cfg
+
+            attrs = [
+                "stiffness",
+                "damping",
+                "armature",
+                "friction",
+                "effort_limit",
+                "velocity_limit",
+            ]
+
+            for attr in attrs:
+                if hasattr(cfg, attr):
+                    f.write(f"  {attr}: {getattr(cfg, attr)}\n")
+
+            f.write("\n")
+
+        # -------------------------------------------------
+        # BODY INFORMATION
+        # -------------------------------------------------
+        f.write("\nRIGID BODIES\n")
+        f.write("----------------------------------------\n")
+
+        for body_id, body_name in enumerate(robot.body_names):
+
+            f.write(f"Body {body_id}: {body_name}\n")
+
+            # Mass
+            try:
+                mass = robot.root_physx_view.get_masses()[0, body_id]
+                f.write(f"  Mass: {mass:.6f} kg\n")
+            except:
+                pass
+
+            # Inertia tensor
+            try:
+                inertia = robot.root_physx_view.get_inertias()[0, body_id]
+
+                f.write("  Inertia Tensor:\n")
+                f.write(f"    {inertia}\n")
+
+            except:
+                pass
+
+            f.write("\n")
+
+    print(f"Saved robot configuration to {filename}")
+
 
 @configclass
 class ProstheticTestSceneCfg(InteractiveSceneCfg):
@@ -51,7 +149,7 @@ class ProstheticTestSceneCfg(InteractiveSceneCfg):
             ),
             "Motor": ImplicitActuatorCfg(
                 joint_names_expr=["Motor.*"],
-                stiffness=150.0,         # Adjust to tune response
+                stiffness=50.0,         # Adjust to tune response
                 damping=0.5,            # Adjust to tune response
                 armature=0.0,              # Adjust to tune response
                 effort_limit=1000.0,     # Large effort limit to ensure it can apply the disturbance
@@ -65,7 +163,10 @@ def main():
     scene_cfg = ProstheticTestSceneCfg(num_envs=1, env_spacing=2.0)
     decimation = 4
     
-    sim_cfg = sim_utils.SimulationCfg(dt=1.0 / 120.0)
+    sim_cfg = sim_utils.SimulationCfg(
+        dt=1/120,
+        gravity=(0.0, 0.0, 0.0),
+    )
 
     # Create PhysX config
     sim_cfg.physx = sim_utils.PhysxCfg()
@@ -83,15 +184,28 @@ def main():
     sim.reset()
     
     robot: Articulation = scene["prosthetic_leg"]
+
+    save_robot_configuration(robot)
     
     # Identify joint to test
     test_joint_name = "Motor" 
-    joint_idx = robot.find_joints(test_joint_name)[0]
+    motor_idx = robot.find_joints(test_joint_name)[0]
+
+    joint_idx = robot.find_joints("R_Ankle_y")[0]
     
     # Data collection lists
     time_history = []
     target_history = []
     actual_pos_history = []
+
+    motor_vel_history = []
+    motor_torque_history = []
+    motor_desired_torque_history = []
+
+    ankle_pos_history = []
+    ankle_vel_history = []
+    ankle_torque_history = []
+    ankle_desired_torque_history = []
     
     current_time = 0.0
     
@@ -102,17 +216,25 @@ def main():
     time_since_disturbance = 0.0
     post_disturbance_duration = 5.0 # Record for 5 seconds AFTER the step is applied
     
-    velocity_threshold = 0.3 # Threshold to consider the leg "stable"
+    velocity_threshold = 0.1 # Threshold to consider the leg "stable"
     
     print("Initializing Simulation... Waiting for leg to stabilize.")
     target_positions = torch.zeros((1, robot.num_joints), device=robot.device)
     
     step_count = 0
     while launcher.app.is_running():
-        current_vel = robot.data.joint_vel[0, joint_idx].item()
-        current_pos = robot.data.joint_pos[0, joint_idx].item()
+        current_vel = robot.data.joint_vel[0, motor_idx].item()
+        current_pos = robot.data.joint_pos[0, motor_idx].item()
+        current_cmp_torque = robot.data.computed_torque[0, motor_idx].item()
+        current_torque = robot.data.applied_torque[0, motor_idx].item()
 
-        print("Position:", current_pos, "   Velocity:", current_vel)
+        current_vel_ankle = robot.data.joint_vel[0, joint_idx].item()
+        current_pos_ankle = robot.data.joint_pos[0, joint_idx].item()
+        current_cmp_torque_ankle = robot.data.computed_torque[0, joint_idx].item()
+        current_torque_ankle = robot.data.applied_torque[0, joint_idx].item()
+
+
+        # print("Position:", current_pos, "   Velocity:", current_vel)
         
         if step_count % decimation == 0:
             # 1. Check for stability to apply the step disturbance
@@ -128,7 +250,7 @@ def main():
                 current_target = step_target
                 time_since_disturbance += sim_cfg.dt * decimation
             
-            target_positions[:, joint_idx] = current_target
+            target_positions[:, motor_idx] = current_target
             robot.set_joint_position_target(target_positions)
         
         scene.write_data_to_sim()
@@ -141,9 +263,19 @@ def main():
         time_history.append(current_time)
         target_history.append(current_target)
         actual_pos_history.append(current_pos)
+        motor_vel_history.append(current_vel)
+        motor_torque_history.append(current_torque)
+        motor_desired_torque_history.append(current_cmp_torque)
+
+        ankle_pos_history.append(current_pos_ankle)
+        ankle_vel_history.append(current_vel_ankle)
+        ankle_torque_history.append(current_torque_ankle)
+        ankle_desired_torque_history.append(current_cmp_torque_ankle)
+
+
         
         current_time += sim_cfg.dt
-        print(current_time)
+        # print(current_time)
         step_count += 1
 
         # End simulation after recording the post-disturbance response
@@ -156,10 +288,10 @@ def main():
     with open(csv_filename, mode='w', newline='') as file:
         writer = csv.writer(file)
         # Write headers
-        writer.writerow(["Time (s)", "Target Position (rad)", "Actual Position (rad)"])
+        writer.writerow(["Time", "Target Motor Position", "Motor Position", "Motor Velocity", "Motor Applied Torque", "Motor calculated Torque", "Ankle Position", "Ankle Velocity", "Ankle Applied Torque", "Ankle Calculated Torque"])
         # Write data rows
-        for t, target, actual in zip(time_history, target_history, actual_pos_history):
-            writer.writerow([t, target, actual])
+        for t, target, actual, mvel, mt, mct, ap, av, at, act in zip(time_history, target_history, actual_pos_history, motor_vel_history, motor_torque_history, motor_desired_torque_history, ankle_pos_history, ankle_vel_history, ankle_torque_history, ankle_desired_torque_history):
+            writer.writerow([t, target, actual, mvel, mt, mct, ap, av, at, act])
             
     print(f"Successfully saved data to {csv_filename} for posterior analysis.")
 
