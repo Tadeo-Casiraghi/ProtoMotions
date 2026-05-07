@@ -74,7 +74,7 @@ class SceneCfg(InteractiveSceneCfg):
             self.light = AssetBaseCfg(
                 prim_path="/World/Light",
                 spawn=sim_utils.DomeLightCfg(
-                    intensity=3000.0, color=(0.75, 0.75, 0.75)
+                    intensity=750.0, color=(0.75, 0.75, 0.75)
                 ),
             )
 

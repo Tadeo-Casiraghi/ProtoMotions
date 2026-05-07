@@ -72,6 +72,8 @@ def compute_torques(
 
     
     torque = kp * (desired_angle - current_angle) - kd * current_vel
+    torque = 600 * (0 - current_angle) - 5 * current_vel
+    torque = 1000*torch.ones_like(current_angle)
     
     # Optional: Clamp torque to motor limits if needed
     # torque = torch.clamp(torque, -50.0, 50.0)

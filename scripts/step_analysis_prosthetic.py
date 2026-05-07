@@ -23,9 +23,9 @@ from typing import Dict, List, Any, Optional, Tuple
 
 @configclass
 class ProstheticTestSceneCfg(InteractiveSceneCfg):
-    ground = sim_utils.GroundPlaneCfg()
     
     prosthetic_leg: ArticulationCfg = ArticulationCfg(
+        prim_path="{ENV_REGEX_NS}/ProstheticLeg",
         spawn=sim_utils.UsdFileCfg(
             usd_path="prosthetic_leg_test.usda",
             rigid_props=sim_utils.RigidBodyPropertiesCfg(),
@@ -77,21 +77,21 @@ class ProstheticTestSceneCfg(InteractiveSceneCfg):
                 velocity_limit=10000.0,  # Large velocity limit to ensure it can apply the disturbance
                 friction=0.0,              # No friction for clean step response data
             ),
-            "R_Ankle": ImplicitActuatorCfg(
-                joint_names_expr=["R_Ankle.*"],
-                stiffness=1000.0,         # Adjust to tune response
+            "R_Ankle_y": ImplicitActuatorCfg(
+                joint_names_expr=["R_Ankle_y.*"],
+                stiffness=500.0,         # Adjust to tune response
                 damping=10.0,            # Adjust to tune response
                 armature=0.0,              # Adjust to tune response
                 effort_limit=10000.0,     # Large effort limit to ensure it can apply the disturbance
                 velocity_limit=10000.0,  # Large velocity limit to ensure it can apply the disturbance
                 friction=0.0,              # No friction for clean step response data
             ),
-            "R_Ankle_Motor": ImplicitActuatorCfg(
-                joint_names_expr=["R_Ankle_Motor.*"],
-                stiffness=0.0,         # Adjust to tune response
-                damping=0.0,            # Adjust to tune response
+            "Motor": ImplicitActuatorCfg(
+                joint_names_expr=["Motor.*"],
+                stiffness=50.0,         # Adjust to tune response
+                damping=0.01,            # Adjust to tune response
                 armature=0.0,              # Adjust to tune response
-                effort_limit=10000.0,     # Large effort limit to ensure it can apply the disturbance
+                effort_limit=1000.0,     # Large effort limit to ensure it can apply the disturbance
                 velocity_limit=10000.0,  # Large velocity limit to ensure it can apply the disturbance
                 friction=0.0,              # No friction for clean step response data
             ),
@@ -100,27 +100,29 @@ class ProstheticTestSceneCfg(InteractiveSceneCfg):
 
 def main():
     scene_cfg = ProstheticTestSceneCfg(num_envs=1, env_spacing=2.0)
-    scene = InteractiveScene(scene_cfg)
-    
-    sim_cfg = sim_utils.PhysxCfg()
-    sim_cfg.dt = 1.0 / 120.0
     decimation = 4
+    
+    sim_cfg = sim_utils.SimulationCfg(dt=1.0 / 120.0)
 
-    # Solver iterations
+    # Create PhysX config
+    sim_cfg.physx = sim_utils.PhysxCfg()
+
+    # Now set fields AFTER creation
     sim_cfg.physx.num_position_iterations = 16
     sim_cfg.physx.num_velocity_iterations = 8
-
-    # Contact behavior
     sim_cfg.physx.contact_offset = 0.002
     sim_cfg.physx.max_depenetration_velocity = 1.0
 
     sim = sim_utils.SimulationContext(sim_cfg)
+
+    scene = InteractiveScene(scene_cfg)
+
     sim.reset()
     
     robot: Articulation = scene["prosthetic_leg"]
     
     # Identify joint to test
-    test_joint_name = "R_Ankle_Motor" 
+    test_joint_name = "Motor" 
     joint_idx = robot.find_joints(test_joint_name)[0]
     
     # Data collection lists
@@ -132,26 +134,28 @@ def main():
     
     # Step Disturbance Parameters
     initial_target = 0.0
-    step_target = 1       # New target position (radians)
+    step_target = 1.0      # New target position (radians)
     disturbance_applied = False
     time_since_disturbance = 0.0
     post_disturbance_duration = 5.0 # Record for 5 seconds AFTER the step is applied
     
-    velocity_threshold = 0.01 # Threshold to consider the leg "stable"
+    velocity_threshold = 0.1 # Threshold to consider the leg "stable"
     
     print("Initializing Simulation... Waiting for leg to stabilize.")
-    target_positions = torch.zeros((robot.num_envs, robot.num_joints), device=robot.device)
+    target_positions = torch.zeros((1, robot.num_joints), device=robot.device)
     
     step_count = 0
     while launcher.app.is_running():
         current_vel = robot.data.joint_vel[0, joint_idx].item()
         current_pos = robot.data.joint_pos[0, joint_idx].item()
+
+        print("Position:", current_pos, "   Velocity:", current_vel)
         
         if step_count % decimation == 0:
             # 1. Check for stability to apply the step disturbance
             if not disturbance_applied:
-                # If velocity is near zero AND we've simulated for at least 0.5s to let initial drops settle
-                if abs(current_vel) < velocity_threshold and current_time > 0.5:
+                # If velocity is near zero AND we've simulated for at least 2.0s to let initial drops settle
+                if abs(current_vel) < velocity_threshold and current_time > 2.0:
                     print(f"Leg stabilized at t={current_time:.2f}s. Applying Step Disturbance!")
                     disturbance_applied = True
                     current_target = step_target
@@ -162,9 +166,10 @@ def main():
                 time_since_disturbance += sim_cfg.dt * decimation
             
             target_positions[:, joint_idx] = current_target
-            # TODO: RARI
             robot.set_joint_position_target(target_positions)
         
+        scene.write_data_to_sim()
+
         # 2. Step physics
         sim.step()
         scene.update(sim.get_physics_dt())
@@ -175,6 +180,7 @@ def main():
         actual_pos_history.append(current_pos)
         
         current_time += sim_cfg.dt
+        print(current_time)
         step_count += 1
 
         # End simulation after recording the post-disturbance response

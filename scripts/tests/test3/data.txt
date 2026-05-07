@@ -1,0 +1,18 @@
+"R_Ankle_y": ImplicitActuatorCfg(
+    joint_names_expr=["R_Ankle_y.*"],
+    stiffness=500.0,         # Adjust to tune response
+    damping=10.0,            # Adjust to tune response
+    armature=0.0,              # Adjust to tune response
+    effort_limit=10000.0,     # Large effort limit to ensure it can apply the disturbance
+    velocity_limit=10000.0,  # Large velocity limit to ensure it can apply the disturbance
+    friction=0.0,              # No friction for clean step response data
+),
+"Motor": ImplicitActuatorCfg(
+    joint_names_expr=["Motor.*"],
+    stiffness=50.0,         # Adjust to tune response
+    damping=0.5,            # Adjust to tune response
+    armature=0.0,              # Adjust to tune response
+    effort_limit=1000.0,     # Large effort limit to ensure it can apply the disturbance
+    velocity_limit=10000.0,  # Large velocity limit to ensure it can apply the disturbance
+    friction=0.0,              # No friction for clean step response data
+),
