@@ -140,8 +140,8 @@ class ProstheticTestSceneCfg(InteractiveSceneCfg):
         actuators={
             "R_Ankle_y": ImplicitActuatorCfg(
                 joint_names_expr=["R_Ankle_y.*"],
-                stiffness=500.0,         # Adjust to tune response
-                damping=10.0,            # Adjust to tune response
+                stiffness=200.0,         # Adjust to tune response
+                damping=1.0,            # Adjust to tune response
                 armature=0.0,              # Adjust to tune response
                 effort_limit=10000.0,     # Large effort limit to ensure it can apply the disturbance
                 velocity_limit=10000.0,  # Large velocity limit to ensure it can apply the disturbance
