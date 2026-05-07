@@ -119,6 +119,10 @@ def save_robot_configuration(robot: Articulation, filename="data.txt"):
     print(f"Saved robot configuration to {filename}")
 
 
+Kp = 100.0
+Kd = 1.0
+Theta = 0.0
+
 @configclass
 class ProstheticTestSceneCfg(InteractiveSceneCfg):
     
@@ -149,8 +153,8 @@ class ProstheticTestSceneCfg(InteractiveSceneCfg):
             ),
             "Motor": ImplicitActuatorCfg(
                 joint_names_expr=["Motor.*"],
-                stiffness=50.0,         # Adjust to tune response
-                damping=0.5,            # Adjust to tune response
+                stiffness=0.0,         # Adjust to tune response
+                damping=0.0,            # Adjust to tune response
                 armature=0.0,              # Adjust to tune response
                 effort_limit=1000.0,     # Large effort limit to ensure it can apply the disturbance
                 velocity_limit=10000.0,  # Large velocity limit to ensure it can apply the disturbance
@@ -207,6 +211,9 @@ def main():
     ankle_torque_history = []
     ankle_desired_torque_history = []
     
+    Kp_history = []
+    Kd_history = []
+
     current_time = 0.0
     
     # Step Disturbance Parameters
@@ -249,9 +256,14 @@ def main():
             else:
                 current_target = step_target
                 time_since_disturbance += sim_cfg.dt * decimation
-            
-            target_positions[:, motor_idx] = current_target
+                
+            Torque = Kp * (current_target - current_pos) - Kd * current_vel
+            target_positions[:, motor_idx] = 0.0 # Keep the motor target at zero to let the disturbance cause the movement, or set to current_target for a more traditional PD control approach
             robot.set_joint_position_target(target_positions)
+            torque_targets = torch.zeros_like(target_positions)
+            torque_targets[:, motor_idx] = Torque
+            robot.set_joint_effort_target(torque_targets)
+
         
         scene.write_data_to_sim()
 
@@ -272,6 +284,9 @@ def main():
         ankle_torque_history.append(current_torque_ankle)
         ankle_desired_torque_history.append(current_cmp_torque_ankle)
 
+        Kp_history.append(Kp)
+        Kd_history.append(Kd)
+
 
         
         current_time += sim_cfg.dt
@@ -288,11 +303,11 @@ def main():
     with open(csv_filename, mode='w', newline='') as file:
         writer = csv.writer(file)
         # Write headers
-        writer.writerow(["Time", "Target Motor Position", "Motor Position", "Motor Velocity", "Motor Applied Torque", "Motor calculated Torque", "Ankle Position", "Ankle Velocity", "Ankle Applied Torque", "Ankle Calculated Torque"])
+        writer.writerow(["Time", "Target Motor Position", "Motor Position", "Motor Velocity", "Motor Applied Torque", "Motor calculated Torque", "Ankle Position", "Ankle Velocity", "Ankle Applied Torque", "Ankle Calculated Torque", "Kp", "Kd"])
         # Write data rows
-        for t, target, actual, mvel, mt, mct, ap, av, at, act in zip(time_history, target_history, actual_pos_history, motor_vel_history, motor_torque_history, motor_desired_torque_history, ankle_pos_history, ankle_vel_history, ankle_torque_history, ankle_desired_torque_history):
-            writer.writerow([t, target, actual, mvel, mt, mct, ap, av, at, act])
-            
+        for t, target, actual, mvel, mt, mct, ap, av, at, act, kp, kd in zip(time_history, target_history, actual_pos_history, motor_vel_history, motor_torque_history, motor_desired_torque_history, ankle_pos_history, ankle_vel_history, ankle_torque_history, ankle_desired_torque_history, Kp_history, Kd_history):
+            writer.writerow([t, target, actual, mvel, mt, mct, ap, av, at, act, kp, kd])
+
     print(f"Successfully saved data to {csv_filename} for posterior analysis.")
 
 if __name__ == "__main__":

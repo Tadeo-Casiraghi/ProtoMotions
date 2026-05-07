@@ -84,7 +84,7 @@ def parallel_axis(I_com, m, r):
 
 
 # Read file and extract data
-test_number = 1
+test_number = 5
 
 with open(f"test{test_number}/data.txt", "r") as f:
     lines = f.readlines()
