@@ -119,8 +119,8 @@ def save_robot_configuration(robot: Articulation, filename="data.txt"):
     print(f"Saved robot configuration to {filename}")
 
 
-Kp = 100.0
-Kd = 1.0
+Kp = 10.0
+Kd = 0.9
 Theta = 0.0
 
 @configclass
@@ -144,7 +144,7 @@ class ProstheticTestSceneCfg(InteractiveSceneCfg):
         actuators={
             "R_Ankle_y": ImplicitActuatorCfg(
                 joint_names_expr=["R_Ankle_y.*"],
-                stiffness=200.0,         # Adjust to tune response
+                stiffness=100.0,         # Adjust to tune response
                 damping=1.0,            # Adjust to tune response
                 armature=0.0,              # Adjust to tune response
                 effort_limit=10000.0,     # Large effort limit to ensure it can apply the disturbance
@@ -165,7 +165,7 @@ class ProstheticTestSceneCfg(InteractiveSceneCfg):
 
 def main():
     scene_cfg = ProstheticTestSceneCfg(num_envs=1, env_spacing=2.0)
-    decimation = 4
+    decimation = 2
     
     sim_cfg = sim_utils.SimulationCfg(
         dt=1/120,

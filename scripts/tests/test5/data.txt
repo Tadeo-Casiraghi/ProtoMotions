@@ -16,7 +16,7 @@ Joint 1: R_Ankle_y
 ACTUATORS
 ----------------------------------------
 Actuator: R_Ankle_y
-  stiffness: 50.0
+  stiffness: 100.0
   damping: 1.0
   armature: 0.0
   friction: 0.0
@@ -24,8 +24,8 @@ Actuator: R_Ankle_y
   velocity_limit: None
 
 Actuator: Motor
-  stiffness: 300.0
-  damping: 0.5
+  stiffness: 0.0
+  damping: 0.0
   armature: 0.0
   friction: 0.0
   effort_limit: 1000.0

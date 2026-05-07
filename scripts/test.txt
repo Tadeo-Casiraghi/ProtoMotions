@@ -1,0 +1,34 @@
+# This block runs at 30 Hz (Agent Rate)
+        if step_count % decimation == 0:
+            if not disturbance_applied:
+                if abs(current_vel) < velocity_threshold and current_time > 2.0:
+                    disturbance_applied = True
+                    current_target = step_target
+                else:
+                    current_target = initial_target
+            else:
+                current_target = step_target
+
+            # --- MULTI-RATE IMPEDANCE CONTROL START ---
+            
+            # 1. Update the Target Position (theta_d)
+            target_positions[:, motor_idx] = current_target
+            robot.set_joint_position_target(target_positions)
+            
+            # 2. Update the Stiffness (Kp) and Damping (Kd) dynamically
+            # We fetch the actuator model and update its internal parameters
+            for actuator in robot.actuators.values():
+                # Note: This updates the parameters for the next physics steps
+                actuator.stiffness[:] = Kp
+                actuator.damping[:] = Kd
+            
+            # 3. Write these new gains into the simulation buffer
+            robot.write_actuator_stiffness_to_sim(robot.actuators["Motor"].stiffness)
+            robot.write_actuator_damping_to_sim(robot.actuators["Motor"].damping)
+            
+            # --- MULTI-RATE IMPEDANCE CONTROL END ---
+
+        # 4. Standard Simulation Steps (These run at 120 Hz)
+        scene.write_data_to_sim()
+        sim.step()
+        scene.update(sim.get_physics_dt())
