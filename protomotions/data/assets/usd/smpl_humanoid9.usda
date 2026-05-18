@@ -5120,7 +5120,7 @@ def Xform "smpl_humanoid9" (
         )
         {
             float drive:rotY:physics:damping = 80
-            float drive:rotY:physics:maxForce = 3000
+            float drive:rotY:physics:maxForce = 200
             float drive:rotY:physics:stiffness = 3000
             uniform token drive:rotY:physics:type = "force"
             int isaac:physics:Rot_X:DofOffset
@@ -5128,8 +5128,8 @@ def Xform "smpl_humanoid9" (
             int isaac:physics:Rot_Z:DofOffset
             float limit:rotX:physics:high = -1
             float limit:rotX:physics:low = 1
-            float limit:rotY:physics:high = 180
-            float limit:rotY:physics:low = -180
+            float limit:rotY:physics:high = 45
+            float limit:rotY:physics:low = -45
             float limit:rotZ:physics:high = -1
             float limit:rotZ:physics:low = 1
             float limit:transX:physics:high = -1

@@ -1,0 +1,56 @@
+========== ROBOT CONFIGURATION ==========
+
+JOINTS
+----------------------------------------
+Joint 0: Motor
+  Position Limits: [-3.1416, 3.1416]
+  Velocity Limit: 5939047009418473460822977246849400832.0000
+  Effort Limit: 1000.0000
+
+Joint 1: R_Ankle_y
+  Position Limits: [-3.1416, 3.1416]
+  Velocity Limit: 5939047009418473460822977246849400832.0000
+  Effort Limit: 10000.0000
+
+
+ACTUATORS
+----------------------------------------
+Actuator: R_Ankle_y
+  stiffness: 100.0
+  damping: 1.0
+  armature: 0.0
+  friction: 0.0
+  effort_limit: 10000.0
+  velocity_limit: None
+
+Actuator: Motor
+  stiffness: 0.0
+  damping: 0.0
+  armature: 0.0
+  friction: 0.0
+  effort_limit: 1000.0
+  velocity_limit: None
+
+
+RIGID BODIES
+----------------------------------------
+Body 0: prosthetic_assembly2
+  Mass: 0.100000 kg
+  Inertia Tensor:
+    tensor([0.0010, 0.0000, 0.0000, 0.0000, 0.0010, 0.0000, 0.0000, 0.0000, 0.0010])
+
+Body 1: R_Ankle_Motor
+  Mass: 0.100000 kg
+  Inertia Tensor:
+    tensor([0.0010, 0.0000, 0.0000, 0.0000, 0.0010, 0.0000, 0.0000, 0.0000, 0.0010])
+
+Body 2: R_Ankle
+  Mass: 1.597648 kg
+  Inertia Tensor:
+    tensor([0.0025, 0.0000, 0.0000, 0.0000, 0.0052, 0.0000, 0.0000, 0.0000, 0.0052])
+
+Body 3: R_Toe
+  Mass: 0.408062 kg
+  Inertia Tensor:
+    tensor([0.0004, 0.0000, 0.0000, 0.0000, 0.0004, 0.0000, 0.0000, 0.0000, 0.0006])
+

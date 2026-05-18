@@ -84,7 +84,8 @@ def parallel_axis(I_com, m, r):
 
 
 # Read file and extract data
-test_number = 5
+test_number = "Server"
+test_number = 9
 
 with open(f"test{test_number}/data.txt", "r") as f:
     lines = f.readlines()
@@ -136,26 +137,88 @@ actual_data = data["Ankle Position"].values + data["Motor Position"].values
 step_time = time_data[np.where(target_data > 0)[0][0]]
 
 # Transfer Function
-Kp = motor["stiffness"]
-Kd = motor["damping"]
+# if Kp in data as a column, use it; otherwise, use the value from the motor data
+if "Kp" in data.columns:
+    Kp = data["Kp"].values[0]
+else:
+    Kp = motor["stiffness"]
+
+if "Kd" in data.columns:
+    Kd = data["Kd"].values[0]
+else:
+    Kd = motor["damping"]
 Jm = motor["armature"] + 1e-4
 k = spring["stiffness"]
 b = spring["damping"]
 
-Tf = ctrl.TransferFunction([Kp*b, Kp*k], [Jm*Jl, (Jm*b + Kd*Jl + Jl*b), (Jm*k + Kd*b + Kp*Jl+k*Jl), (Kd*k+Kp*b), Kp*k])
+# Tf = ctrl.TransferFunction([Kp*b, Kp*k], [Jm*Jl, (Jm*b + Kd*Jl + Jl*b), (Jm*k + Kd*b + Kp*Jl+k*Jl), (Kd*k+Kp*b), Kp*k])
 
 
-t_out, y_out = ctrl.forced_response(Tf, T=time_data, U=target_data)
+# t_out, y_out = ctrl.forced_response(Tf, T=time_data, U=target_data)
 
-# Plotting
-plt.figure(figsize=(10, 6))
-plt.plot(time_data, target_data, label="Target Position (rad)", linestyle="--")
-plt.plot(time_data, actual_data, label="Actual Position (rad)")
-plt.plot(t_out+1/240, y_out, label="Step Response")
-plt.title("Step Response of Joint 1")
-plt.xlabel("Time (s)")
-plt.ylabel("Position (rad)")
-plt.xlim(2, 3)
-plt.legend()
-plt.grid()
+# # Plotting
+# plt.figure(figsize=(10, 6))
+# plt.plot(time_data, target_data, label="Target Position (rad)", linestyle="--")
+# plt.plot(time_data, actual_data, label="Actual Position (rad)")
+# plt.plot(t_out+1/240, y_out, label="Step Response")
+# plt.title("Step Response of Joint 1")
+# plt.xlabel("Time (s)")
+# plt.ylabel("Position (rad)")
+# plt.xlim(2, 3.5)
+# plt.legend()
+# plt.grid()
+# plt.show()
+
+# =====================================================================
+# INSERT HZ VALUE HERE
+# Try changing this to 120, 60, or 30 to see the tracking degrade
+# =====================================================================
+Hz = 120 
+T = 1.0 / Hz 
+
+# Define continuous laplace variable 's'
+s = ctrl.tf('s')
+
+# Open Loop Plant Subsystems (Derived from coupled physical equations)
+# Common Denominator: Jm*Jl*s^4 + (Jm+Jl)*b*s^3 + (Jm+Jl)*k*s^2
+den_plant = Jm*Jl*s**4 + (Jm + Jl)*b*s**3 + (Jm + Jl)*k*s**2
+P_motor = (Jl*s**2 + b*s + k) / den_plant
+P_load = (b*s + k) / den_plant
+
+# Discrete Feedback Controller mapped to Continuous domain via Bilinear Transform
+# The backward difference derivative becomes an ideal derivative with a low-pass filter
+C_fb = Kp + Kd * (s / (1 + (T / 2) * s))
+
+# Complete Closed-Loop Transfer Functions
+Tf_motor = (Kp * P_motor) / (1 + C_fb * P_motor)
+Tf_load = (Kp * P_load) / (1 + C_fb * P_motor)
+# =====================================================================
+
+# Simulate Responses
+t_out_m, y_out_m = ctrl.forced_response(Tf_motor, T=time_data, U=target_data)
+t_out_l, y_out_l = ctrl.forced_response(Tf_load, T=time_data, U=target_data)
+
+# --- Plotting Subplots ---
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
+
+# 1. Motor Tracking Plot
+ax1.plot(time_data, target_data, label="Target Motor Pos (rad)", linestyle="--", color="black")
+ax1.plot(time_data, actual_data, label="Actual Motor Pos (Data)", color="blue", alpha=0.7)
+ax1.plot(t_out_m + 1/240, y_out_m, label=f"Simulated Motor Pos ({Hz}Hz)", linestyle="-.", color="cyan")
+ax1.set_title("Motor Tracking Performance")
+ax1.set_ylabel("Position (rad)")
+ax1.legend()
+ax1.grid(True)
+
+# 2. Load (Ankle Joint) Plot
+ax2.plot(time_data, actual_data, label="Actual Ankle Pos (Data)", color="green", alpha=0.7)
+ax2.plot(t_out_l + 1/240, y_out_l, label=f"Simulated Ankle Pos ({Hz}Hz)", linestyle="-.", color="lime")
+ax2.set_title("Load (Ankle Joint) Dynamic Response")
+ax2.set_xlabel("Time (s)")
+ax2.set_ylabel("Position (rad)")
+ax2.set_xlim(2, 3.5)
+ax2.legend()
+ax2.grid(True)
+
+plt.tight_layout()
 plt.show()
