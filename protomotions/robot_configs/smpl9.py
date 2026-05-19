@@ -176,6 +176,14 @@ class Smpl9RobotConfig(RobotConfig):
                     velocity_limit = 10000.0,
                     friction = 0.0
                 ),
+                "Motor": ControlInfo(
+                    stiffness = 0.0,
+                    damping = 0.0,
+                    armature = 0.0,
+                    effort_limit = 10000.0,
+                    velocity_limit = 10000.0,
+                    friction = 0.0
+                ),
             },
         )
     )

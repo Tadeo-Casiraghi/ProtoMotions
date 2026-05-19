@@ -47,6 +47,15 @@ class SmplRobotConfig(RobotConfig):
     non_termination_contact_bodies: List[str] = field(
         default_factory=lambda: ["R_Ankle", "L_Ankle", "R_Toe", "L_Toe"]
     )
+    
+    contact_bodies: List[str] = field(
+        default_factory=lambda: [
+            "R_Ankle",
+            "L_Ankle",
+            "R_Toe",
+            "L_Toe",
+        ]
+    )
 
     common_naming_to_robot_body_names: Dict[str, str] = field(
         default_factory=lambda: {

@@ -1,0 +1,97 @@
+motions:
+- file: 07/07_04_poses.motion
+  fps: 120.0
+  idx: 1497
+  sub_motions:
+  - timings:
+      end: 3.7416666666666667
+      start: 0.0
+  weight: 1.0
+- file: 07/07_12_poses.motion
+  fps: 120.0
+  idx: 1498
+  sub_motions:
+  - timings:
+      end: 2.191666666666667
+      start: 0.0
+  weight: 1.0
+- file: 07/07_08_poses.motion
+  fps: 120.0
+  idx: 1499
+  sub_motions:
+  - timings:
+      end: 3.0166666666666666
+      start: 0.0
+  weight: 1.0
+- file: 07/07_06_poses.motion
+  fps: 120.0
+  idx: 1500
+  sub_motions:
+  - timings:
+      end: 3.475
+      start: 0.0
+  weight: 1.0
+- file: 07/07_01_poses.motion
+  fps: 120.0
+  idx: 1501
+  sub_motions:
+  - timings:
+      end: 2.6333333333333333
+      start: 0.0
+  weight: 1.0
+- file: 07/07_02_poses.motion
+  fps: 120.0
+  idx: 1502
+  sub_motions:
+  - timings:
+      end: 2.7416666666666667
+      start: 0.0
+  weight: 1.0
+- file: 07/07_11_poses.motion
+  fps: 120.0
+  idx: 1503
+  sub_motions:
+  - timings:
+      end: 2.625
+      start: 0.0
+  weight: 1.0
+- file: 07/07_10_poses.motion
+  fps: 120.0
+  idx: 1504
+  sub_motions:
+  - timings:
+      end: 2.5083333333333333
+      start: 0.0
+  weight: 1.0
+- file: 07/07_03_poses.motion
+  fps: 120.0
+  idx: 1505
+  sub_motions:
+  - timings:
+      end: 3.4583333333333335
+      start: 0.0
+  weight: 1.0
+- file: 07/07_09_poses.motion
+  fps: 120.0
+  idx: 1506
+  sub_motions:
+  - timings:
+      end: 2.55
+      start: 0.0
+  weight: 1.0
+- file: 07/07_07_poses.motion
+  fps: 120.0
+  idx: 1507
+  sub_motions:
+  - timings:
+      end: 3.158333333333333
+      start: 0.0
+  weight: 1.0
+- file: 07/07_05_poses.motion
+  fps: 120.0
+  idx: 1508
+  sub_motions:
+  - timings:
+      end: 4.308333333333334
+      start: 0.0
+  weight: 1.0
