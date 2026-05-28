@@ -483,6 +483,7 @@ class IsaacLabSimulator(Simulator):
             # torque_targets = torch.clip(
             #     torque_targets, -self._torque_limits_common, self._torque_limits_common
             # )
+            # print("Hello Simulator here, I will apply this torque on the motor:", pd_targets[:, self.sim_torque_joints])
             self._robot.set_joint_effort_target(torque_targets)
         else:
             print("Warning: sim_torque_joints not defined for BUILT_IN_PD_HYBRID control. No torques applied.")

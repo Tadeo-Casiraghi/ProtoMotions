@@ -233,9 +233,7 @@ class CoLearningMimicEvaluator(MimicEvaluator):
             "suspension_z"
         )
 
-        joint_idx_motor = self.env.robot_config.kinematic_info.dof_names.index(
-            "Motor"
-        )
+        joint_idx_motor = self.env.simulator.sim_torque_joints[0]
 
         # ============================================================
         # MOTION INFO
