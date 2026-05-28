@@ -63,8 +63,9 @@ def plot_data():
         plt.grid()
 
         # --- Plot Motor Torque ---
+        q_prev_est = motor_angle_data - motor_velocity_data * 1/120
         # calculate torque from Kp, Kd, and angle error
-        angle_error = desired_angle_data - motor_angle_data
+        angle_error = desired_angle_data - q_prev_est
         torque_from_kp = kp_data * angle_error
         torque_from_kd = kd_data * (-motor_velocity_data)
         total_torque = torque_from_kp + torque_from_kd

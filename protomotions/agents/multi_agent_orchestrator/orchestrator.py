@@ -233,6 +233,10 @@ class CoLearningMimicEvaluator(MimicEvaluator):
             "suspension_z"
         )
 
+        joint_idx_common_motor =  self.env.robot_config.kinematic_info.dof_names.index(
+            "Motor"
+        )
+
         joint_idx_motor = self.env.simulator.sim_torque_joints[0]
 
         # ============================================================
@@ -427,27 +431,41 @@ class CoLearningMimicEvaluator(MimicEvaluator):
                 skin_forces_knee_data.append(forces_knee_np)
 
                 # ====================================================
-                # OBSERVED FORCES
+                # OBSERVED FORCES (FIXED)
                 # ====================================================
 
                 blind_obs_tensor = obs["blind_body_obs"][0]
-
                 num_bodies = self.env.robot_config.kinematic_info.num_bodies
-
                 force_block_size = num_bodies * 3
 
-                obs_forces_flat = blind_obs_tensor[-force_block_size:]
+                # 1. Determine exactly which bodies survived the contact filtering step
+                contact_indices_removed = self.agent.config.contact_indices_to_remove  # or agent_config
 
-                obs_forces_all = obs_forces_flat.reshape(num_bodies, 3)
+                # Create the same boolean mask your filter function used
+                keep_mask = np.ones(num_bodies, dtype=bool)
+                for idx in contact_indices_removed:
+                    keep_mask[idx] = False
 
-                obs_skin_forces = obs_forces_all[
-                    self.env.skin_body_indices, :
-                ]
+                # 2. Reconstruct the block based on the ACTUAL remaining bodies
+                num_remaining_bodies = np.sum(keep_mask)
+                actual_force_block_size = num_remaining_bodies * 3
+
+                obs_forces_flat = blind_obs_tensor[-actual_force_block_size:]
+                obs_forces_all = obs_forces_flat.reshape(num_remaining_bodies, 3)
+
+                # 3. Map your original skin indices to where they live now in the squeezed array
+                # Find the global positions of the skin bodies
+                skin_indices = self.env.skin_body_indices.cpu().numpy()
+
+                # Calculate their new squeezed positions by counting how many alive joints precede them
+                filtered_skin_indices = [np.sum(keep_mask[:idx]) for idx in skin_indices if keep_mask[idx]]
+
+                # Extract using the corrected indices
+                obs_skin_forces = obs_forces_all[filtered_skin_indices, :]
 
                 observed_skin_forces_data.append(
                     obs_skin_forces.detach().cpu().numpy()
                 )
-
 
                 # ====================================================
                 # OBSERVED Motor Torque
@@ -473,8 +491,8 @@ class CoLearningMimicEvaluator(MimicEvaluator):
                 # OBSERVED Motor Angle and Velocity
                 # ====================================================
 
-                motor_angle_val = dof_state.dof_pos[0, joint_idx_motor].item()
-                motor_vel_val = dof_state.dof_vel[0, joint_idx_motor].item()
+                motor_angle_val = dof_state.dof_pos[0, joint_idx_common_motor].item()
+                motor_vel_val = dof_state.dof_vel[0, joint_idx_common_motor].item()
 
                 motor_angle_data.append(motor_angle_val)
                 motor_velocity_data.append(motor_vel_val) 
