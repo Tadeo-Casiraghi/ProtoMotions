@@ -525,14 +525,20 @@ class BaseAgent:
 
             if action.shape[1] == len(self.config.action_indices):
                 # Standard agent (Humanoid): maps cleanly to its physical slots
+                # print("Hello I am in the humanoid expand action")
+                # print("action_indices:", self.config.action_indices)
                 full_action[:, self.config.action_indices] = action
             else:
+                # print("Hello I am in the prosthetic expand action")
                 # Expanded agent (Prosthetic): 
                 # Separate the physical target from the extra impedance parameters
                 num_physical_indices = len(self.config.action_indices)
                 
                 # Scatter the physical joint angle target (e.g., column 0)
                 full_action[:, self.config.action_indices] = action[:, :num_physical_indices]
+
+                # print("index where will put the desired theta:", self.config.action_indices)
+                # print("value i will put in the index:", action[:, :num_physical_indices][0].detach().cpu().numpy())
                 
                 # Scatter Kp and Kd to the very end of the tensor
                 if num_extra_actions > 0:

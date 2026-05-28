@@ -326,15 +326,16 @@ def humanoid_agent_config(
     for i, dof_name in enumerate(dofs):
         n_low = dof_name.lower()
         if (
-            "prosthetic" in n_low 
-            or "skin" in n_low 
-            or "socket" in n_low 
-            or dof_name in ["R_Ankle_y"] # Ensure these match your URDF exact casing
+            "suspension" in n_low 
+            or dof_name in ["R_Ankle_y", "Motor"] # Ensure these match your URDF exact casing
         ):
+            print(dof_name, " Skipped")
             continue  # Skip this DOF
+        print(dof_name, " Included")
         action_indices.append(i)
 
     num_active_actions = len(action_indices)
+    print("Number of humanoid active joints:", num_active_actions)
 
     actor_config = PPOActorConfig(
         num_out=num_active_actions,

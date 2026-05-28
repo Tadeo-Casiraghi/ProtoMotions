@@ -903,6 +903,9 @@ class Simulator(ABC):
             current_vel   = common_dof_state.dof_vel[:, self.common_torque_joints]
 
             # 1. Slice out the raw, unscaled action tracks
+            # print("Index from where I will take the desired theta:", self.common_torque_joints)
+            # print("Value I will take:", self._common_actions[:, self.common_torque_joints][0])
+            
             raw_theta = self._common_actions[:, self.common_torque_joints]  # This is already [4096, 1]
             raw_kp    = self._common_actions[:, num_dofs + 0].unsqueeze(-1) # Now [4096, 1]
             raw_kd    = self._common_actions[:, num_dofs + 1].unsqueeze(-1) # Now [4096, 1]
@@ -915,7 +918,10 @@ class Simulator(ABC):
             torque = kp_phys * (desired_angle - current_angle) - kd_phys * current_vel
             torque = torch.clamp(torque, -200.0, 200.0)
 
-            # print(torque)
+            # print(desired_angle[0].detach().cpu().numpy(),
+            #       kp_phys[0].detach().cpu().numpy(),
+            #       kd_phys[0].detach().cpu().numpy(),
+            #       torque[0].detach().cpu().numpy())
 
             pd_targets[:, self.common_torque_joints] = torque
     

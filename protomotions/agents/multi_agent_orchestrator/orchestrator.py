@@ -317,6 +317,11 @@ class CoLearningMimicEvaluator(MimicEvaluator):
                 Kp_data.append(action_p[:, 1].detach().cpu().numpy())
                 Kd_data.append(action_p[:, 2].detach().cpu().numpy())
 
+                # print()
+                # print("########################################")
+                # print(action_p[0].detach().cpu().numpy())
+                # print("The desired angle from the neural net is:", action_p[0][0].detach().cpu().numpy()*3.14)
+
                 if (
                     actions_storage is not None
                     and len(actions_storage) < motion_num_frames.max().item()
@@ -329,14 +334,22 @@ class CoLearningMimicEvaluator(MimicEvaluator):
                 # ====================================================
                 # BUILD ENV ACTION
                 # ====================================================
+
                 env_action = self.agent.expand_action_to_env(
                     action_h,
                     num_extra_actions=2,
                 )
+
+                # print("The env action at 22 after humanoid expand aciton is:", env_action[0][22].detach().cpu().numpy()*3.14)
+
                 env_action += self.prosthetic_agent.expand_action_to_env(
                     action_p,
                     num_extra_actions=2,
                 )
+
+                # print("The env action at 22 after prosthetic expand action is:", env_action[0][22].detach().cpu().numpy()*3.14)
+
+
                 # ====================================================
                 # STEP ENV
                 # ====================================================
