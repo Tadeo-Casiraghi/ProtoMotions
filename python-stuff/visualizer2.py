@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # --- CONFIGURATION ---
-FILE_PATH = "multiple_arrays.npz" # Ensure path is correct
+FILE_PATH = "python-stuff/multiple_arrays.npz" # Ensure path is correct
 DT = 1.0 / 30.0
 skin_names = [
     "skin_box_posterior_top", "skin_box_medial_top",
@@ -164,7 +164,7 @@ def plot_data():
             print(f"Max Net Force (Knee Frame): {np.max(net_mag):.2f} N")
             plt.tight_layout()
 
-    # =========================================================
+        # =========================================================
         # FIGURE 5: VERIFICATION (CALC vs OBS)
         # =========================================================
         if calc_forces is not None and obs_forces is not None:
