@@ -814,6 +814,34 @@ class Simulator(ABC):
         pd_tar = self._common_pd_action_offset + self._common_pd_action_scale * action
         return pd_tar
 
+    def _action_to_impedance_targets(
+        self, 
+        raw_theta: torch.Tensor, 
+        raw_kp: torch.Tensor, 
+        raw_kd: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """
+        Convert raw neural network action slices into physical impedance parameters.
+
+        Args:
+            raw_theta (torch.Tensor): Raw position targets in [-1, 1]
+            raw_kp (torch.Tensor): Raw stiffness targets in [-1, 1]
+            raw_kd (torch.Tensor): Raw damping targets in [-1, 1]
+
+        Returns:
+            tuple[torch.Tensor, torch.Tensor, torch.Tensor]: (kp_phys, kd_phys, desired_angle)
+        """
+        # Map [-1, 1] -> [-pi, pi]
+        desired_angle = raw_theta * 3.14 + 0.0
+        
+        # Map [-1, 1] -> [0, 1000]
+        kp_phys       = raw_kp * 1000.0 + 1000.0
+        
+        # Map [-1, 1] -> [0, 10]
+        kd_phys       = raw_kd * 5.0 + 5.0
+        
+        return kp_phys, kd_phys, desired_angle
+
     def _action_to_torque_targets(self, action: torch.Tensor) -> torch.Tensor:
         """
         Convert a common action tensor into torque targets for simulation.
@@ -863,14 +891,38 @@ class Simulator(ABC):
         on control_type themselves.
         """
         if self.control_type == ControlType.BUILT_IN_PD_HYBRID:
-            # PATCH
-            # First save the torque commands so they are not affected by the actions to pd
-            torque_targets = self._common_actions[:, self.common_torque_joints]
-            pd_targets = self._action_to_pd_targets(self._common_actions)
-            # Now put them back unchanged
-            pd_targets[:, self.common_torque_joints] = torque_targets
+            num_dofs = self._get_simulator_dof_state().num_dofs
+
+            # Isolate physical actions for standard joints (removes trailing Kp/Kd columns)
+            physical_actions = self._common_actions[:, :num_dofs]
+            pd_targets = self._action_to_pd_targets(physical_actions)
+
+            # Get high-frequency simulator states (120 Hz feedback loop)
+            common_dof_state = self._get_simulator_dof_state().convert_to_common(self.data_conversion)
+            current_angle = common_dof_state.dof_pos[:, self.common_torque_joints]
+            current_vel   = common_dof_state.dof_vel[:, self.common_torque_joints]
+
+            # 1. Slice out the raw, unscaled action tracks
+            raw_theta = self._common_actions[:, self.common_torque_joints]  # This is already [4096, 1]
+            raw_kp    = self._common_actions[:, num_dofs + 0].unsqueeze(-1) # Now [4096, 1]
+            raw_kd    = self._common_actions[:, num_dofs + 1].unsqueeze(-1) # Now [4096, 1]
+
+            # 2. Call your new scaling helper function
+            kp_phys, kd_phys, desired_angle = self._action_to_impedance_targets(
+                raw_theta, raw_kp, raw_kd
+            )
+
+            torque = kp_phys * (desired_angle - current_angle) - kd_phys * current_vel
+            torque = torch.clamp(torque, -200.0, 200.0)
+
+            # print(torque)
+
+            pd_targets[:, self.common_torque_joints] = torque
+    
+            # Reorder for simulation layout and dispatch
             sim_targets = pd_targets[:, self.data_conversion.dof_convert_to_sim]
             self._apply_hybrid_control(sim_targets)
+
         elif self.control_type == ControlType.BUILT_IN_PD:
             pd_targets = self._action_to_pd_targets(self._common_actions)
             sim_targets = pd_targets[:, self.data_conversion.dof_convert_to_sim]

@@ -197,10 +197,12 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "dof_forces": "current_state.dof_forces",
                 "dof_vel": "current_state.dof_vel",
                 "use_torque_squared": "False",
+                "indices": "humanoid_joints",  # Only penalize power for humanoid joints, not prosthetic
             },
             weight=-7.5e-5,
             min_value=-0.75,
             zero_during_grace_period=False,
+            # TADEO ACA HAY QUE REVISAR ESTO indices_subset=["all_physical_dofs"]
         ),
         "contact_match_rew": RewardComponentConfig(
             function=contact_mismatch_sum,
@@ -218,7 +220,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "current_forces": "current_contact_force_magnitudes",
                 "previous_forces": "prev_contact_force_magnitudes",
             },
-            indices_subset=["all_left_foot_bodies", "all_right_foot_bodies"],
+            indices_subset=["all_left_foot_bodies"], #, "all_right_foot_bodies"],
             weight=-1e-5,
             min_value=-0.5,
             zero_during_grace_period=True,
@@ -418,6 +420,7 @@ def prosthetic_agent_config(
     from protomotions.agents.base_agent.config import OptimizerConfig
     from protomotions.agents.evaluators.config import MimicEvaluatorConfig
 
+    gSDE = False  # Enable gSDE for the prosthetic agent
     dofs = robot_config.kinematic_info.dof_names
     action_indices = []
 
@@ -480,6 +483,7 @@ def prosthetic_agent_config(
             enabled=True, shift_mean=True
         ),
         action_indices=action_indices,
+        gSDE=gSDE,  # Pass the gSDE flag to the agent config
     )
     return agent_config
 

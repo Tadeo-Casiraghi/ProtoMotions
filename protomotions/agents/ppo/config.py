@@ -113,3 +113,5 @@ class PPOAgentConfig(BaseAgentConfig):
     advantage_normalization: AdvantageNormalizationConfig = field(
         default_factory=AdvantageNormalizationConfig
     )
+
+    gSDE: bool = False  # Flag to enable Generalized State-Dependent Exploration (gSDE)

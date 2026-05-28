@@ -106,6 +106,11 @@ class HistoryBuffer(nn.Module):
             fresh_data: Current frame data [num_envs, *shape]
             env_ids: Environment indices to update
         """
+        # FIX: Slice away the trailing Kp and Kd gains (columns 70 and 71)
+        # so the humanoid history only tracks physical joint actions (69)
+        if fresh_data.shape[-1] > self.data.shape[-1]:
+            fresh_data = fresh_data[..., :self.data.shape[-1]]
+
         self.data[0, env_ids] = fresh_data
 
     def get_hist(self, env_ids=slice(None)):

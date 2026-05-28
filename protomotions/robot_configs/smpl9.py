@@ -114,8 +114,8 @@ class Smpl9RobotConfig(RobotConfig):
                 "R_Ankle_y": ControlInfo(
                     stiffness=3000.0,
                     damping=50.0,
-                    effort_limit=10000.0,
-                    velocity_limit=10000.0,
+                    effort_limit=500.0,
+                    velocity_limit=100.0,
                     armature= 0.02,
                     friction=0.0
                 ),
@@ -148,40 +148,40 @@ class Smpl9RobotConfig(RobotConfig):
                    stiffness = 2000.0,
                    damping = 2000.0,
                    armature = 0.0,
-                   effort_limit = 100000.0,
-                   velocity_limit = 1000000.0,
+                   effort_limit = 200.0,
+                   velocity_limit = 100.0,
                    friction = 0.0
                 ),
                 "suspension_y": ControlInfo(
                     stiffness = 5000.0,
                     damping = 500.0,
                     armature = 0.0,
-                    effort_limit = 10000.0,
-                    velocity_limit = 10000.0,
+                    effort_limit = 300.0,
+                    velocity_limit = 200.0,
                     friction = 0.0
                 ),
                 "suspension_x": ControlInfo(
                     stiffness = 5000.0,
                     damping = 500.0,
                     armature = 0.0,
-                    effort_limit = 10000.0,
-                    velocity_limit = 10000.0,
+                    effort_limit = 300.0,
+                    velocity_limit = 200.0,
                     friction = 0.0
                 ),
                 "suspension_z": ControlInfo(
                     stiffness = 5000.0,
                     damping = 500.0,
                     armature = 0.0,
-                    effort_limit = 10000.0,
-                    velocity_limit = 10000.0,
+                    effort_limit = 300.0,
+                    velocity_limit = 200.0,
                     friction = 0.0
                 ),
                 "Motor": ControlInfo(
                     stiffness = 0.0,
                     damping = 0.0,
                     armature = 0.0,
-                    effort_limit = 10000.0,
-                    velocity_limit = 10000.0,
+                    effort_limit = 200.0,
+                    velocity_limit = 50.0,
                     friction = 0.0
                 ),
             },

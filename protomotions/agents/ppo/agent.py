@@ -95,10 +95,13 @@ class PPO(BaseAgent):
         env: BaseEnv,
         config: PPOAgentConfig,
         root_dir: Optional[Path] = None,
+        gSDE: bool = False,
     ):
         super().__init__(fabric, env, config, root_dir)
         self.tau: float = self.config.tau
         self.e_clip: float = self.config.e_clip
+
+        self.gSDE = gSDE  # Store the gSDE flag for use in model creation
 
         # Initialize EMA for advantage normalization
         if (
@@ -110,6 +113,7 @@ class PPO(BaseAgent):
         else:
             self.adv_mean_ema = None
             self.adv_std_ema = None
+
 
     def create_model(self):
         """Create PPO actor-critic model.
@@ -138,10 +142,40 @@ class PPO(BaseAgent):
             self.config.model.actor_optimizer,
             params=list(model._actor.parameters()),
         )
+        
+        # =================================================================
+        # SDE INTERACTION PATCH (Bypasses Fabric proxy recursion)
+        # =================================================================
+        # We target the raw underlying module directly to prevent loopbacks
+        if self.gSDE:
+            raw_actor = model._actor
+            orig_raw_forward = raw_actor.forward
+
+            def sde_patched_forward(batch_td: TensorDict) -> TensorDict:
+                # 1. Run the actual original raw layer stack (No infinite wrapper loops!)
+                out_td = orig_raw_forward(batch_td)
+                mean_action = out_td["mean_action"]
+                
+                # 2. Compute state-dependent standard deviation (SDE)
+                base_std = torch.exp(self.actor.logstd)
+                state_modulator = 1.0 - torch.tanh(torch.abs(mean_action))
+                sde_std = base_std * (0.2 + 0.8 * state_modulator)
+                
+                # 3. Re-sample the action smoothly using our state-dependent distribution
+                dist = torch.distributions.Normal(mean_action, sde_std)
+                
+                out_td["action"] = dist.sample()
+                out_td["neglogp"] = -dist.log_prob(out_td["action"]).sum(dim=-1)
+                return out_td
+
+            # Bind directly to the raw un-wrapped module's forward hook
+            raw_actor.forward = sde_patched_forward
+            print("[SDE Core] Successfully hooked raw underlying actor model with SDE.")
+
+        # Fabric wrapper setup happens safe and sound down here
         self.actor, self.actor_optimizer = self.fabric.setup(
             model._actor, actor_optimizer
         )
-        # Actor now only has forward() method
 
         critic_optimizer = instantiate(
             self.config.model.critic_optimizer,
@@ -351,12 +385,23 @@ class PPO(BaseAgent):
         batch_td = self.actor(batch_td)
 
         mean_action = batch_td["mean_action"]
-
-        # Recompute neglogp for the actions that were actually taken (from experience buffer)
-        # We need the current policy's evaluation, not the sampled action's neglogp
         mu = mean_action  # Already tanh-bounded
-        std = torch.exp(self.actor.logstd)
-        dist = torch.distributions.Normal(mu, std)
+
+        # =================================================================
+        # SDE TRAINING LOSS MATCH (Aligns Optimization with SDE Distributions)
+        # =================================================================
+        base_std = torch.exp(self.actor.logstd)
+        
+        if self.gSDE:
+            # Replicate our smooth state-dependent variance scaling logic for optimization updates
+            state_modulator = 1.0 - torch.tanh(torch.abs(mean_action))
+            sde_std = base_std * (0.2 + 0.8 * state_modulator)
+            dist = torch.distributions.Normal(mu, sde_std)
+        else:
+            # Fall back to traditional static exploration for the humanoid policy layout
+            dist = torch.distributions.Normal(mu, base_std)
+
+
         current_neglogp = -dist.log_prob(batch_dict["action"]).sum(dim=-1)
 
         # Compute probability ratio between new and old policy

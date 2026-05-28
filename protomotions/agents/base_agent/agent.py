@@ -72,11 +72,9 @@ def compute_torques(
 
     
     torque = kp * (desired_angle - current_angle) - kd * current_vel
-    torque = 600 * (0 - current_angle) - 5 * current_vel
-    torque = 1000*torch.ones_like(current_angle)
     
     # Optional: Clamp torque to motor limits if needed
-    # torque = torch.clamp(torque, -50.0, 50.0)
+    torque = torch.clamp(torque, -200.0, 200.0)
     
     return torque
 
@@ -503,7 +501,7 @@ class BaseAgent:
         # Return action for environment
         return output_td["action"]
     
-    def expand_action_to_env(self, action):
+    def expand_action_to_env(self, action, num_extra_actions = 0):
         env_action = action  # Default to pass-through
         if (
             hasattr(self.config, "action_indices") 
@@ -511,7 +509,7 @@ class BaseAgent:
         ):
             # 1. Get dimensions
             batch_size = action.shape[0]
-            total_dofs = self.env.robot_config.kinematic_info.num_dofs
+            total_dofs = self.env.robot_config.kinematic_info.num_dofs + num_extra_actions
             
             # 2. Create full zero-tensor [Num Envs, Total DOFs]
             # This implicitly sets passive joints to 0.0 (which the Simulator Hardware Lock will later ignore/overwrite)
@@ -525,8 +523,21 @@ class BaseAgent:
             if action.dim() == 1:
                 action = action.unsqueeze(1)
 
-            full_action[:, self.config.action_indices] = action
-            
+            if action.shape[1] == len(self.config.action_indices):
+                # Standard agent (Humanoid): maps cleanly to its physical slots
+                full_action[:, self.config.action_indices] = action
+            else:
+                # Expanded agent (Prosthetic): 
+                # Separate the physical target from the extra impedance parameters
+                num_physical_indices = len(self.config.action_indices)
+                
+                # Scatter the physical joint angle target (e.g., column 0)
+                full_action[:, self.config.action_indices] = action[:, :num_physical_indices]
+                
+                # Scatter Kp and Kd to the very end of the tensor
+                if num_extra_actions > 0:
+                    full_action[:, -num_extra_actions:] = action[:, num_physical_indices:]
+
             env_action = full_action
 
             # print('Original action size', action.size())

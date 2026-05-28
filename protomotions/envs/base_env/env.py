@@ -193,13 +193,17 @@ class BaseEnv:
             env_dof_names = self.robot_config.kinematic_info.dof_names
             sim_torque_joints = []
             common_torque_joints = []
+            humanoid_joints = []
             for i, (name_sim, name_env) in enumerate(zip(sim_dof_names, env_dof_names)):
                 if name_sim in self.robot_config.control.torque_joints:
                     sim_torque_joints.append(i)
                 if name_env in self.robot_config.control.torque_joints:
                     common_torque_joints.append(i)
+                else:
+                    humanoid_joints.append(i)
             self.simulator.sim_torque_joints = sim_torque_joints
             self.simulator.common_torque_joints = common_torque_joints
+            self.simulator.humanoid_joints = humanoid_joints
 
         if hasattr(self.config, "passive_dof_names") and self.config.passive_dof_names is not None:
             sim_dof_names = self.simulator._robot.joint_names 
@@ -793,20 +797,62 @@ class BaseEnv:
         Returns:
             Dict of variables available for eval (e.g., current_state, ref_state)
         """
-        return {
-            "current_state": self.simulator.get_robot_state(),
-            "current_actions": self.simulator.get_current_actions(),
-            "previous_actions": self.simulator.get_previous_actions(),
-            "soft_dof_limits_lower": self.robot_config.kinematic_info.dof_limits_lower.to(
-                self.device
-            )
-            * self.robot_config.control.soft_pos_limit,
-            "soft_dof_limits_upper": self.robot_config.kinematic_info.dof_limits_upper.to(
-                self.device
-            )
-            * self.robot_config.control.soft_pos_limit,
-            "dt": self.dt,
-        }
+        if self.config.secondary_reward_flag:
+            num_dofs = self.robot_config.kinematic_info.num_dofs
+    
+            # Grab the full actions from the simulator (now size 71)
+            raw_current_actions = self.simulator.get_current_actions()
+            raw_previous_actions = self.simulator.get_previous_actions()
+
+            raw_current_actions_prime = raw_current_actions.clone()
+            raw_current_actions_prime[:, self.simulator.common_torque_joints] = 0.0
+
+            raw_previous_actions_prime = raw_previous_actions.clone()
+            raw_previous_actions_prime[:, self.simulator.common_torque_joints] = 0.0
+
+            return {
+                "current_state": self.simulator.get_robot_state(),
+                
+                # 1. Humanoid Actions: Isolate down to the physical DOFs (Size 69) set common_torque_joints to 0 so they don't interfere with humanoid reward components that expect 0 for those joints. We will use the full actions with torque values for prosthetic reward components.
+                "current_actions": raw_current_actions_prime[:, :num_dofs],
+                "previous_actions": raw_previous_actions_prime[:, :num_dofs],
+                
+                # 2. Prosthetic Actions: Grab only the column corresponding to the prosthetic physical joint
+                "prosthetic_current_actions": raw_current_actions[:, self.simulator.common_torque_joints],
+                "prosthetic_previous_actions": raw_previous_actions[:, self.simulator.common_torque_joints],
+                
+                # 3. Prosthetic Gains: Isolate the trailing columns where Kp and Kd live (Size 2)
+                "prosthetic_current_gains": raw_current_actions[:, num_dofs:],
+                "prosthetic_previous_gains": raw_previous_actions[:, num_dofs:],
+                
+                "humanoid_joints": self.simulator.humanoid_joints,
+                "prosthetic_joints": self.simulator.common_torque_joints,
+
+                "soft_dof_limits_lower": self.robot_config.kinematic_info.dof_limits_lower.to(
+                    self.device
+                )
+                * self.robot_config.control.soft_pos_limit,
+                "soft_dof_limits_upper": self.robot_config.kinematic_info.dof_limits_upper.to(
+                    self.device
+                )
+                * self.robot_config.control.soft_pos_limit,
+                "dt": self.dt,
+            }
+        else:
+            return {
+                "current_state": self.simulator.get_robot_state(),
+                "current_actions": self.simulator.get_current_actions(),
+                "previous_actions": self.simulator.get_previous_actions(),
+                "soft_dof_limits_lower": self.robot_config.kinematic_info.dof_limits_lower.to(
+                    self.device
+                )
+                * self.robot_config.control.soft_pos_limit,
+                "soft_dof_limits_upper": self.robot_config.kinematic_info.dof_limits_upper.to(
+                    self.device
+                )
+                * self.robot_config.control.soft_pos_limit,
+                "dt": self.dt,
+            }
 
     def get_has_reset_grace(self):
         """Check if environments are in the grace period after reset.

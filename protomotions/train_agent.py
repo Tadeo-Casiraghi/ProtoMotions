@@ -297,8 +297,7 @@ log = logging.getLogger(__name__)
 
 
 def detect_checkpoint_mode(args, save_dir):
-    """
-    Detect checkpoint mode: resume, warm start, or fresh.
+    """Detect checkpoint mode: resume, warm start, or fresh.
 
     Returns:
         tuple: (mode, checkpoint_path, wandb_id)
@@ -306,12 +305,20 @@ def detect_checkpoint_mode(args, save_dir):
             checkpoint_path: Path to checkpoint or None
             wandb_id: Wandb ID for resume or None
     """
-    pre_existing_checkpoint = save_dir / "last.ckpt"
     checkpoint_config_path = save_dir / "config.yaml"
 
+    # Search for any multi-agent 'last' checkpoints (e.g., humanoid_last.ckpt)
+    last_checkpoints = list(save_dir.glob("*_last.ckpt"))
+
     # Priority 1: Resume - continuing same run
-    if pre_existing_checkpoint.exists():
-        log.info(f"RESUME: Found checkpoint in save_dir: {pre_existing_checkpoint}")
+    if len(last_checkpoints) > 0:
+        # Construct the nominal pointer path that your orchestrator's load() expects
+        pre_existing_checkpoint = save_dir / "last.ckpt"
+
+        log.info(
+            f"RESUME: Found {len(last_checkpoints)} multi-agent checkpoint(s) "
+            f"matching '*_last.ckpt' in {save_dir}"
+        )
 
         # Load wandb_id
         wandb_id = None
@@ -341,7 +348,6 @@ def detect_checkpoint_mode(args, save_dir):
     else:
         log.info("FRESH START: Training from scratch")
         return "fresh", None, None
-
 
 def load_experiment_module(experiment_path):
     """

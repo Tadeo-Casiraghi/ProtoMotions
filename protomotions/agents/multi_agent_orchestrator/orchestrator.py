@@ -4,6 +4,7 @@ import time
 import logging
 from typing import Dict, Any
 from rich.progress import track
+import numpy as np
 
 from pathlib import Path
 from protomotions.agents.utils.data import ExperienceBuffer
@@ -101,65 +102,406 @@ class CoLearningMimicEvaluator(MimicEvaluator):
             raw_action_p = p_outs.get("mean_action", p_outs.get("action"))
             
             # 2. Re-implement torque calculation (Deterministic)
-            # (Copying the logic from your collect_rollout_step_withcalc)
-            # NOTE: We can't call collect_rollout_step_withcalc directly because 
-            # it might sample stochastic actions.
             
-            # Extract raw params
-            raw_theta = raw_action_p[:, 0]
-            raw_kp    = raw_action_p[:, 1]
-            raw_kd    = raw_action_p[:, 2]
+            # # Extract raw params
+            # raw_theta = raw_action_p[:, 0]
+            # raw_kp    = raw_action_p[:, 1]
+            # raw_kd    = raw_action_p[:, 2]
 
-            kp_scale = 1000.0
-            kp_offset = 1000.0 
+            # kp_scale = 1000.0
+            # kp_offset = 1000.0 
             
-            # Example: Map [-1, 1] -> [0, 10] for Kd
-            kd_scale = 5
-            kd_offset = 5
+            # # Example: Map [-1, 1] -> [0, 10] for Kd
+            # kd_scale = 5
+            # kd_offset = 5
             
-            # Example: Map [-1, 1] -> [-pi, pi] for Angle
-            angle_scale = 3.14
-            angle_offset = 0.0
+            # # Example: Map [-1, 1] -> [-pi, pi] for Angle
+            # angle_scale = 3.14
+            # angle_offset = 0.0
 
-            desired_angle = raw_theta * angle_scale + angle_offset
-            kp_phys       = raw_kp * kp_scale + kp_offset
-            kd_phys       = raw_kd * kd_scale + kd_offset
+            # desired_angle = raw_theta * angle_scale + angle_offset
+            # kp_phys       = raw_kp * kp_scale + kp_offset
+            # kd_phys       = raw_kd * kd_scale + kd_offset
 
-            # Get State
-            current_angle = obs_td["prosthetic_obs"][:, 0]
-            current_vel   = obs_td["prosthetic_obs"][:, 1]
+            # # Get State
+            # current_angle = obs_td["prosthetic_obs"][:, 0]
+            # current_vel   = obs_td["prosthetic_obs"][:, 1]
             
-            # JIT Torque Calc
-            # We need to import the JIT function or access it from the agent module
-            # Assuming compute_torques_jit is available here
-            torque = compute_torques(
-                desired_angle, kp_phys, kd_phys, current_angle, current_vel
-            )
+            # # JIT Torque Calc
+            # # We need to import the JIT function or access it from the agent module
+            # # Assuming compute_torques_jit is available here
+            # torque = compute_torques(
+            #     desired_angle, kp_phys, kd_phys, current_angle, current_vel
+            # )
             
             # Construct Final Prosthetic Action
-            action_p = torque.unsqueeze(-1)
+            action_p = raw_action_p
             
             # --- C. Merge Actions ---
-            env_action = self.agent.expand_action_to_env(action_h)
-            env_action += self.prosthetic_agent.expand_action_to_env(action_p)
+            env_action = self.agent.expand_action_to_env(action_h, num_extra_actions=2)
+            env_action += self.prosthetic_agent.expand_action_to_env(action_p, num_extra_actions=2)
 
             # --- D. Step Environment ---
             obs, rewards, dones, terminated, extras = self.env.step(env_action)
             
-            # --- E. Prepare Next Step ---
+            # --- E. Extract Real Simulated Torque ---
+            # Look for the true torque returned by the simulator inside extras.
+            # Replace "prosthetic_torque" with whatever key your env uses (e.g., extras["applied_torques"])
+            torque = extras.get("prosthetic/measured_torque", None)
+            
+            if torque is None:
+                # Safe fallback if the environment doesn't output it yet so it won't crash
+                torque = torch.zeros(raw_action_p.shape[0], device=self.prosthetic_agent.device)
+            
+            # --- F. Prepare Next Step ---
             obs = self.agent.add_agent_info_to_obs(obs)
             obs = self.prosthetic_agent.add_agent_history_to_obs(obs)
             obs_td = self.agent.obs_dict_to_tensordict(obs)
             
-            # Update Prosthetic History (with the deterministic actions)
-            if self.prosthetic_agent.save_actions:
-                 combined_entry = torch.cat([raw_action_p, torque.unsqueeze(-1)], dim=-1)
-                 self.prosthetic_agent.action_history.update(combined_entry)
+            # # Update Prosthetic History (with the deterministic actions + real torque)
+            # if self.prosthetic_agent.save_actions:
+            #     # Ensure torque is a 2D column tensor [N, 1] before concatenation
+            #     if len(torque.shape) == 1:
+            #         torque = torque.unsqueeze(-1)
+                
+            #     combined_entry = torch.cat([raw_action_p, torque], dim=-1)
+            #     self.prosthetic_agent.action_history.update(combined_entry)
 
-            # --- F. Update Metrics ---
+            # --- G. Update Metrics ---
             self.update_metrics_from_env_extras(
                 metrics, extras, active_env_ids, active_motion_ids, prefix=True,
             )
+
+    def simple_test_policy(self, collect_metrics: bool = False) -> None:
+        """
+        Co-learning version of simple_test_policy.
+        Runs BOTH humanoid + prosthetic agents together exactly like training.
+        """
+
+        assert (
+            self.fabric.world_size == 1
+        ), "Simple test policy only supported for single process"
+
+        # ============================================================
+        # STORAGE
+        # ============================================================
+
+        # prismatic_data = []
+        # rotation_x = []
+        # rotation_y = []
+        # rotation_z = []
+
+        # skin_forces_data = []
+        # skin_forces_world_data = []
+        # skin_forces_knee_data = []
+        # observed_skin_forces_data = []
+
+        # ============================================================
+        # BODY / JOINT LOOKUPS
+        # ============================================================
+
+        # target_body_name = "R_Knee"
+        # try:
+        #     sim_body_names = self.env.robot_config.kinematic_info.body_names
+        #     knee_body_idx = sim_body_names.index(target_body_name)
+        #     print(f"Found {target_body_name} at index {knee_body_idx}")
+        # except ValueError:
+        #     print(f"ERROR: Could not find body '{target_body_name}'")
+        #     return
+
+        # joint_idx = self.env.robot_config.kinematic_info.dof_names.index(
+        #     "suspension_slide"
+        # )
+
+        # joint_idx_x = self.env.robot_config.kinematic_info.dof_names.index(
+        #     "suspension_x"
+        # )
+
+        # joint_idx_y = self.env.robot_config.kinematic_info.dof_names.index(
+        #     "suspension_y"
+        # )
+
+        # joint_idx_z = self.env.robot_config.kinematic_info.dof_names.index(
+        #     "suspension_z"
+        # )
+
+        # ============================================================
+        # MOTION INFO
+        # ============================================================
+
+        num_motions = self.motion_lib.num_motions()
+        motion_lengths = self.motion_lib.get_motion_length(None)
+        motion_num_frames = (motion_lengths / self.env.dt).floor().long()
+
+        if collect_metrics:
+            metrics = self._create_metrics_dict(
+                num_motions,
+                motion_num_frames,
+                motion_num_frames.max().item(),
+                include_raw_robot_state=False,
+            )
+        else:
+            metrics = None
+
+        # ============================================================
+        # EVAL MODE
+        # ============================================================
+
+        self.agent.eval()
+        self.prosthetic_agent.eval()
+
+        done_indices = None
+        step = 0
+
+        actions_storage = [] if collect_metrics and num_motions == 1 else None
+
+        print("Evaluating co-learning policy...")
+        try:
+            while True:
+                # ====================================================
+                # RESET
+                # ====================================================
+
+                obs, _ = self.env.reset(done_indices)
+
+                # SAME OBS CHAIN AS TRAINING
+                obs = self.agent.add_agent_info_to_obs(obs)
+                obs = self.prosthetic_agent.add_agent_history_to_obs(obs)
+
+                obs_td = self.agent.obs_dict_to_tensordict(obs)
+
+                cur_motion_ids = self.motion_manager.motion_ids
+                cur_env_ids = torch.arange(
+                    0, cur_motion_ids.numel(), device=self.device
+                )
+
+                # ====================================================
+                # HUMANOID ACTION
+                # ====================================================
+
+                h_outs = self.agent.model(obs_td)
+
+                if "mean_action" in h_outs:
+                    action_h = h_outs["mean_action"]
+                else:
+                    action_h = h_outs["action"]
+
+                # ====================================================
+                # PROSTHETIC ACTION
+                # ====================================================
+
+                p_outs = self.prosthetic_agent.model(obs_td)
+
+                if "mean_action" in p_outs:
+                    action_p = p_outs["mean_action"]
+                else:
+                    action_p = p_outs["action"]
+
+                # ====================================================
+                # STORE ACTIONS
+                # ====================================================
+
+                if (
+                    actions_storage is not None
+                    and len(actions_storage) < motion_num_frames.max().item()
+                ):
+                    actions_storage.append({
+                        "humanoid": action_h[0].detach().cpu().numpy(),
+                        "prosthetic": action_p[0].detach().cpu().numpy(),
+                    })
+
+                # ====================================================
+                # BUILD ENV ACTION
+                # ====================================================
+                env_action = self.agent.expand_action_to_env(
+                    action_h,
+                    num_extra_actions=2,
+                )
+                env_action += self.prosthetic_agent.expand_action_to_env(
+                    action_p,
+                    num_extra_actions=2,
+                )
+                # ====================================================
+                # STEP ENV
+                # ====================================================
+                obs, rewards, dones, terminated, extras = self.env.step(
+                    env_action
+                )
+                # ====================================================
+                # REBUILD OBS
+                # ====================================================
+
+                obs = self.agent.add_agent_info_to_obs(obs)
+                obs = self.prosthetic_agent.add_agent_history_to_obs(obs)
+                obs_td = self.agent.obs_dict_to_tensordict(obs)
+
+                # ====================================================
+                # DOF STATE
+                # ====================================================
+
+                # dof_state = self.env.simulator.get_dof_state()
+
+                # current_val = dof_state.dof_pos[0, joint_idx].item()
+                # current_val_x = dof_state.dof_pos[0, joint_idx_x].item()
+                # current_val_y = dof_state.dof_pos[0, joint_idx_y].item()
+                # current_val_z = dof_state.dof_pos[0, joint_idx_z].item()
+
+                # prismatic_data.append(current_val)
+                # rotation_x.append(current_val_x)
+                # rotation_y.append(current_val_y)
+                # rotation_z.append(current_val_z)
+
+                # ====================================================
+                # CONTACT FORCES
+                # ====================================================
+
+                # contact_buf = self.env.simulator.get_bodies_contact_buf()
+
+                # all_forces = contact_buf.rigid_body_contact_forces
+
+                # skin_forces_world_tensor = all_forces[
+                #     :, self.env.skin_body_indices, :
+                # ]
+
+                # forces_world_np = all_forces[
+                #     0, self.env.skin_body_indices, :
+                # ].detach().cpu().numpy()
+
+                # robot_state = self.env.simulator.get_robot_state()
+
+                # knee_quat_np = robot_state.rigid_body_rot[
+                #     0, knee_body_idx, :
+                # ].detach().cpu().numpy()
+
+                # r_knee = R.from_quat(knee_quat_np)
+
+                # forces_knee_np = r_knee.inv().apply(forces_world_np)
+
+                # all_quats = robot_state.rigid_body_rot
+
+                # skin_quats_tensor = all_quats[
+                #     :, self.env.skin_body_indices, :
+                # ]
+
+                # forces_np = skin_forces_world_tensor[
+                #     0
+                # ].detach().cpu().numpy()
+
+                # quats_np = skin_quats_tensor[
+                #     0
+                # ].detach().cpu().numpy()
+
+                # rot = R.from_quat(quats_np)
+
+                # forces_local_np = rot.inv().apply(forces_np)
+
+                # skin_forces_data.append(forces_local_np)
+                # skin_forces_world_data.append(forces_world_np)
+                # skin_forces_knee_data.append(forces_knee_np)
+
+                # ====================================================
+                # OBSERVED FORCES
+                # ====================================================
+
+                # blind_obs_tensor = obs["blind_body_obs"][0]
+
+                # num_bodies = self.env.robot_config.kinematic_info.num_bodies
+
+                # force_block_size = num_bodies * 3
+
+                # obs_forces_flat = blind_obs_tensor[-force_block_size:]
+
+                # obs_forces_all = obs_forces_flat.reshape(num_bodies, 3)
+
+                # obs_skin_forces = obs_forces_all[
+                #     self.env.skin_body_indices, :
+                # ]
+
+                # observed_skin_forces_data.append(
+                #     obs_skin_forces.detach().cpu().numpy()
+                # )
+
+                # ====================================================
+                # SAVE DATA
+                # ====================================================
+
+                # if len(prismatic_data) % 100 == 0:
+
+                #     np.savez(
+                #         "python-stuff/multiple_arrays.npz",
+                #         prismatic=prismatic_data,
+                #         rotx=rotation_x,
+                #         roty=rotation_y,
+                #         rotz=rotation_z,
+                #         skin_forces=skin_forces_data,
+                #         skin_forces_world=skin_forces_world_data,
+                #         skin_forces_knee=skin_forces_knee_data,
+                #         skin_forces_obs=observed_skin_forces_data,
+                #     )
+
+                #     print(".", end="", flush=True)
+
+                # ====================================================
+                # METRICS
+                # ====================================================
+
+                if collect_metrics:
+
+                    unique_motion_ids, first_indices = np.unique(
+                        cur_motion_ids.cpu().numpy(),
+                        return_index=True,
+                    )
+
+                    cur_env_ids = torch.from_numpy(first_indices).to(
+                        device=self.device
+                    )
+
+                    cur_motion_ids = torch.from_numpy(unique_motion_ids).to(
+                        device=self.device
+                    )
+
+                    self.update_metrics_from_env_extras(
+                        metrics,
+                        extras,
+                        cur_env_ids,
+                        cur_motion_ids,
+                        prefix=True,
+                    )
+
+                # ====================================================
+                # DONE HANDLING
+                # ====================================================
+
+                done_indices = dones.nonzero(
+                    as_tuple=False
+                ).squeeze(-1)
+
+                step += 1
+
+        except KeyboardInterrupt:
+
+            print("\nEvaluation interrupted by Ctrl+C")
+
+            if collect_metrics:
+
+                print("Metrics up to now:")
+
+                for k in self.config.eval_metric_keys:
+                    print(f"{k}: {metrics[k].mean_mean_reduce().item()}")
+
+                if num_motions == 1:
+                    self._plot_per_frame_metrics(
+                        metrics,
+                        actions_storage,
+                    )
+
+            return
+
+        except Exception as e:
+
+            print(f"Error in co-learning simple_test_policy: {e}")
+
+            raise e
 
 class CoLearningOrchestrator:
     def __init__(
@@ -191,7 +533,8 @@ class CoLearningOrchestrator:
                 config=agent_cfg, 
                 env=env, 
                 fabric=fabric,
-                root_dir=root_dir  # ← pass it through
+                root_dir=root_dir,  # ← pass it through
+                gSDE = agent_cfg.gSDE if hasattr(agent_cfg, 'gSDE') else False
             )
 
         self.num_envs: int = self.env.num_envs
@@ -427,10 +770,10 @@ class CoLearningOrchestrator:
                     action_h = self.agents['humanoid'].collect_rollout_step(obs_td, step)
                     self.agents['humanoid'].check_obs_for_nans(obs_td, action_h)
 
-                    env_action = self.agents['humanoid'].expand_action_to_env(action_h)
+                    env_action = self.agents['humanoid'].expand_action_to_env(action_h, num_extra_actions=2)
 
-                    action_p = self.agents['prosthetic'].collect_rollout_step_withcalc(obs_td, step)
-                    env_action += self.agents['prosthetic'].expand_action_to_env(action_p)
+                    action_p = self.agents['prosthetic'].collect_rollout_step(obs_td, step)
+                    env_action += self.agents['prosthetic'].expand_action_to_env(action_p, num_extra_actions=2)
 
                     # --- D. Step Environment ---
                     next_global_obs, rewards, raw_dones, raw_terminated, extras = self.env.step(env_action)
@@ -648,7 +991,7 @@ class CoLearningOrchestrator:
         
         # Aggregate across distributed ranks
         aggregated_log_dict = aggregate_scalar_metrics(log_dict, self.fabric)
-        self.fabric.log_dict(aggregated_log_dict)
+        self.fabric.log_dict(aggregated_log_dict, step=self.current_epoch)
     
     def setup(self):
         """
