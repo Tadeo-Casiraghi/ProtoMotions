@@ -84,6 +84,12 @@ class Smpl9RobotConfig(RobotConfig):
                 "L_Thorax", "L_Shoulder", "L_Elbow", "L_Wrist", "L_Hand",
                 "R_Thorax", "R_Shoulder", "R_Elbow", "R_Wrist", "R_Hand", 
             ],
+            "motor_joints": [
+                "Motor",
+            ],
+            "output_ankle": [
+                "R_Ankle",
+            ],
         }
     )
     default_root_height: float = 0.95
@@ -112,7 +118,7 @@ class Smpl9RobotConfig(RobotConfig):
                     velocity_limit=100,
                 ),
                 "R_Ankle_y": ControlInfo(
-                    stiffness=3000.0,
+                    stiffness=500.0,
                     damping=50.0,
                     effort_limit=500.0,
                     velocity_limit=100.0,
@@ -196,8 +202,8 @@ class Smpl9RobotConfig(RobotConfig):
                 substeps=2,
             ),
             isaaclab=IsaacLabSimParams(
-                fps=120,
-                decimation=4,
+                fps=360,
+                decimation=12,
                 
                 physx=IsaacLabPhysXParams(
                     num_position_iterations=16,

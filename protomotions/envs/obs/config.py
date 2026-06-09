@@ -78,13 +78,15 @@ class ProstheticObsConfig(ConfigBuilder):
     
     enabled: bool = False
     num_historical_steps: int = 1
-    
+
+    action_history: ActionHistoryConfig = field(default_factory=ActionHistoryConfig)
+
     # Defaults are 0, but you must override these in your experiment file!
     ankle_dof_index: int = 0   # The index in dof_pos
     motor_dof_index: int = 0  # The index in dof_pos
     shank_body_index: int = 0  # The index in rigid_body_pos
 
-
+    
 
 @dataclass
 class SceneObsConfig(ConfigBuilder):

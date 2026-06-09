@@ -69,21 +69,8 @@ class CoLearningMimicEvaluator(MimicEvaluator):
         
         # --- MULTI-AGENT OBSERVATION CHAIN ---
         obs = self.agent.add_agent_info_to_obs(obs)                  # Humanoid
-        obs = self.prosthetic_agent.add_agent_history_to_obs(obs)    # Prosthetic
+        # obs = self.prosthetic_agent.add_agent_history_to_obs(obs)    # Prosthetic
         obs_td = self.agent.obs_dict_to_tensordict(obs)
-        
-        # Zero out prosthetic history for these envs
-        if self.prosthetic_agent.save_actions:
-            # Create a zero tensor matching the action shape from the buffer
-            zero_action = torch.zeros(
-                self.prosthetic_agent.num_envs, 
-                self.prosthetic_agent.action_history.data.shape[-1], 
-                device=self.prosthetic_agent.device
-            )
-            self.prosthetic_agent.action_history.set_all(zero_action)
-            
-            if hasattr(self.prosthetic_agent, 'prev_command_buffer'):
-                self.prosthetic_agent.prev_command_buffer.zero_()
 
         # 3. Evaluation Loop
         for step in range(max_len):
@@ -156,18 +143,9 @@ class CoLearningMimicEvaluator(MimicEvaluator):
             
             # --- F. Prepare Next Step ---
             obs = self.agent.add_agent_info_to_obs(obs)
-            obs = self.prosthetic_agent.add_agent_history_to_obs(obs)
+            # obs = self.prosthetic_agent.add_agent_history_to_obs(obs)
             obs_td = self.agent.obs_dict_to_tensordict(obs)
             
-            # # Update Prosthetic History (with the deterministic actions + real torque)
-            # if self.prosthetic_agent.save_actions:
-            #     # Ensure torque is a 2D column tensor [N, 1] before concatenation
-            #     if len(torque.shape) == 1:
-            #         torque = torque.unsqueeze(-1)
-                
-            #     combined_entry = torch.cat([raw_action_p, torque], dim=-1)
-            #     self.prosthetic_agent.action_history.update(combined_entry)
-
             # --- G. Update Metrics ---
             self.update_metrics_from_env_extras(
                 metrics, extras, active_env_ids, active_motion_ids, prefix=True,
@@ -280,7 +258,7 @@ class CoLearningMimicEvaluator(MimicEvaluator):
 
                 # SAME OBS CHAIN AS TRAINING
                 obs = self.agent.add_agent_info_to_obs(obs)
-                obs = self.prosthetic_agent.add_agent_history_to_obs(obs)
+                # obs = self.prosthetic_agent.add_agent_history_to_obs(obs)
 
                 obs_td = self.agent.obs_dict_to_tensordict(obs)
 
@@ -319,11 +297,6 @@ class CoLearningMimicEvaluator(MimicEvaluator):
                 Kp_data.append(action_p[:, 1].detach().cpu().numpy())
                 Kd_data.append(action_p[:, 2].detach().cpu().numpy())
 
-                # print()
-                # print("########################################")
-                # print(action_p[0].detach().cpu().numpy())
-                # print("The desired angle from the neural net is:", action_p[0][0].detach().cpu().numpy()*3.14)
-
                 if (
                     actions_storage is not None
                     and len(actions_storage) < motion_num_frames.max().item()
@@ -342,14 +315,11 @@ class CoLearningMimicEvaluator(MimicEvaluator):
                     num_extra_actions=2,
                 )
 
-                # print("The env action at 22 after humanoid expand aciton is:", env_action[0][22].detach().cpu().numpy()*3.14)
 
                 env_action += self.prosthetic_agent.expand_action_to_env(
                     action_p,
                     num_extra_actions=2,
                 )
-
-                # print("The env action at 22 after prosthetic expand action is:", env_action[0][22].detach().cpu().numpy()*3.14)
 
 
                 # ====================================================
@@ -363,7 +333,7 @@ class CoLearningMimicEvaluator(MimicEvaluator):
                 # ====================================================
 
                 obs = self.agent.add_agent_info_to_obs(obs)
-                obs = self.prosthetic_agent.add_agent_history_to_obs(obs)
+                # obs = self.prosthetic_agent.add_agent_history_to_obs(obs)
                 obs_td = self.agent.obs_dict_to_tensordict(obs)
 
                 # ====================================================
@@ -730,19 +700,6 @@ class CoLearningOrchestrator:
         """Initialize buffers using the agent's own logic."""
         # 1. Get initial observations (Full Global Obs)     
 
-        
-        if self.agents['prosthetic'].save_actions:
-            # Create a zero tensor matching the action shape from the buffer
-            zero_action = torch.zeros(
-                self.agents['prosthetic'].num_envs, 
-                self.agents['prosthetic'].action_history.data.shape[-1], 
-                device=self.agents['prosthetic'].device
-            )
-            self.agents['prosthetic'].action_history.set_all(zero_action)
-
-            if hasattr(self.agents['prosthetic'], 'prev_command_buffer'):
-                self.agents['prosthetic'].prev_command_buffer.zero_()
-
         global_obs, _ = self.env.reset()
 
         current_obs = global_obs.copy()
@@ -751,8 +708,8 @@ class CoLearningOrchestrator:
         # A. Humanoid adds "blind_body_obs" to current_obs
         current_obs = self.agents['humanoid'].add_agent_info_to_obs(current_obs)
         
-        # B. Prosthetic adds "history" and "torque" to THE SAME current_obs
-        current_obs = self.agents['prosthetic'].add_agent_history_to_obs(current_obs)
+        # # B. Prosthetic adds "history" and "torque" to THE SAME current_obs
+        # current_obs = self.agents['prosthetic'].add_agent_history_to_obs(current_obs)
         
         # C. Convert to TensorDict
         # (Assuming both agents share the same tensordict logic, calling it from one is fine)
@@ -798,18 +755,10 @@ class CoLearningOrchestrator:
 
     def fit(self):
         self._setup_agent_buffers()
-
-        if self.agents['prosthetic'].save_actions:
-            # Create a zero tensor matching the action shape from the buffer
-            zero_action = torch.zeros(
-                self.agents['prosthetic'].num_envs, 
-                self.agents['prosthetic'].action_history.data.shape[-1], 
-                device=self.agents['prosthetic'].device
-            )
         
         # Force reset on fit start
         done_indices = torch.arange(self.env.num_envs, device=self.device, dtype=torch.long)
-        self.time_report.start_timer('Main Timer')
+        global_obs, _ = self.env.reset()
 
         while self.current_epoch < self.max_epochs:
             self.epoch_start_time = time.time()
@@ -837,7 +786,7 @@ class CoLearningOrchestrator:
                     obs = self.agents['humanoid'].add_agent_info_to_obs(global_obs)
 
                     # B. Prosthetic adds "history" and "torque" to THE SAME current_obs
-                    obs = self.agents['prosthetic'].add_agent_history_to_obs(obs)
+                    # obs = self.agents['prosthetic'].add_agent_history_to_obs(obs)
         
                     # C. Convert to TensorDict
                     # (Assuming both agents share the same tensordict logic, calling it from one is fine)
@@ -905,19 +854,9 @@ class CoLearningOrchestrator:
                     else:
                         reward_map = {name: rewards for name in self.agents.keys()}
 
-                    # Handle History Reset (using the SYNCHRONIZED done indices)
-                    if self.agents['prosthetic'].save_actions and len(done_indices) > 0:
-                        self.agents['prosthetic'].action_history.set_all(
-                            zero_action[done_indices], 
-                            env_ids=done_indices
-                        )
-                        # Future-proof: Reset prev_command if it exists
-                        if hasattr(self.agents['prosthetic'], 'prev_command_buffer'):
-                            self.agents['prosthetic'].prev_command_buffer[done_indices] = 0
-
                     # Construct Next Observations
                     next_obs = self.agents['humanoid'].add_agent_info_to_obs(next_global_obs)
-                    next_obs = self.agents['prosthetic'].add_agent_history_to_obs(next_obs)
+                    # next_obs = self.agents['prosthetic'].add_agent_history_to_obs(next_obs)
                     next_obs_td = self.agents['humanoid'].obs_dict_to_tensordict(next_obs)
 
                     # -----------------------------------------------------------
@@ -1131,35 +1070,8 @@ class CoLearningOrchestrator:
         )
 
         prosthetic._obs_pipeline = lambda raw_obs: (
-            prosthetic.add_agent_history_to_obs(
-                humanoid.add_agent_info_to_obs(raw_obs)
-            )
+            humanoid.add_agent_info_to_obs(raw_obs)
         )
-
-    # def load(self, path: str):
-    #     """
-    #     Loads checkpoints for all agents. 
-    #     Assumes 'path' points to a specific file (e.g. '.../last.ckpt')
-    #     and that agents saved files with prefixes (e.g. '.../humanoid_last.ckpt').
-    #     """
-    #     if not path:
-    #         return
-
-    #     import os
-    #     path_obj = Path(path)
-    #     parent_dir = path_obj.parent
-    #     filename = path_obj.name  # e.g., "last.ckpt" or "epoch_100.ckpt"
-
-    #     for name, agent in self.agents.items():
-    #         # Construct the expected filename: "humanoid_" + "last.ckpt"
-    #         agent_specific_filename = f"{name}_{filename}"
-    #         agent_path = parent_dir / agent_specific_filename
-            
-    #         if agent_path.exists():
-    #             log.info(f"Loading {name} from {agent_path}")
-    #             agent.load(str(agent_path))
-    #         else:
-    #             log.warning(f"Checkpoint for {name} not found at {agent_path}. Starting fresh.")
         
     @property
     def _skip_next_policy_update(self):

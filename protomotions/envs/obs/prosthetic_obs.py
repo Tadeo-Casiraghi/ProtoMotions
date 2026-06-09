@@ -152,6 +152,7 @@ def compute_prosthetic_observations(
     body_lin_acc: Tensor,
     body_rot: Tensor,
     body_ang_vel: Tensor,
+    debug_step: int = 0,
     w_last: bool = True,
 ) -> Tensor:
         """
@@ -163,17 +164,36 @@ def compute_prosthetic_observations(
             9.  Simulated Gyro: Local Angular Velocity (from body_ang_vel + body_rot)
             10.  Simulated Accelerometer: Projected Gravity (from body_rot)
         """
+        debug = False
+
+        step = debug_step  # For easier debugging and visualization in tensorboard
+
+        # Convert step to a float offset: Step 1 = 0.001, Step 2 = 0.002, etc.
+        time_offset = float(step) * 0.001
+
         # 1. Ankle Angle (1 dim)
         ankle_angle = dof_pos[:, ankle_dof_index].unsqueeze(-1)
+        if debug:
+            # turn to 1.0 for debugging to see if this value is seen in the prosthetic input
+            ankle_angle = torch.ones_like(ankle_angle) * (1.0 + time_offset)
 
         # 2. Ankle Velocity (1 dim)
         ankle_vel = dof_vel[:, ankle_dof_index].unsqueeze(-1)
+        if debug:
+            # turn to 2.0 for debugging to see if this value is seen in the prosthetic input
+            ankle_vel = torch.ones_like(ankle_vel) * (2.0 + time_offset)
         
         # 3. Ankle Motor Angle (1 dim)
         motor_angle = dof_pos[:, motor_dof_index].unsqueeze(-1)
+        if debug:
+            # turn to 3.0 for debugging to see if this value is seen in the prosthetic input
+            motor_angle = torch.ones_like(motor_angle) * (3.0 + time_offset)
 
         # 4. Ankle Motor Velocity (1 dim)
         motor_vel = dof_vel[:, motor_dof_index].unsqueeze(-1)
+        if debug:
+            # turn to 4.0 for debugging to see if this value is seen in the prosthetic input
+            motor_vel = torch.ones_like(motor_vel) * (4.0 + time_offset)
 
         # --- Simulated IMU ---
 
@@ -183,6 +203,10 @@ def compute_prosthetic_observations(
         global_ang_vel = body_ang_vel[:, shank_body_index]
         rot_inv = rotations.quat_conjugate(shank_rot, w_last)
         local_ang_vel = rotations.quat_rotate(rot_inv, global_ang_vel, w_last)
+        if debug:
+            # turn to 5.0, 6.0, 7.0 for debugging to see if these values are seen in the prosthetic input
+            base_gyro = torch.tensor([5.0, 6.0, 7.0], device=local_ang_vel.device)
+            local_ang_vel = torch.ones_like(local_ang_vel) * (base_gyro + time_offset)
 
         # 10. Accelerometer: Proper Acceleration
     
@@ -198,6 +222,10 @@ def compute_prosthetic_observations(
         
         # C. Rotate to Local Frame
         local_acc = rotations.quat_rotate(rot_inv, global_proper_acc, w_last)
+        if debug:
+            # turn to 8.0, 9.0, 10.0 for debugging to see if these values are seen in the prosthetic input
+            base_acc = torch.tensor([8.0, 9.0, 10.0], device=local_acc.device)
+            local_acc = torch.ones_like(local_acc) * (base_acc + time_offset)
 
         # --- Combine ---
         return torch.cat([
@@ -224,16 +252,35 @@ class ProstheticObs:
         # Buffers
         self.prosthetic_obs = None
         self.prosthetic_obs_hist_buf = None
+
+        self.previous_actions_hist_buf = None
+        if self.config.action_history.enabled:
+            self.previous_actions_hist_buf = HistoryBuffer(
+                self.config.action_history.num_historical_steps,
+                self.env.num_envs,
+                shape=(3,),
+                device=self.env.device,
+            )
+
         self._initialized = False
 
-    def post_physics_step(self):
-        """Called every simulation step to rotate buffers and compute new obs."""
-        if not self._initialized:
-            self.compute_observations(torch.arange(self.env.num_envs, device=self.device))
+        self.step = 0  # For debugging purposes to track time in compute_observations
 
-        # Rotate history buffer (discard oldest, make room for new)
+    def post_physics_step(self):
+        env_ids = torch.arange(self.env.num_envs, device=self.device)
+        
+        if not self._initialized:
+            self.compute_observations(env_ids)
+            return  # buffers just initialized, no need to rotate
+
+        # Rotate first (push current → history), then compute new current
         if self.prosthetic_obs_hist_buf is not None:
             self.prosthetic_obs_hist_buf.rotate()
+
+        if self.config.action_history.enabled:
+            self.previous_actions_hist_buf.rotate()
+        
+        self.compute_observations(env_ids)
 
     def reset_hist(self, env_ids):
         """Reset history for specific environments (e.g. after a fall)."""
@@ -250,6 +297,13 @@ class ProstheticObs:
                 self.config.num_historical_steps, 1, 1
             )
             self.prosthetic_obs_hist_buf.set_all(filled_hist, env_ids=env_ids)
+
+        if self.config.action_history.enabled and self.config.action_history.num_historical_steps > 1:
+            current_actions = self.previous_actions_hist_buf.get_current(env_ids)
+            filled_actions_hist = current_actions.unsqueeze(0).repeat(
+                self.config.action_history.num_historical_steps, 1, 1
+            )
+            self.previous_actions_hist_buf.set_all(filled_actions_hist, env_ids=env_ids)
 
     def compute_observations(self, env_ids):
         """Actual math computation for the current frame."""
@@ -271,6 +325,21 @@ class ProstheticObs:
                 w_last=True,
         )
 
+        sim_ref = self.env.simulator
+
+        # Pull the tensor for the specific envs and joint index
+        # Shape goes from [num_envs, num_dofs] -> [len(env_ids)] -> [len(env_ids), 1]
+        if hasattr(sim_ref, "_robot") and hasattr(sim_ref._robot, "data") and hasattr(sim_ref._robot.data, "applied_torque"):
+            prosthetic_torque = sim_ref._robot.data.applied_torque[env_ids, self.config.motor_dof_index].unsqueeze(-1)
+        else:
+            # Fallback if the cache isn't populated yet during the very first cold-start frame
+            prosthetic_torque = torch.zeros(len(env_ids), 1, dtype=torch.float, device=self.device)
+
+        # A quick pre-scale so 100Nm becomes 1.0, keeping it well under your clamp of 5
+        prosthetic_torque = prosthetic_torque * 0.04
+
+        obs = torch.cat([obs, prosthetic_torque], dim=-1)
+
         # 3. Initialize Buffers (First Run Only)
         if self.prosthetic_obs is None:
             self.prosthetic_obs = torch.zeros(
@@ -286,9 +355,37 @@ class ProstheticObs:
                 device=self.device,
             )
 
+            if self.config.action_history.enabled:
+                all_prev_actions = self.env.simulator.get_previous_actions(env_ids)
+                
+                # Pull theta target from its physical joint slot
+                physical_action = all_prev_actions[:, self.config.motor_dof_index].unsqueeze(-1)
+                
+                # Pull Kp and Kd from the final 2 tail slots of the tensor
+                extra_actions = all_prev_actions[:, -2:] 
+                
+                # Stitch them back into the true [theta, Kp, Kd] format the network expects
+                prosthetic_actions = torch.cat([physical_action, extra_actions], dim=-1)
+                
+                self.previous_actions_hist_buf.set_curr(prosthetic_actions, env_ids)
+
         # 4. Store Data
         self.prosthetic_obs[env_ids] = obs
         self.prosthetic_obs_hist_buf.set_curr(obs, env_ids)
+
+        if self.config.action_history.enabled:
+            all_prev_actions = self.env.simulator.get_previous_actions(env_ids)
+                
+            # Pull theta target from its physical joint slot
+            physical_action = all_prev_actions[:, self.config.motor_dof_index].unsqueeze(-1)
+            
+            # Pull Kp and Kd from the final 2 tail slots of the tensor
+            extra_actions = all_prev_actions[:, -2:] 
+            
+            # Stitch them back into the true [theta, Kp, Kd] format the network expects
+            prosthetic_actions = torch.cat([physical_action, extra_actions], dim=-1)
+
+            self.previous_actions_hist_buf.set_curr(prosthetic_actions, env_ids)
 
     def get_obs(self):
         """Return the dictionary of observations to be fed to the neural net."""
@@ -305,5 +402,10 @@ class ProstheticObs:
         obs["historical_prosthetic_obs"] = (
             self.prosthetic_obs_hist_buf.get_all_flattened().clone()
         )
+
+        if self.config.action_history.enabled:
+            obs["historical_prosthetic_previous_actions"] = (
+                self.previous_actions_hist_buf.get_all_flattened().clone()
+            )
 
         return obs

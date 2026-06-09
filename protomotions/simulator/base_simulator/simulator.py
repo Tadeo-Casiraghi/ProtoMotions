@@ -142,6 +142,7 @@ class Simulator(ABC):
         self.control_type: ControlType = self.robot_config.control.control_type
         self.decimation: int = self.config.sim.decimation
         self.dt: float = self.decimation * 1.0 / self.config.sim.fps
+        self.physics_dt = 1.0 / self.config.sim.fps
 
         self._num_bodies: int = self.robot_config.kinematic_info.num_bodies
         self._num_dof: int = self.robot_config.kinematic_info.num_dofs
@@ -185,6 +186,11 @@ class Simulator(ABC):
         self._visualization_markers: Optional[Dict[str, VisualizationMarkerConfig]] = (
             None
         )
+
+        self.torque_old = torch.zeros(self.num_envs, len(self.robot_config.control.torque_joints), device=self.device)
+        fc = 15
+        pi = 3.14159265359
+        self.alpha = (2*pi*fc*self.physics_dt)/(1 + 2*pi*fc*self.physics_dt)
 
     def _initialize_with_markers(
         self, visualization_markers: Optional[Dict[str, VisualizationMarkerConfig]]
@@ -383,6 +389,16 @@ class Simulator(ABC):
             markers_callback (Callable): Optional callback function that returns marker states.
                                         Called after physics step but before rendering.
         """
+        
+        # if self.num_dofs is None:
+        if not hasattr(self, "num_dofs"):
+            self.num_dofs = self._get_simulator_dof_state().num_dofs
+
+        if not hasattr(self, "torque_joints_tensor"):
+            self.torque_joints_tensor = torch.tensor(
+                self.common_torque_joints, device=self.device, dtype=torch.long
+            )
+
         # Store the previous actions
         self._previous_actions = self._common_actions.clone()
         self.user_requested_reset = False
@@ -395,6 +411,25 @@ class Simulator(ABC):
             ] += self._domain_randomization["action_noise"]["action_noise"]
 
         self._common_actions = common_actions.to(self.device)
+
+        # ===============================================================
+        # CRITICAL PERFORMANCE FIX: CACHE IMPEDANCE TARGETS AT 30 HZ
+        # ===============================================================
+        # 1. Isolate down to physical DOFs once per policy step
+        physical_actions = self._common_actions[:, :self.num_dofs]
+        self.cached_pd_targets = self._action_to_pd_targets(physical_actions)
+
+        # 2. Extract prosthetic elements using fast advanced indexing
+        raw_theta = self._common_actions[:, self.torque_joints_tensor]
+        raw_kp    = self._common_actions[:, self.num_dofs + 0].unsqueeze(-1)
+        raw_kd    = self._common_actions[:, self.num_dofs + 1].unsqueeze(-1)
+
+        # 3. Pre-calculate physical constraints and cache them as instance variables
+        self.cached_kp_phys, self.cached_kd_phys, self.cached_desired_angle = (
+            self._action_to_impedance_targets(raw_theta, raw_kp, raw_kd)
+        )
+        # ===============================================================
+
         self._physics_step()
 
         # Get fresh markers state after physics step
@@ -422,6 +457,14 @@ class Simulator(ABC):
         if new_object_states is not None:
             new_object_states = new_object_states.convert_to_sim(self.data_conversion)
         self._set_simulator_env_state(new_states, new_object_states, env_ids)
+
+        # --- Reset the low-pass filter history for specific envs ---
+        if env_ids is None:
+            # If env_ids is None, Isaac Lab is resetting ALL environments at once
+            self.torque_old.zero_()
+        else:
+            # Reset only the specific environments that just finished/crashed
+            self.torque_old[env_ids] = 0.0
 
     @abstractmethod
     def _set_simulator_env_state(
@@ -891,41 +934,40 @@ class Simulator(ABC):
         on control_type themselves.
         """
         if self.control_type == ControlType.BUILT_IN_PD_HYBRID:
-            num_dofs = self._get_simulator_dof_state().num_dofs
-
-            # Isolate physical actions for standard joints (removes trailing Kp/Kd columns)
-            physical_actions = self._common_actions[:, :num_dofs]
-            pd_targets = self._action_to_pd_targets(physical_actions)
-
             # Get high-frequency simulator states (120 Hz feedback loop)
             common_dof_state = self._get_simulator_dof_state().convert_to_common(self.data_conversion)
             current_angle = common_dof_state.dof_pos[:, self.common_torque_joints]
             current_vel   = common_dof_state.dof_vel[:, self.common_torque_joints]
-
-            # 1. Slice out the raw, unscaled action tracks
-            # print("Index from where I will take the desired theta:", self.common_torque_joints)
-            # print("Value I will take:", self._common_actions[:, self.common_torque_joints][0])
             
-            raw_theta = self._common_actions[:, self.common_torque_joints]  # This is already [4096, 1]
-            raw_kp    = self._common_actions[:, num_dofs + 0].unsqueeze(-1) # Now [4096, 1]
-            raw_kd    = self._common_actions[:, num_dofs + 1].unsqueeze(-1) # Now [4096, 1]
+            # 2. Use the pre-computed, cached 30 Hz targets directly
+            torque_desired = (
+                self.cached_kp_phys * (self.cached_desired_angle - current_angle) 
+                - self.cached_kd_phys * current_vel
+            )
+            # Low-pass filter the torques to reduce high-frequency noise
+            torque = self.alpha * torque_desired + (1 - self.alpha) * self.torque_old
+            self.torque_old = torque
 
-            # 2. Call your new scaling helper function
-            kp_phys, kd_phys, desired_angle = self._action_to_impedance_targets(
-                raw_theta, raw_kp, raw_kd
+            # Print header once
+            if not hasattr(self, "_printed_pd_header"):
+                print("kp,kd,theta_des,theta_cur,vel_cur,torque_calc,torque_applied")
+                self._printed_pd_header = True
+
+            print(
+                f"{self.cached_kp_phys[0, 0].item()},"
+                f"{self.cached_kd_phys[0, 0].item()},"
+                f"{self.cached_desired_angle[0, 0].item()},"
+                f"{current_angle[0, 0].item()},"
+                f"{current_vel[0, 0].item()},"
+                f"{torque_desired[0, 0].item()},"
+                f"{torque[0, 0].item()}"
             )
 
-            torque = kp_phys * (desired_angle - current_angle) - kd_phys * current_vel
-            torque = torch.clamp(torque, -200.0, 200.0)
+            # 4. Clone the cached targets base view to modify it safely
+            pd_targets = self.cached_pd_targets.clone()
+            pd_targets[:, self.torque_joints_tensor] = torque
 
-            # print(desired_angle[0].detach().cpu().numpy(),
-            #       kp_phys[0].detach().cpu().numpy(),
-            #       kd_phys[0].detach().cpu().numpy(),
-            #       torque[0].detach().cpu().numpy())
-
-            pd_targets[:, self.common_torque_joints] = torque
-    
-            # Reorder for simulation layout and dispatch
+            # 5. Reorder and dispatch
             sim_targets = pd_targets[:, self.data_conversion.dof_convert_to_sim]
             self._apply_hybrid_control(sim_targets)
 

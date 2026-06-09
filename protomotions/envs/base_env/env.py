@@ -206,6 +206,12 @@ class BaseEnv:
             self.simulator.humanoid_joints = humanoid_joints
 
         if hasattr(self.config, "passive_dof_names") and self.config.passive_dof_names is not None:
+            
+            if (hasattr(self.robot_config, "control") and self.robot_config.control.torque_joints is not None):
+                human_joints = self.simulator.humanoid_joints
+            else:
+                human_joints = self.robot_config.kinematic_info.dof_names
+
             sim_dof_names = self.simulator._robot.joint_names 
             env_dof_names = self.robot_config.kinematic_info.dof_names
             
@@ -240,9 +246,16 @@ class BaseEnv:
             self.simulator.passive_dof_defaults = passive_defaults_indices
             
             # B. Update Config (So Agent/Orchestrator know active indices)
-            self.config.active_dof_indices = active_indices
+            self.config.active_dof_indices = active_indices # TODO TADEO: Ojo con esto que tiene en cuenta el motor de la protesis
             # print("Set Active DOF indices to", self.config.active_dof_indices)
             self.config.passive_dof_defaults = passive_defaults_indices_env # For reference
+
+            temp_human = []
+            for index in human_joints:
+                if index not in passive_defaults_indices:
+                    temp_human.append(index)
+            
+            self.simulator.humanoid_joints = temp_human
             
             # C. CRITICAL: SYNC ROBOT CONFIG
             # Your Observation code reads robot_config.kinematic_info.dof_names.
@@ -573,6 +586,10 @@ class BaseEnv:
 
         self.compute_observations()
         self.compute_reward()
+
+        # TADEO addition
+        self._previous_applied_torque = self.current_torques.clone() if hasattr(self, "current_torques") else None
+
         self.reset_buf[:], self.terminate_buf[:] = self.check_resets_and_terminations()
 
         if (
@@ -590,6 +607,8 @@ class BaseEnv:
         rbs.translate(-self.respawn_root_offset.clone())
         for k, _ in rbs.get_shape_mapping(flattened=True).items():
             self.extras[f"raw/{k}"] = rbs.flatten_bodies(k)
+        
+        
 
     def user_reset(self):
         """Force environments to reset on next check (triggered by user input)."""
@@ -713,6 +732,7 @@ class BaseEnv:
         reward_components: Dict[str, Any],
         context: Dict[str, Any],
         log_prefix: str = "",
+        prosthetic_keys: set[str] = None,
     ) -> torch.Tensor:
         """Compute rewards from dynamic reward component configurations.
 
@@ -730,6 +750,9 @@ class BaseEnv:
             self.num_envs, device=self.device, dtype=torch.float
         )
         any_multiplicative = False
+
+        pure_prosthetic_reward = torch.zeros(self.num_envs, device=self.device, dtype=torch.float)
+        prosthetic_keys = prosthetic_keys or set()
 
         # Get grace period mask (None if not applicable)
         grace_mask = self.get_has_reset_grace()
@@ -781,6 +804,9 @@ class BaseEnv:
                 self.extras[f"{log_prefix}scaled_r/{reward_name}"] = scaled_reward
                 additive_reward += scaled_reward
 
+                if "human" not in log_prefix and reward_name in prosthetic_keys:
+                    pure_prosthetic_reward += scaled_reward
+
         # Combine rewards
         if any_multiplicative:
             self.extras[f"{log_prefix}multiplicative_reward"] = multiplicative_reward
@@ -789,6 +815,7 @@ class BaseEnv:
         else:
             combined_reward = additive_reward
 
+        self.extras[f"{log_prefix}pure_prosthetic_reward"] = pure_prosthetic_reward
         return combined_reward
 
     def _get_reward_context(self):
@@ -799,7 +826,14 @@ class BaseEnv:
         """
         if self.config.secondary_reward_flag:
             num_dofs = self.robot_config.kinematic_info.num_dofs
-    
+
+            self.current_torques = self.simulator._robot.data.applied_torque
+            if not hasattr(self, "_previous_applied_torque") or self._previous_applied_torque is None:
+                self._previous_applied_torque = self.current_torques.clone()
+
+            prosthetic_current_torque = self.current_torques[:, self.simulator.common_torque_joints]
+            prosthetic_previous_torque = self._previous_applied_torque[:, self.simulator.common_torque_joints]
+
             # Grab the full actions from the simulator (now size 71)
             raw_current_actions = self.simulator.get_current_actions()
             raw_previous_actions = self.simulator.get_previous_actions()
@@ -820,10 +854,19 @@ class BaseEnv:
                 # 2. Prosthetic Actions: Grab only the column corresponding to the prosthetic physical joint
                 "prosthetic_current_actions": raw_current_actions[:, self.simulator.common_torque_joints],
                 "prosthetic_previous_actions": raw_previous_actions[:, self.simulator.common_torque_joints],
+
+                "prosthetic_current_torque": prosthetic_current_torque,
+                "prosthetic_previous_torque": prosthetic_previous_torque,
                 
                 # 3. Prosthetic Gains: Isolate the trailing columns where Kp and Kd live (Size 2)
                 "prosthetic_current_gains": raw_current_actions[:, num_dofs:],
-                "prosthetic_previous_gains": raw_previous_actions[:, num_dofs:],
+                "prosthetic_previous_gains": (
+                    raw_previous_actions[:, num_dofs:] 
+                    if raw_previous_actions.shape[1] > num_dofs 
+                    else raw_current_actions[:, num_dofs:].clone()
+                ),
+
+                "prosthetic_current_kp": raw_current_actions[:, num_dofs:num_dofs+1],
                 
                 "humanoid_joints": self.simulator.humanoid_joints,
                 "prosthetic_joints": self.simulator.common_torque_joints,
@@ -831,11 +874,11 @@ class BaseEnv:
                 "soft_dof_limits_lower": self.robot_config.kinematic_info.dof_limits_lower.to(
                     self.device
                 )
-                * self.robot_config.control.soft_pos_limit,
+                * self.robot_config.control.softer_pos_limit,
                 "soft_dof_limits_upper": self.robot_config.kinematic_info.dof_limits_upper.to(
                     self.device
                 )
-                * self.robot_config.control.soft_pos_limit,
+                * self.robot_config.control.softer_pos_limit,
                 "dt": self.dt,
             }
         else:
@@ -879,8 +922,23 @@ class BaseEnv:
             primary_reward = self._compute_dynamic_rewards(
                 self.config.reward_config, context, log_prefix="humanoid/"
             )
+
+            prosthetic_keys = {"action_smoothness_prosthetic_angle",
+                               "action_smoothness_prosthetic_kpkd",
+                               "torque_smoothness_prosthetic_ankle",
+                               "skin_rew",
+                               "gt_rew_ankle",
+                               "gr_rew_ankle",
+                               "gv_rew_ankle",
+                               "gav_rew_ankle",
+                               "pow_rew_prosthetic",
+                               "torque_bounds",
+                               "action_bounds",
+                               "Kp_bounds",
+                               }
+
             secondary_reward = self._compute_dynamic_rewards(
-                self.config.secondary_reward_config, context, log_prefix="prosthetic/"
+                self.config.secondary_reward_config, context, log_prefix="prosthetic/", prosthetic_keys=prosthetic_keys
             )
             combined_reward = primary_reward + secondary_reward
             

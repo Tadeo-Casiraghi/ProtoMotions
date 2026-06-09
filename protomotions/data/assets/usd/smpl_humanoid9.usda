@@ -5093,8 +5093,8 @@ def Xform "smpl_humanoid9" (
             int isaac:physics:Rot_Z:DofOffset
             float limit:rotX:physics:high = -1
             float limit:rotX:physics:low = 1
-            float limit:rotY:physics:high = 180
-            float limit:rotY:physics:low = -180
+            float limit:rotY:physics:high = 50
+            float limit:rotY:physics:low = -50
             float limit:rotZ:physics:high = -1
             float limit:rotZ:physics:low = 1
             float limit:transX:physics:high = -1

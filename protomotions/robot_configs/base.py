@@ -145,6 +145,7 @@ class ControlConfig(ConfigBuilder):
 
     # the positional limits used for rewards
     soft_pos_limit: float = 0.9
+    softer_pos_limit: float = 0.5
 
     # The following field is loaded post-init and populated from the MJCF asset
     control_info: Dict[str, ControlInfo] = field(init=False)

@@ -467,7 +467,6 @@ class IsaacLabSimulator(Simulator):
             for dof_idx, physical_val in self.passive_dof_defaults.items():
                 # Overwrite the target with the EXACT physical value from your config.
                 # e.g., -0.025 meters
-                #  print('CHanging value for index', dof_idx)
                 pd_targets[..., dof_idx] = physical_val
 
         # 2. SEND POSITIONS (Drivers: Body + Passive)
@@ -480,10 +479,7 @@ class IsaacLabSimulator(Simulator):
             # If sim_torque_joints is defined, use it to determine which joints get torques
             torque_targets = torch.zeros_like(pd_targets)
             torque_targets[:, self.sim_torque_joints] = pd_targets[:, self.sim_torque_joints]
-            # torque_targets = torch.clip(
-            #     torque_targets, -self._torque_limits_common, self._torque_limits_common
-            # )
-            # print("Hello Simulator here, I will apply this torque on the motor:", pd_targets[:, self.sim_torque_joints])
+
             self._robot.set_joint_effort_target(torque_targets)
         else:
             print("Warning: sim_torque_joints not defined for BUILT_IN_PD_HYBRID control. No torques applied.")
@@ -495,16 +491,7 @@ class IsaacLabSimulator(Simulator):
             for dof_idx, physical_val in self.passive_dof_defaults.items():
                 # Overwrite the target with the EXACT physical value from your config.
                 # e.g., -0.025 meters
-                #  print('CHanging value for index', dof_idx)
                 pd_targets[..., dof_idx] = physical_val
-
-        # for key, value in self.special_settings.items():
-        #     # First print its current value
-        #     print(f"Overriding DOF index {key} to value {value}")
-        #     print("Current value:", pd_targets[0,key].clone())
-        #     pd_targets[...,key] = value
-        #     print("New value:", pd_targets[0,key].clone())
-        #     print()
 
         self._robot.set_joint_position_target(pd_targets, joint_ids=None)
 

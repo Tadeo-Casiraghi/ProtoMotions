@@ -836,6 +836,9 @@ class Mimic(BaseEnv):
             self.motion_manager.post_physics_step()
             super().post_physics_step()
 
+            if self.prosthetic_obs_cb is not None:
+                self.prosthetic_obs_cb.post_physics_step()
+
             if self.config.masked_mimic_obs.enabled:
                 self.masked_mimic_obs_cb.post_physics_step()
 

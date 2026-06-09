@@ -193,6 +193,21 @@ def norm(x: Tensor, indices: Optional[Tensor] = None) -> Tensor:
 
     return torch.norm(x, dim=-1)
 
+def squared_norm(x: Tensor, indices: Optional[Tensor] = None) -> Tensor:
+    """Squared L2 norm of a tensor.
+
+    Computes ||x||_2^2, which penalizes extreme values more heavily.
+
+    Args:
+        x: Tensor [num_envs, num_bodies, dim] or [num_envs, dim]
+        indices: Optional body indices to subset
+    """
+    if indices is not None:
+        x = x[:, indices]
+
+    # Square the elements, then sum across the last dimension
+    return torch.sum(torch.square(x), dim=-1)
+
 
 def rotation_error(
     q: Tensor,
