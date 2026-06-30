@@ -1,4 +1,4 @@
-<mujoco model="smpl_humanoid9">
+<mujoco model="smpl_humanoid10">
   <compiler coordinate="local"/>
   <default>
     <joint damping="50.0" armature="0.01" stiffness="1000.0" limited="true"/>
@@ -19,12 +19,26 @@
     <default class="anterior">
       <geom solref="0.0017 1" solimp="0.9 0.99 0.001 0.5 2" rgba="0 0 0 1"/>
     </default>
+
+    <default class="coll">
+        <geom type="capsule" contype="1" conaffinity="0" condim="3" rgba="0.8 0.7 .5 1" margin="0.001" material="MatSkin"/>
+    </default>
+
+    <default class="myo_leg_touch">
+      <site type="box" group="3" rgba="0.8 0.2 .2 1"/>
+    </default>
   </default>
+
   <asset>
-    <texture name="skybox" type="skybox" builtin="gradient"
-            rgb1="1.0 1.0 1.0"
-            rgb2="1.0 1.0 1.0"
-            width="512" height="512"/>
+    <texture
+      type="skybox"
+      builtin="flat"
+      rgb1="1 1 1"
+      width="512"
+      height="512"/>
+    <material name="MatSkin" rgba="0.9 .7 1 1"/>
+    <mesh file="../mesh/OSL/osl_ankle_v2.stl" name="osl_ankle_assembly_geom_1_osl_ankle_v2"/>
+    <mesh file="../mesh/OSL/osl_custom_foot_v2.stl" name="osl_foot_assembly_geom_1_osl_custom_foot_v2"/>
   </asset>
   <worldbody>
     <light cutoff="100" diffuse="1 1 1" dir="-0 0 -1.3" directional="true" exponent="1" pos="0 0 1.3" specular=".1 .1 .1"/>
@@ -64,102 +78,120 @@
           <joint name="R_Knee_x" type="hinge" pos="0 0 0" axis="1 0 0" stiffness="800" damping="80" armature="0.02" range="-180.0000 180.0000"/>
           <joint name="R_Knee_y" type="hinge" pos="0 0 0" axis="0 1 0" stiffness="800" damping="80" armature="0.02" range="-180.0000 180.0000"/>
           <joint name="R_Knee_z" type="hinge" pos="0 0 0" axis="0 0 1" stiffness="800" damping="80" armature="0.02" range="-180.0000 180.0000"/>
-          <geom type="capsule" contype="1" conaffinity="1" density="14088" fromto="-0.0085 0.0032 -0.0797 -0.02115 0.0079 -0.1992" size="0.01"/>
+          <geom type="capsule" contype="1" conaffinity="1" density="11336" fromto="-0.00386	0.00148	-0.03588	-0.01643	0.00615	-0.15461" size="0.01"/>
           
-          <body name="skin_box_posterior_top" pos="-0.05470451931018451 0.0032138937524858443 -0.0800532560472466" quat="0.5259542185366413 -0.47262264017238004 0.4929276001932958 -0.5069737478091723">
-            <geom class="posterior" type="box" size="0.005 0.005 0.008767" density="140057"/> 
+          <body name="skin_box_posterior_top" pos="-0.05002507982897726 0.0014752877792309754 -0.03584827438683026" quat="0.5259542185366413 -0.47262264017238004 0.4929276001932958 -0.5069737478091723">
+              <geom class="posterior" type="box" size="0.005000 0.005000 0.008767" density="67442" rgba="1 0 0 1"/> 
+          </body>
+          <body name="skin_box_medial_top" pos="-0.004368783333674456 0.03754833852358707 -0.03926257407023701" quat="0.13421336967846742 -0.041270130758904594 -0.6466634749023202 0.7497398868500662">
+              <geom class="medial" type="box" size="0.005000 0.005000 0.008767" density="67442" rgba="0 1 0 1"/> 
+          </body>
+          <body name="skin_box_anterior_top" pos="0.04128751316162835 0.0018548753303769148 -0.04549948978298737" quat="0.5727511163956187 -0.41467596827833214 -0.4368648205143749 0.5560118061668682">
+              <geom class="anterior" type="box" size="0.005000 0.005000 0.008767" density="67442" rgba="0 0 1 1"/> 
+          </body>
+          <body name="skin_box_lateral_top" pos="-0.004368783333674448 -0.03421817541397918 -0.04208519009958062" quat="0.7745746530175288 -0.6166989983853296 -0.046512854319300176 0.13248776047762917">
+              <geom class="lateral" type="box" size="0.005000 0.005000 0.008767" density="67442" rgba="1 1 0 1"/> 
+          </body>
+          <body name="skin_box_posterior_bottom" pos="-0.0481193801870875 0.004621445631928363 -0.11584101127988082" quat="0.5259542185366413 -0.47262264017238004 0.4929276001932958 -0.5069737478091723">
+              <geom class="posterior" type="box" size="0.005000 0.005000 0.005277" density="112045" rgba="1 0 0 1"/> 
+          </body>
+          <body name="skin_box_medial_bottom" pos="-0.012721852933263729 0.030343820171131665 -0.11857643855541734" quat="0.13421336967846742 -0.041270130758904594 -0.6466634749023202 0.7497398868500662">
+              <geom class="medial" type="box" size="0.005000 0.005000 0.005277" density="112045" rgba="0 1 0 1"/> 
+          </body>
+          <body name="skin_box_anterior_bottom" pos="0.022675674320560047 0.004915741527967215 -0.12332364097703863" quat="0.5727511163956187 -0.41467596827833214 -0.4368648205143749 0.5560118061668682">
+              <geom class="anterior" type="box" size="0.005000 0.005000 0.005277" density="112045" rgba="0 0 1 1"/> 
+          </body>
+          <body name="skin_box_lateral_bottom" pos="-0.012721852933263722 -0.020806633011236086 -0.1205882137015021" quat="0.7745746530175288 -0.6166989983853296 -0.046512854319300176 0.13248776047762917">
+              <geom class="lateral" type="box" size="0.005000 0.005000 0.005277" density="112045" rgba="1 1 0 1"/> 
           </body>
 
-          <body name="skin_box_medial_top" pos="-0.00904822281488171 0.04927921900013707 -0.08307455413931036" quat="0.03309040381457722 0.0409744846434732 -0.6574625257782494 0.7516442935197971">
-            <geom class="medial" type="box" size="0.005 0.005 0.008767" density="140057"/> 
-          </body>
+          <body name="osl_tibial_pylon" pos="-0.03 0.006 -0.2315" quat="0.707035 0.707179 0 0">
+            <inertial pos="0 0 0" mass="0.0629248" diaginertia="0.001 0.001 0.001"/>
 
-          <body name="skin_box_anterior_top" pos="0.0366080736804211 0.0035934813036317837 -0.08970447144340371" quat="0.5727511163956187 -0.41467596827833214 -0.4368648205143749 0.5560118061668682">
-            <geom class="anterior" type="box" size="0.005 0.005 0.008767" density="140057"/> 
-          </body>
+            <geom name="osl_tibial_pylon_geom_1" type="cylinder" size="0.012 0.070499651775824771" quat="0.707035 0.707179 0 0" rgba="0 0 0 1.0" condim="3" contype="1"/>
+            <body name="osl_ankle_assembly" pos="0 -0.1761 -0.006">
+              <inertial pos="-0.00665 0.04539 0.00924" quat="0.612323 0.440299 -0.442253 0.485396" mass="1.739" diaginertia="0.00535042 0.00492977 0.0030318"/>
+              <geom name="osl_ankle_assembly_geom_1" type="mesh" rgba="0.071 0.169 0.62 1" mesh="osl_ankle_assembly_geom_1_osl_ankle_v2" condim="3" contype="1"/>
+              <site name="r_osl_load_force" type="box" pos="0 0.105 0.005" size="0.02 0.003 0.02" euler="0 0 0" rgba="0.8 0.2 .2 .4" />
 
-          <body name="skin_box_lateral_top" pos="-0.0090482228148817 -0.04247184394401944 -0.08668317335133995" quat="0.7769019928564379 -0.6274148629728858 0.03964237168313232 0.03467514360094845">
-            <geom class="lateral" type="box" size="0.005 0.005 0.008767" density="140057"/> 
-          </body>
+              <body name="osl_foot_assembly">
+                <inertial pos="0.064562 -0.048401 0.004732" quat="0.482413 0.245831 0.66522 0.514127" mass="0.291" diaginertia="0.00145886 0.00139898 0.001"/>
+                <joint name="osl_ankle_angle_r" pos="0 0 0" axis="0 0 1" range="-0.5236 0.5236"/>
+                                  <geom name="osl_foot_assembly_geom_1" type="mesh" rgba="0 0 0 1" mesh="osl_foot_assembly_geom_1_osl_custom_foot_v2"/>
 
-          <body name="skin_box_posterior_bottom" pos="-0.05279881966829475 0.006360051605183232 -0.16004599294029714" quat="0.5259542185366413 -0.47262264017238004 0.4929276001932958 -0.5069737478091723">
-            <geom class="posterior" type="box" size="0.005 0.005 0.005277" density="140057"/> 
-          </body>
+                <geom name="osl_foot_col1" size=".012" class="coll" fromto="0.19 -0.05 0.007    -0.03 -0.05 0.007"/>
+                <geom name="osl_foot_col2" size=".012" class="coll" fromto="0.182 -0.05 0.028    -0.03 -0.05 0.028"/>
+                <geom name="osl_foot_col3" size=".012" class="coll" fromto="0.182 -0.05 -0.015    -0.03 -0.05 -0.015"/>
 
-          <body name="skin_box_medial_bottom" pos="-0.017401292414470984 0.04207470064768166 -0.1623884186244907" quat="0.03309040381457722 0.0409744846434732 -0.6574625257782494 0.7516442935197971">
-            <geom class="medial" type="box" size="0.005 0.005 0.005277" density="140057"/> 
-          </body>
-
-          <body name="skin_box_anterior_bottom" pos="0.017996234839352795 0.0066543475012220835 -0.16752862263745497" quat="0.5727511163956187 -0.41467596827833214 -0.4368648205143749 0.5560118061668682">
-            <geom class="anterior" type="box" size="0.005 0.005 0.005277" density="140057"/> 
-          </body>
-
-          <body name="skin_box_lateral_bottom" pos="-0.017401292414470974 -0.029060301541276347 -0.16518619695326142" quat="0.7769019928564379 -0.6274148629728858 0.03964237168313232 0.03467514360094845">
-            <geom class="lateral" type="box" size="0.005 0.005 0.005277" density="140057"/> 
+                <site name="r_osl_foot_touch" type="box" pos="0.08 -0.052 0" size=".12 .01 .05" euler="0 0 0" class="myo_leg_touch"/>
+                <site name="r_heel_btm" type="sphere" pos="-0.04 -0.055 0.007" size="0.01" rgba="0 1 0 1"/>
+                <site name="r_toe_btm" type="sphere" pos="0.19 -0.055 0.007" size="0.01" rgba="0 1 0 1"/>
+              </body>
+            </body>
           </body>
 
 
           <body name="prosthetic_assembly1" pos="-0.014825  0.00555  -0.13945" quat="0.53483409 -0.46255    -0.48321172  0.51624261">
-          <inertial pos="0 0 0" mass="0.1" diaginertia="0.001 0.001 0.001"/>
+          <inertial pos="0 0 0" mass="0.1" diaginertia="0.00001 0.00001 0.00001"/>
             <joint name="suspension_slide" type="slide" axis="0 1 0" 
                range="-0.05 0.05" stiffness="10000000" damping="1" springref="-0.025"/>
               
             <body name="prosthetic_assembly2" pos="0.0  0.0  0.0" quat="1.0 0.0 0.0 0.0">
-            <inertial pos="0 0 0" mass="0.1" diaginertia="0.001 0.001 0.001"/>
+            <inertial pos="0 0 0" mass="0.1" diaginertia="0.00001 0.00001 0.00001"/>
 
 
-              <joint name="suspension_x" type="hinge" axis="1 0 0" pos="0 0 0"
+              <joint name="suspension_x" type="hinge" axis="1 0 0" pos="0 0.06 0"
                     range="-10 10" stiffness="10" damping="1"/>
 
-              <joint name="suspension_y" type="hinge" axis="0 1 0" pos="0 0 0"
+              <joint name="suspension_y" type="hinge" axis="0 1 0" pos="0 0.06 0"
                     range="-10 10" stiffness="10" damping="1"/>
 
-              <joint name="suspension_z" type="hinge" axis="0 0 1" pos="0 0 0"
+              <joint name="suspension_z" type="hinge" axis="0 0 1" pos="0 0.06 0"
                     range="-20 20" stiffness="10" damping="1"/>
 
-              <body name="socket_box_posterior_top" pos="-0.0 -0.02792 0.05518" quat="0.0 0.0 0.99627 -0.08629">
+              <body name="socket_box_posterior_top" pos="0.0 -0.07241 0.05518" quat="0.0 -0.0 0.99627 -0.08629">
                         
                   <geom type="box" pos="0.0 0.0 0.0" size="0.025000 0.037500 0.005000"
-                        density="5912" rgba="1 0 0 0.5"/> 
+                        density="1000" rgba="1 0 0 0.5"/> 
               </body>
-              <body name="socket_box_medial_top" pos="0.05518 -0.02792 0.0" quat="0.70447 0.06101 -0.70447 0.06101">
+              <body name="socket_box_medial_top" pos="0.04486 -0.07241 -0.0024" quat="0.79039 0.06846 -0.60649 0.05253">
                         
                   <geom type="box" pos="0.0 0.0 0.0" size="0.025000 0.037500 0.005000"
-                        density="5912" rgba="0 1 0 0.5"/> 
+                        density="1000" rgba="0 1 0 0.5"/> 
               </body>
-              <body name="socket_box_anterior_top" pos="0.0 -0.02792 -0.05518" quat="0.99627 0.08629 -0.0 -0.0">
+              <body name="socket_box_anterior_top" pos="0.0 -0.07241 -0.05518" quat="0.99627 0.08629 -0.0 0.0">
                         
                   <geom type="box" pos="0.0 0.0 0.0" size="0.025000 0.037500 0.005000"
-                        density="5912" rgba="0 0 1 0.5"/> 
+                        density="1000" rgba="0 0 1 0.5"/> 
               </body>
-              <body name="socket_box_lateral_top" pos="-0.05518 -0.02792 -0.0" quat="0.70447 0.06101 0.70447 -0.06101">
+              <body name="socket_box_lateral_top" pos="-0.04486 -0.07241 -0.0024" quat="0.79039 0.06846 0.60649 -0.05253">
                         
                   <geom type="box" pos="0.0 0.0 0.0" size="0.025000 0.037500 0.005000"
-                        density="5912" rgba="1 1 0 0.5"/> 
+                        density="1000" rgba="1 1 0 0.5"/> 
               </body>
-              <body name="socket_box_posterior_bottom" pos="-0.0 0.05089 0.04142" quat="0.0 0.0 0.99627 -0.08629">
+              <body name="socket_box_posterior_bottom" pos="-0.0 0.0064 0.04142" quat="0.0 -0.0 0.99627 -0.08629">
                         
                   <geom type="box" pos="0.0 0.0 0.0" size="0.025000 0.037500 0.005000"
-                        density="5912" rgba="1 0 0 0.5"/> 
+                        density="1000" rgba="1 0 0 0.5"/> 
               </body>
-              <body name="socket_box_medial_bottom" pos="0.04142 0.05089 0.0" quat="0.70447 0.06101 -0.70447 0.06101">
+              <body name="socket_box_medial_bottom" pos="0.03122 0.0064 -0.00151" quat="0.79039 0.06846 -0.60649 0.05253">
                         
                   <geom type="box" pos="0.0 0.0 0.0" size="0.025000 0.037500 0.005000"
-                        density="5912" rgba="0 1 0 0.5"/> 
+                        density="1000" rgba="0 1 0 0.5"/> 
               </body>
-              <body name="socket_box_anterior_bottom" pos="-0.0 0.05089 -0.04142" quat="0.99627 0.08629 -0.0 -0.0">
+              <body name="socket_box_anterior_bottom" pos="0.0 0.0064 -0.04142" quat="0.99627 0.08629 -0.0 0.0">
                         
                   <geom type="box" pos="0.0 0.0 0.0" size="0.025000 0.037500 0.005000"
-                        density="5912" rgba="0 0 1 0.5"/> 
+                        density="1000" rgba="0 0 1 0.5"/> 
               </body>
-              <body name="socket_box_lateral_bottom" pos="-0.04142 0.05089 -0.0" quat="0.70447 0.06101 0.70447 -0.06101">
+              <body name="socket_box_lateral_bottom" pos="-0.03122 0.0064 -0.00151" quat="0.79039 0.06846 0.60649 -0.05253">
                         
                   <geom type="box" pos="0.0 0.0 0.0" size="0.025000 0.037500 0.005000"
-                        density="5912" rgba="1 1 0 0.5"/> 
+                        density="1000" rgba="1 1 0 0.5"/> 
               </body>
 
               <body name="R_Ankle_Motor" pos="6.53051581e-05 2.60605127e-01 6.25176230e-05" quat="0.53483409  0.46255     0.48321172 -0.51624261">
-                  <inertial pos="0 0 0" mass="0.1" diaginertia="0.001 0.001 0.001"/>
+                  <inertial pos="0 0 0" mass="0.1" diaginertia="0.00001 0.00001 0.00001"/>
                   <joint name="Motor" type="hinge" pos="0 0 0" axis="0 1 0" stiffness="0" damping="0" armature="0.02" range="-180.0000 180.0000"/>              
                   
                   <body name="R_Ankle" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
