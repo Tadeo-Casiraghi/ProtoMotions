@@ -844,8 +844,10 @@ class BaseEnv:
             raw_previous_actions_prime = raw_previous_actions.clone()
             raw_previous_actions_prime[:, self.simulator.common_torque_joints] = 0.0
 
+            current_state = self.simulator.get_robot_state()
+
             return {
-                "current_state": self.simulator.get_robot_state(),
+                "current_state": current_state,
                 
                 # 1. Humanoid Actions: Isolate down to the physical DOFs (Size 69) set common_torque_joints to 0 so they don't interfere with humanoid reward components that expect 0 for those joints. We will use the full actions with torque values for prosthetic reward components.
                 "current_actions": raw_current_actions_prime[:, :num_dofs],
@@ -854,6 +856,7 @@ class BaseEnv:
                 # 2. Prosthetic Actions: Grab only the column corresponding to the prosthetic physical joint
                 "prosthetic_current_actions": raw_current_actions[:, self.simulator.common_torque_joints],
                 "prosthetic_previous_actions": raw_previous_actions[:, self.simulator.common_torque_joints],
+                "prosthetic_current_dof_pos": current_state.dof_pos[:, self.simulator.common_torque_joints],
 
                 "prosthetic_current_torque": prosthetic_current_torque,
                 "prosthetic_previous_torque": prosthetic_previous_torque,
@@ -870,6 +873,7 @@ class BaseEnv:
                 
                 "humanoid_joints": self.simulator.humanoid_joints,
                 "prosthetic_joints": self.simulator.common_torque_joints,
+                "ankle_joint": self.config.ankle_dof_index,
 
                 "soft_dof_limits_lower": self.robot_config.kinematic_info.dof_limits_lower.to(
                     self.device

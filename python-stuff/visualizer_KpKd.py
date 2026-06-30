@@ -85,6 +85,7 @@ def plot_data():
         # ==========================================================
         plt.figure(figsize=(12, 6))
         plt.plot(sim_kp, label="Kp", color="blue")
+        # plt.plot(np.diff(sim_kp)/(1/360), label="Kp derivative", color="red")
         plt.title("Kp")
         plt.xlabel("Sample")
         plt.ylabel("Kp")
@@ -96,6 +97,7 @@ def plot_data():
         # ==========================================================
         plt.figure(figsize=(12, 6))
         plt.plot(sim_kd, label="Kd", color="orange")
+        # plt.plot(np.diff(sim_kd)/(1/360), label="Kd derivative", color="red")
         plt.title("Kd")
         plt.xlabel("Sample")
         plt.ylabel("Kd")
@@ -119,6 +121,7 @@ def plot_data():
         # ==========================================================
         plt.figure(figsize=(12, 6))
         plt.plot(sim_theta_des, label="Theta Desired")
+        # plt.plot(np.diff(sim_theta_des)/(1/360), label="Theta Desired Derivative", color="red")
         plt.plot(sim_theta_cur, label="Theta Current")
         plt.title("Theta Desired vs Theta Current")
         plt.xlabel("Sample")

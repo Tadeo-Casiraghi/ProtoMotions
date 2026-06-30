@@ -188,6 +188,11 @@ class Simulator(ABC):
         )
 
         self.torque_old = torch.zeros(self.num_envs, len(self.robot_config.control.torque_joints), device=self.device)
+        self.kp_old = torch.zeros(self.num_envs, 1, device=self.device)
+        self.kd_old = torch.zeros(self.num_envs, 1, device=self.device)
+        self.theta_old = torch.zeros(self.num_envs, 1, device=self.device)
+        self.alpha_params = 0.05
+
         fc = 15
         pi = 3.14159265359
         self.alpha = (2*pi*fc*self.physics_dt)/(1 + 2*pi*fc*self.physics_dt)
@@ -424,6 +429,8 @@ class Simulator(ABC):
         raw_kp    = self._common_actions[:, self.num_dofs + 0].unsqueeze(-1)
         raw_kd    = self._common_actions[:, self.num_dofs + 1].unsqueeze(-1)
 
+
+
         # 3. Pre-calculate physical constraints and cache them as instance variables
         self.cached_kp_phys, self.cached_kd_phys, self.cached_desired_angle = (
             self._action_to_impedance_targets(raw_theta, raw_kp, raw_kd)
@@ -462,9 +469,15 @@ class Simulator(ABC):
         if env_ids is None:
             # If env_ids is None, Isaac Lab is resetting ALL environments at once
             self.torque_old.zero_()
+            self.kp_old.one_()*300
+            self.kd_old.one_()*5
+            self.theta_old.zero_()
         else:
             # Reset only the specific environments that just finished/crashed
             self.torque_old[env_ids] = 0.0
+            self.kp_old[env_ids] = 300.0
+            self.kd_old[env_ids] = 5.0
+            self.theta_old[env_ids] = 0.0
 
     @abstractmethod
     def _set_simulator_env_state(
@@ -877,7 +890,7 @@ class Simulator(ABC):
         # Map [-1, 1] -> [-pi, pi]
         desired_angle = raw_theta * 3.14 + 0.0
         
-        # Map [-1, 1] -> [0, 1000]
+        # Map [-1, 1] -> [0, 2000]
         kp_phys       = raw_kp * 1000.0 + 1000.0
         
         # Map [-1, 1] -> [0, 10]
@@ -938,30 +951,38 @@ class Simulator(ABC):
             common_dof_state = self._get_simulator_dof_state().convert_to_common(self.data_conversion)
             current_angle = common_dof_state.dof_pos[:, self.common_torque_joints]
             current_vel   = common_dof_state.dof_vel[:, self.common_torque_joints]
+
+            current_kp = self.alpha_params * self.cached_kp_phys + (1 - self.alpha_params) * self.kp_old
+            current_kd = self.alpha_params * self.cached_kd_phys + (1 - self.alpha_params) * self.kd_old
+            current_theta = self.alpha_params * self.cached_desired_angle + (1 - self.alpha_params) * self.theta_old
+
+            self.kp_old = current_kp
+            self.kd_old = current_kd
+            self.theta_old = current_theta
             
             # 2. Use the pre-computed, cached 30 Hz targets directly
             torque_desired = (
-                self.cached_kp_phys * (self.cached_desired_angle - current_angle) 
-                - self.cached_kd_phys * current_vel
+                current_kp * (current_theta - current_angle) 
+                - current_kd * current_vel
             )
             # Low-pass filter the torques to reduce high-frequency noise
             torque = self.alpha * torque_desired + (1 - self.alpha) * self.torque_old
             self.torque_old = torque
 
-            # Print header once
-            if not hasattr(self, "_printed_pd_header"):
-                print("kp,kd,theta_des,theta_cur,vel_cur,torque_calc,torque_applied")
-                self._printed_pd_header = True
+            # # Print header once
+            # if not hasattr(self, "_printed_pd_header"):
+            #     print("kp,kd,theta_des,theta_cur,vel_cur,torque_calc,torque_applied")
+            #     self._printed_pd_header = True
 
-            print(
-                f"{self.cached_kp_phys[0, 0].item()},"
-                f"{self.cached_kd_phys[0, 0].item()},"
-                f"{self.cached_desired_angle[0, 0].item()},"
-                f"{current_angle[0, 0].item()},"
-                f"{current_vel[0, 0].item()},"
-                f"{torque_desired[0, 0].item()},"
-                f"{torque[0, 0].item()}"
-            )
+            # print(
+            #     f"{current_kp[0, 0].item()},"
+            #     f"{current_kd[0, 0].item()},"
+            #     f"{current_theta[0, 0].item()},"
+            #     f"{current_angle[0, 0].item()},"
+            #     f"{current_vel[0, 0].item()},"
+            #     f"{torque_desired[0, 0].item()},"
+            #     f"{torque[0, 0].item()}"
+            # )
 
             # 4. Clone the cached targets base view to modify it safely
             pd_targets = self.cached_pd_targets.clone()

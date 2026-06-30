@@ -109,3 +109,4 @@ class EnvConfig(ConfigBuilder):
     passive_defaults_map: Optional[Dict[str, float]] = None
     active_dof_indices: Optional[List[int]] = None
     passive_dof_defaults: Optional[Dict[int, float]] = None
+    ankle_dof_index: Optional[int] = None
