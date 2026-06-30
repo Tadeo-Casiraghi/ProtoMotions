@@ -104,8 +104,7 @@
           <body name="skin_box_lateral_bottom" pos="-0.012721852933263722 -0.020806633011236086 -0.1205882137015021" quat="0.7745746530175288 -0.6166989983853296 -0.046512854319300176 0.13248776047762917">
               <geom class="lateral" type="box" size="0.005000 0.005000 0.005277" density="112045" rgba="1 1 0 1"/> 
           </body>
-
-          <body name="osl_tibial_pylon" pos="-0.03 0.006 -0.2315" quat="0.707035 0.707179 0 0">
+          <body name="osl_tibial_pylon" pos="-0.025 0.009 -0.2315" quat="0.692209  0.719785 0.037474 -0.036767">
             <inertial pos="0 0 0" mass="0.0629248" diaginertia="0.001 0.001 0.001"/>
 
             <geom name="osl_tibial_pylon_geom_1" type="cylinder" size="0.012 0.070499651775824771" quat="0.707035 0.707179 0 0" rgba="0 0 0 1.0" condim="3" contype="1"/>
