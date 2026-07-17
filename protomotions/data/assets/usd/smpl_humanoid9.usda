@@ -172,9 +172,12 @@ over "Flattened_Prototype_93"
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_9" (
-            apiSchemas = ["PhysicsCollisionAPI"]
+            apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
+            float physxCollision:contactOffset = 0.002
+            float physxCollision:restOffset = 0.0005
+            
             float3[] extent = [(-0.005, -0.005, -0.008767), (0.005, 0.005, 0.008767)]
         }
     }
@@ -211,9 +214,12 @@ over "Flattened_Prototype_95"
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_12" (
-            apiSchemas = ["PhysicsCollisionAPI"]
+            apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
+            float physxCollision:contactOffset = 0.002
+            float physxCollision:restOffset = 0.0005
+            
             float3[] extent = [(-0.005, -0.005, -0.005277), (0.005, 0.005, 0.005277)]
         }
     }
@@ -714,9 +720,12 @@ over "Flattened_Prototype_120"
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_8" (
-            apiSchemas = ["PhysicsCollisionAPI"]
+            apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
+            float physxCollision:contactOffset = 0.002
+            float physxCollision:restOffset = 0.0005
+            
             float3[] extent = [(-0.005, -0.005, -0.008767), (0.005, 0.005, 0.008767)]
         }
     }
@@ -732,9 +741,12 @@ over "Flattened_Prototype_121"
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_10" (
-            apiSchemas = ["PhysicsCollisionAPI"]
+            apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
+            float physxCollision:contactOffset = 0.002
+            float physxCollision:restOffset = 0.0005
+            
             float3[] extent = [(-0.005, -0.005, -0.008767), (0.005, 0.005, 0.008767)]
         }
     }
@@ -1108,9 +1120,12 @@ over "Flattened_Prototype_142"
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_7" (
-            apiSchemas = ["PhysicsCollisionAPI"]
+            apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
+            float physxCollision:contactOffset = 0.002
+            float physxCollision:restOffset = 0.0005
+            
             float3[] extent = [(-0.005, -0.005, -0.008767), (0.005, 0.005, 0.008767)]
         }
     }
@@ -1169,9 +1184,12 @@ over "Flattened_Prototype_145"
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_11" (
-            apiSchemas = ["PhysicsCollisionAPI"]
+            apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
+            float physxCollision:contactOffset = 0.002
+            float physxCollision:restOffset = 0.0005
+            
             float3[] extent = [(-0.005, -0.005, -0.005277), (0.005, 0.005, 0.005277)]
         }
     }
@@ -1373,9 +1391,12 @@ over "Flattened_Prototype_156"
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_14" (
-            apiSchemas = ["PhysicsCollisionAPI"]
+            apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
+            float physxCollision:contactOffset = 0.002
+            float physxCollision:restOffset = 0.0005
+            
             float3[] extent = [(-0.005, -0.005, -0.005277), (0.005, 0.005, 0.005277)]
         }
     }
@@ -1417,9 +1438,12 @@ over "Flattened_Prototype_159"
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_13" (
-            apiSchemas = ["PhysicsCollisionAPI"]
+            apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
+            float physxCollision:contactOffset = 0.002
+            float physxCollision:restOffset = 0.0005
+            
             float3[] extent = [(-0.005, -0.005, -0.005277), (0.005, 0.005, 0.005277)]
         }
     }
@@ -3872,6 +3896,9 @@ def Xform "smpl_humanoid9" (
                 add references = </Flattened_Prototype_91>
             )
             {
+                rel material:binding = </smpl_humanoid9/Looks/SocketMaterial> (
+                    bindMaterialAs = "weakerThanDescendants"
+                )
                 token visibility = "invisible"
             }
         }
@@ -3899,6 +3926,9 @@ def Xform "smpl_humanoid9" (
                 add references = </Flattened_Prototype_146>
             )
             {
+                rel material:binding = </smpl_humanoid9/Looks/SocketMaterial> (
+                    bindMaterialAs = "weakerThanDescendants"
+                )
                 token visibility = "invisible"
             }
         }
@@ -3926,6 +3956,9 @@ def Xform "smpl_humanoid9" (
                 add references = </Flattened_Prototype_138>
             )
             {
+                rel material:binding = </smpl_humanoid9/Looks/SocketMaterial> (
+                    bindMaterialAs = "weakerThanDescendants"
+                )
                 token visibility = "invisible"
             }
         }
@@ -3953,6 +3986,9 @@ def Xform "smpl_humanoid9" (
                 add references = </Flattened_Prototype_150>
             )
             {
+                rel material:binding = </smpl_humanoid9/Looks/SocketMaterial> (
+                    bindMaterialAs = "weakerThanDescendants"
+                )
                 token visibility = "invisible"
             }
         }
@@ -3980,6 +4016,9 @@ def Xform "smpl_humanoid9" (
                 add references = </Flattened_Prototype_152>
             )
             {
+                rel material:binding = </smpl_humanoid9/Looks/SocketMaterial> (
+                    bindMaterialAs = "weakerThanDescendants"
+                )
                 token visibility = "invisible"
             }
         }
@@ -4007,6 +4046,9 @@ def Xform "smpl_humanoid9" (
                 add references = </Flattened_Prototype_116>
             )
             {
+                rel material:binding = </smpl_humanoid9/Looks/SocketMaterial> (
+                    bindMaterialAs = "weakerThanDescendants"
+                )
                 token visibility = "invisible"
             }
         }
@@ -4034,6 +4076,9 @@ def Xform "smpl_humanoid9" (
                 add references = </Flattened_Prototype_155>
             )
             {
+                rel material:binding = </smpl_humanoid9/Looks/SocketMaterial> (
+                    bindMaterialAs = "weakerThanDescendants"
+                )
                 token visibility = "invisible"
             }
         }
@@ -4061,6 +4106,9 @@ def Xform "smpl_humanoid9" (
                 add references = </Flattened_Prototype_149>
             )
             {
+                rel material:binding = </smpl_humanoid9/Looks/SocketMaterial> (
+                    bindMaterialAs = "weakerThanDescendants"
+                )
                 token visibility = "invisible"
             }
         }
@@ -5975,11 +6023,11 @@ def Xform "smpl_humanoid9" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 0.4
-            float physics:staticFriction = 0.8
+            float physics:dynamicFriction = 0.12
+            float physics:staticFriction = 0.12
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping =  5000
-            float physxMaterial:compliantContactStiffness = 87500
+            float physxMaterial:compliantContactDamping = 1300.0
+            float physxMaterial:compliantContactStiffness = 140000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
 
@@ -5990,11 +6038,11 @@ def Xform "smpl_humanoid9" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 0.4
-            float physics:staticFriction = 0.8
+            float physics:dynamicFriction = 0.12
+            float physics:staticFriction = 0.12
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 5000
-            float physxMaterial:compliantContactStiffness = 65000
+            float physxMaterial:compliantContactDamping = 1300.0
+            float physxMaterial:compliantContactStiffness = 104000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
 
@@ -6005,11 +6053,11 @@ def Xform "smpl_humanoid9" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 0.4
-            float physics:staticFriction = 0.8
+            float physics:dynamicFriction = 0.12
+            float physics:staticFriction = 0.12
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 5000
-            float physxMaterial:compliantContactStiffness = 25000
+            float physxMaterial:compliantContactDamping = 1300.0
+            float physxMaterial:compliantContactStiffness = 46666
             uniform token ui:nodegraph:node:expansionState = "open"
         }
 
@@ -6020,13 +6068,21 @@ def Xform "smpl_humanoid9" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 0.4
-            float physics:staticFriction = 0.8
+            float physics:dynamicFriction = 0.12
+            float physics:staticFriction = 0.12
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 5000
-            float physxMaterial:compliantContactStiffness = 46666
+            float physxMaterial:compliantContactDamping = 1300.0
+            float physxMaterial:compliantContactStiffness = 74500
             uniform token ui:nodegraph:node:expansionState = "open"
+        }
+
+        def Material "SocketMaterial" (
+            apiSchemas = ["PhysicsMaterialAPI"]
+        )
+        {
+            float physics:staticFriction = 0.12
+            float physics:dynamicFriction = 0.12
+            float physics:restitution = 0.0
         }
     }
 }
-

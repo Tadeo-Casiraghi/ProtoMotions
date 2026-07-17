@@ -773,6 +773,21 @@ class BaseEnv:
                         f"Failed to evaluate '{eval_string}' for reward '{reward_name}': {e}"
                     )
 
+            # # # === INSERT DEBUG PRINT HERE ===
+            # if reward_name == "theta_action":
+            #     # Extract the tensors from the evaluated keyword arguments
+            #     current_actions = func_kwargs.get("x")
+            #     ankle_ref_pos = func_kwargs.get("ref_x")
+            #     reward = component.function(**func_kwargs)
+                
+            #     # Option B: Print values for the first environment env[0] as a sample
+            #     if current_actions is not None and ankle_ref_pos is not None:
+            #         print(f", {current_actions[0].item()}, {ankle_ref_pos[0]}, {reward[0].item()}")  # Print on the same line
+            # if reward_name == "action_bounds":
+            #     current_dof = func_kwargs.get("dof_pos")
+            #     print(f"{current_dof[0][self.simulator.common_torque_joints].item()}", end="")  # Print on the same line
+            # # # =================================
+
             # Get cached indices if specified (pre-resolved at init time)
             if reward_name in self._reward_indices_cache:
                 func_kwargs["indices"] = self._reward_indices_cache[reward_name]
@@ -845,6 +860,7 @@ class BaseEnv:
             raw_previous_actions_prime[:, self.simulator.common_torque_joints] = 0.0
 
             current_state = self.simulator.get_robot_state()
+
 
             return {
                 "current_state": current_state,
@@ -920,6 +936,7 @@ class BaseEnv:
 
         # Build context for variable evaluation
         context = self._get_reward_context()
+
 
         # If the secondary reward flag is set, compute dynamics twice with different log prefixes
         if self.config.secondary_reward_flag:

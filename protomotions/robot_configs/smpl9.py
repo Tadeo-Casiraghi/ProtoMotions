@@ -151,41 +151,40 @@ class Smpl9RobotConfig(RobotConfig):
                 ),
 
                 "suspension_slide": ControlInfo(
-                   stiffness = 2000.0,
-                   damping = 2000.0,
+                   stiffness = 1000.0,
+                   damping = 0.0,
                    armature = 0.0,
-                   effort_limit = 200.0,
-                   velocity_limit = 100.0,
-                   friction = 0.0
+                   effort_limit = 2000.0,
+                   velocity_limit = 2
                 ),
                 "suspension_y": ControlInfo(
-                    stiffness = 5000.0,
-                    damping = 500.0,
+                    stiffness = 10.0,
+                    damping = 1.0,
                     armature = 0.0,
-                    effort_limit = 300.0,
-                    velocity_limit = 200.0,
+                    effort_limit = 2000.0,
+                    velocity_limit = 2000.0,
                     friction = 0.0
                 ),
                 "suspension_x": ControlInfo(
-                    stiffness = 5000.0,
-                    damping = 500.0,
+                    stiffness = 10.0,
+                    damping = 1.0,
                     armature = 0.0,
-                    effort_limit = 300.0,
-                    velocity_limit = 200.0,
+                    effort_limit = 2000.0,
+                    velocity_limit = 2000.0,
                     friction = 0.0
                 ),
                 "suspension_z": ControlInfo(
-                    stiffness = 5000.0,
-                    damping = 500.0,
+                    stiffness = 10.0,
+                    damping = 1.0,
                     armature = 0.0,
-                    effort_limit = 300.0,
-                    velocity_limit = 200.0,
+                    effort_limit = 2000.0,
+                    velocity_limit = 2000.0,
                     friction = 0.0
                 ),
                 "Motor": ControlInfo(
                     stiffness = 0.0,
                     damping = 0.0,
-                    armature = 0.0,
+                    armature = 0.001,
                     effort_limit = 200.0,
                     velocity_limit = 50.0,
                     friction = 0.0
@@ -207,7 +206,7 @@ class Smpl9RobotConfig(RobotConfig):
                 
                 physx=IsaacLabPhysXParams(
                     num_position_iterations=16,
-                    num_velocity_iterations=8, 
+                    num_velocity_iterations=4, 
                     contact_offset=0.002,
                     max_depenetration_velocity=1,
                 ),

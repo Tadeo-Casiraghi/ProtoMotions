@@ -130,8 +130,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             variables={
                 "x": "current_actions - previous_actions",
             },
-            # TADEO CHANGE GABI
-            weight= -0.004 # -0.08,
+            weight= -0.08,
         ),
         # Mimic tracking rewards
         "gt_rew": RewardComponentConfig(
@@ -151,11 +150,10 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "body_quats": "current_state.rigid_body_rot",
             },
             indices_subset=["skin_bodies"],
-            # weight=-1e-4,  # Negative = Penalty
-            # min_value=-0.5,
-            # TADEO ESTO ES TEMPORARIO
-            weight=-4e-4,  # Start with a small penalty and increase if needed
-            min_value=-1.0,  # Cap the maximum penalty to prevent destabilization
+            weight=-1e-4,  # Negative = Penalty
+            min_value=-0.5,
+            # weight=-4e-4,  # Start with a small penalty and increase if needed
+            # min_value=-1.0,  # Cap the maximum penalty to prevent destabilization
         ),
         "gr_rew": RewardComponentConfig(
             function=rotation_error_exp,
@@ -204,7 +202,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "use_torque_squared": "False",
                 "indices": "humanoid_joints",  # Only penalize power for humanoid joints, not prosthetic
             },
-            weight=-7.5e-7, # TADEO -7.5e-5,
+            weight=-7.5e-5, # TADEO -7.5e-5,
             min_value=-0.75,
             zero_during_grace_period=False,
             # TADEO ACA HAY QUE REVISAR ESTO indices_subset=["all_physical_dofs"]
@@ -215,7 +213,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "sim_contacts": "current_state.rigid_body_contacts",
                 "ref_contacts": "ref_state.rigid_body_contacts",
             },
-            indices_subset=["all_left_foot_bodies"], #, "all_right_foot_bodies"],
+            indices_subset=["all_left_foot_bodies"], # , "all_right_foot_bodies"],
             weight=-0.2,
             zero_during_grace_period=True,
         ),
@@ -225,8 +223,8 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "current_forces": "current_contact_force_magnitudes",
                 "previous_forces": "prev_contact_force_magnitudes",
             },
-            indices_subset=["all_left_foot_bodies"], #, "all_right_foot_bodies"],
-            weight=-1e-5,
+            indices_subset=["all_left_foot_bodies"], # , "all_right_foot_bodies"],
+            weight=-1e-4,
             min_value=-0.5,
             zero_during_grace_period=True,
         ),
@@ -240,51 +238,51 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         #     },
         #     weight=-0.05,
         # ),
-        "action_smoothness_prosthetic_angle": RewardComponentConfig(
-            function=norm,
-            variables={"x": "prosthetic_current_actions - prosthetic_previous_actions"},
-            weight=-2e-1,  # Maybe stiffer penalty for prosthetic?
-        ),
-        "action_smoothness_prosthetic_kpkd": RewardComponentConfig(
-            function=norm,
-            variables={"x": "prosthetic_current_gains - prosthetic_previous_gains"},
-            weight=-4e-2,  # Maybe stiffer penalty for prosthetic?
-        ), 
-        "torque_smoothness_prosthetic_ankle": RewardComponentConfig(
-            function=norm,
-            variables={"x": "prosthetic_current_torque - prosthetic_previous_torque"},
-            weight=-5e-4,  # Start small; torque magnitudes are much larger than actions/gains
-        ),
-        "torque_bounds": RewardComponentConfig(
-            function=norm,
-            variables={"x": "prosthetic_current_torque"},
-            weight=-2e-2,
-        ),
-        "Kp_bounds": RewardComponentConfig(
-            function=norm,
-            variables={"x": "prosthetic_current_kp + 1"},
-            # Add 1 so that instead of centering in 0 --> 1000,
-            # we center in -1 --> 0, which is the actual output range of the agent.
-            # This way we can directly penalize large gains without needing to shift the output distribution.
-            weight=-1e-2,
-        ),
-        "action_bounds": RewardComponentConfig(
-            function=joint_limit_violation,
-            variables={"dof_pos": "current_state.dof_pos",
-                       "dof_limits_lower": "soft_dof_limits_lower",
-                       "dof_limits_upper": "soft_dof_limits_upper",},
-            weight=-4e0,
-            indices_subset=["motor_joints"],
-        ),
-        "theta_action": RewardComponentConfig(
-            function=mean_squared_error_exp,
-            variables={
-                "x": "prosthetic_previous_actions",
-                "ref_x": "prosthetic_current_dof_pos",
-                "coefficient": "-100.0",
-            },
-            weight=0.3,
-        ),
+        # "action_smoothness_prosthetic_angle": RewardComponentConfig(
+        #     function=norm,
+        #     variables={"x": "prosthetic_current_actions - prosthetic_previous_actions"},
+        #     weight=-2e-1,  # Maybe stiffer penalty for prosthetic?
+        # ),
+        # "action_smoothness_prosthetic_kpkd": RewardComponentConfig(
+        #     function=norm,
+        #     variables={"x": "prosthetic_current_gains - prosthetic_previous_gains"},
+        #     weight=-4e-2,  # Maybe stiffer penalty for prosthetic?
+        # ), 
+        # "torque_smoothness_prosthetic_ankle": RewardComponentConfig(
+        #     function=norm,
+        #     variables={"x": "prosthetic_current_torque - prosthetic_previous_torque"},
+        #     weight=-1e-4,  # Start small; torque magnitudes are much larger than actions/gains
+        # ),
+        # "torque_bounds": RewardComponentConfig(
+        #     function=norm,
+        #     variables={"x": "prosthetic_current_torque"},
+        #     weight=-2e-4,
+        # ),
+        # "Kp_bounds": RewardComponentConfig(
+        #     function=norm,
+        #     variables={"x": "prosthetic_current_kp + 1"},
+        #     # Add 1 so that instead of centering in 0 --> 1000,
+        #     # we center in -1 --> 0, which is the actual output range of the agent.
+        #     # This way we can directly penalize large gains without needing to shift the output distribution.
+        #     weight=-5e-2,
+        # ),
+        # "action_bounds": RewardComponentConfig(
+        #     function=joint_limit_violation,
+        #     variables={"dof_pos": "current_state.dof_pos",
+        #                "dof_limits_lower": "soft_dof_limits_lower",
+        #                "dof_limits_upper": "soft_dof_limits_upper",},
+        #     weight=-8e0,
+        #     indices_subset=["motor_joints"],
+        # ),
+        # "theta_action": RewardComponentConfig(
+        #     function=mean_squared_error_exp,
+        #     variables={
+        #         "x": "prosthetic_previous_actions",
+        #         "ref_x": "prosthetic_current_dof_pos",
+        #         "coefficient": "-100.0",
+        #     },
+        #     weight=0.1,
+        # ),
         # "skin_rew": RewardComponentConfig(
         #     function=skin_pressure_penalty,
         #     variables={
@@ -292,108 +290,107 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         #         "body_quats": "current_state.rigid_body_rot",
         #     },
         #     indices_subset=["skin_bodies"],
-        #     weight=-2.5e-4, 
+        #     weight=-2.5e-5, 
         #     min_value=-1.0,
         # ),
-        # "theta_action": RewardComponentConfig(
+        "theta_action": RewardComponentConfig(
+            function=mean_squared_error_exp,
+            variables={
+                "x": "prosthetic_current_actions * 3.14",
+                "ref_x": "ref_state.dof_pos[:, ankle_joint]",
+                "coefficient": "-100.0",
+            },
+            weight=1.0,
+        ),
+        # "gt_rew_ankle": RewardComponentConfig(
         #     function=mean_squared_error_exp,
         #     variables={
-        #         "x": "prosthetic_current_actions",
-        #         "ref_x": "ref_state.dof_pos",
-        #         "indices": "ankle_joint",
+        #         "x": "current_state.rigid_body_pos",
+        #         "ref_x": "ref_state.rigid_body_pos",
         #         "coefficient": "-100.0",
         #     },
-        #     weight=0.2,
+        #     indices_subset=["output_ankle"],
+        #     weight=0.4/5,
         # ),
-        "gt_rew_ankle": RewardComponentConfig(
-            function=mean_squared_error_exp,
-            variables={
-                "x": "current_state.rigid_body_pos",
-                "ref_x": "ref_state.rigid_body_pos",
-                "coefficient": "-100.0",
-            },
-            indices_subset=["output_ankle"],
-            weight=0.4,
-        ),
-        "gr_rew_ankle": RewardComponentConfig(
-            function=rotation_error_exp,
-            variables={
-                "q": "current_state.rigid_body_rot",
-                "ref_q": "ref_state.rigid_body_rot",
-                "coefficient": "-5.0",
-            },
-            indices_subset=["output_ankle"],
-            weight=0.8,
-        ),
-        "gv_rew_ankle": RewardComponentConfig(
-            function=mean_squared_error_exp,
-            variables={
-                "x": "current_state.rigid_body_vel",
-                "ref_x": "ref_state.rigid_body_vel",
-                "coefficient": "-0.5",
-            },
-            indices_subset=["output_ankle"],
-            weight=0.05,
-        ),
-        "gav_rew_ankle": RewardComponentConfig(
-            function=mean_squared_error_exp,
-            variables={
-                "x": "current_state.rigid_body_ang_vel",
-                "ref_x": "ref_state.rigid_body_ang_vel",
-                "coefficient": "-0.1",
-            },
-            indices_subset=["output_ankle"],
-            weight=1e-1,
-        ),
-        "gt_rew": RewardComponentConfig(
-            function=mean_squared_error_exp,
-            variables={
-                "x": "current_state.rigid_body_pos",
-                "ref_x": "ref_state.rigid_body_pos",
-                "coefficient": "-100.0",
-            },
-            indices_subset=["tracking_bodies"],
-            weight=0.3,
-        ),
-        "gr_rew": RewardComponentConfig(
-            function=rotation_error_exp,
-            variables={
-                "q": "current_state.rigid_body_rot",
-                "ref_q": "ref_state.rigid_body_rot",
-                "coefficient": "-5.0",
-            },
-            indices_subset=["tracking_bodies"],
-            weight=0.2,
-        ),
-        "gv_rew": RewardComponentConfig(
-            function=mean_squared_error_exp,
-            variables={
-                "x": "current_state.rigid_body_vel",
-                "ref_x": "ref_state.rigid_body_vel",
-                "coefficient": "-0.5",
-            },
-            indices_subset=["tracking_bodies"],
-            weight=0.05,
-        ),
-        "gav_rew": RewardComponentConfig(
-            function=mean_squared_error_exp,
-            variables={
-                "x": "current_state.rigid_body_ang_vel",
-                "ref_x": "ref_state.rigid_body_ang_vel",
-                "coefficient": "-0.1",
-            },
-            indices_subset=["tracking_bodies"],
-            weight=0.05,
-        ),
-        "rh_rew": RewardComponentConfig(
-            function=mean_squared_error_exp,
-            variables={
-                "x": "current_state.rigid_body_pos[:, 0, 2]",  # Root height (z-coord of body 0)
-                "ref_x": "ref_state.rigid_body_pos[:, 0, 2]",
-                "coefficient": "-100.0",
-            },
-            weight=0.05,
-        ),
+        # "gr_rew_ankle": RewardComponentConfig(
+        #     function=rotation_error_exp,
+        #     variables={
+        #         "q": "current_state.rigid_body_rot",
+        #         "ref_q": "ref_state.rigid_body_rot",
+        #         "coefficient": "-5.0",
+        #     },
+        #     indices_subset=["output_ankle"],
+        #     weight=0.8/10,
+        # ),
+        # "gv_rew_ankle": RewardComponentConfig(
+        #     function=mean_squared_error_exp,
+        #     variables={
+        #         "x": "current_state.rigid_body_vel",
+        #         "ref_x": "ref_state.rigid_body_vel",
+        #         "coefficient": "-0.5",
+        #     },
+        #     indices_subset=["output_ankle"],
+        #     weight=0.05/10,
+        # ),
+        # "gav_rew_ankle": RewardComponentConfig(
+        #     function=mean_squared_error_exp,
+        #     variables={
+        #         "x": "current_state.rigid_body_ang_vel",
+        #         "ref_x": "ref_state.rigid_body_ang_vel",
+        #         "coefficient": "-0.1",
+        #     },
+        #     indices_subset=["output_ankle"],
+        #     weight=1e-1,
+        # ),
+        # "gt_rew": RewardComponentConfig(
+        #     function=mean_squared_error_exp,
+        #     variables={
+        #         "x": "current_state.rigid_body_pos",
+        #         "ref_x": "ref_state.rigid_body_pos",
+        #         "coefficient": "-100.0",
+        #     },
+        #     indices_subset=["tracking_bodies"],
+        #     weight=0.3/10,
+        # ),
+        # "gr_rew": RewardComponentConfig(
+        #     function=rotation_error_exp,
+        #     variables={
+        #         "q": "current_state.rigid_body_rot",
+        #         "ref_q": "ref_state.rigid_body_rot",
+        #         "coefficient": "-5.0",
+        #     },
+        #     indices_subset=["tracking_bodies"],
+        #     weight=0.2/10,
+        # ),
+        # "gv_rew": RewardComponentConfig(
+        #     function=mean_squared_error_exp,
+        #     variables={
+        #         "x": "current_state.rigid_body_vel",
+        #         "ref_x": "ref_state.rigid_body_vel",
+        #         "coefficient": "-0.5",
+        #     },
+        #     indices_subset=["tracking_bodies"],
+        #     weight=0.05,
+        # ),
+        # "gav_rew": RewardComponentConfig(
+        #     function=mean_squared_error_exp,
+        #     variables={
+        #         "x": "current_state.rigid_body_ang_vel",
+        #         "ref_x": "ref_state.rigid_body_ang_vel",
+        #         "coefficient": "-0.1",
+        #     },
+        #     indices_subset=["tracking_bodies"],
+        #     weight=0.05,
+        # ),
+        # "rh_rew": RewardComponentConfig(
+        #     function=mean_squared_error_exp,
+        #     variables={
+        #         "x": "current_state.rigid_body_pos[:, 0, 2]",  # Root height (z-coord of body 0)
+        #         "ref_x": "ref_state.rigid_body_pos[:, 0, 2]",
+        #         "coefficient": "-100.0",
+        #     },
+        #     weight=0.05,
+        # ),
         # "pow_rew_human": RewardComponentConfig(
         #     function=power_consumption_sum,
         #     variables={
@@ -415,32 +412,32 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         #         "use_torque_squared": "False",
         #         "indices": "prosthetic_joints",  # Only penalize power for humanoid joints, not prosthetic
         #     },
-        #     weight=-7.5e-4,  # Maybe softer power penalty for secondary reward?
+        #     weight=-2.0e-4,  # Maybe softer power penalty for secondary reward?
         #     min_value=-0.75,
         #     zero_during_grace_period=False,
         #     # TADEO ACA HAY QUE REVISAR ESTO indices_subset=["all_physical_dofs"]
         # ),
-        "contact_match_rew": RewardComponentConfig(
-            function=contact_mismatch_sum,
-            variables={
-                "sim_contacts": "current_state.rigid_body_contacts",
-                "ref_contacts": "ref_state.rigid_body_contacts",
-            },
-            indices_subset=["all_left_foot_bodies"], #, "all_right_foot_bodies"],
-            weight=-0.1,
-            zero_during_grace_period=True,
-        ),
-        "contact_force_change_rew": RewardComponentConfig(
-            function=impact_force_penalty,
-            variables={
-                "current_forces": "current_contact_force_magnitudes",
-                "previous_forces": "prev_contact_force_magnitudes",
-            },
-            indices_subset=["all_left_foot_bodies"], #, "all_right_foot_bodies"],
-            weight=-1e-5*0.5,
-            min_value=-0.5,
-            zero_during_grace_period=True,
-        ),
+        # "contact_match_rew": RewardComponentConfig(
+        #     function=contact_mismatch_sum,
+        #     variables={
+        #         "sim_contacts": "current_state.rigid_body_contacts",
+        #         "ref_contacts": "ref_state.rigid_body_contacts",
+        #     },
+        #     indices_subset=["all_left_foot_bodies", "all_right_foot_bodies"],
+        #     weight=-0.05,
+        #     zero_during_grace_period=True,
+        # ),
+        # "contact_force_change_rew": RewardComponentConfig(
+        #     function=impact_force_penalty,
+        #     variables={
+        #         "current_forces": "current_contact_force_magnitudes",
+        #         "previous_forces": "prev_contact_force_magnitudes",
+        #     },
+        #     indices_subset=["all_left_foot_bodies", "all_right_foot_bodies"],
+        #     weight=-1e-6,
+        #     min_value=-0.5,
+        #     zero_during_grace_period=True,
+        # ),
     }
 
 

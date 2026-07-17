@@ -227,6 +227,9 @@ def compute_prosthetic_observations(
             base_acc = torch.tensor([8.0, 9.0, 10.0], device=local_acc.device)
             local_acc = torch.ones_like(local_acc) * (base_acc + time_offset)
 
+        # # Debug print (will print in csv format angkle angle and motor angle)
+        # print(f"{ankle_angle.item()},{motor_angle.item()}")
+
         # --- Combine ---
         return torch.cat([
             ankle_angle, 

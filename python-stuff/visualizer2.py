@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # --- CONFIGURATION ---
-FILE_PATH = "python-stuff/multiple_arrays.npz" # Ensure path is correct
+FILE_PATH = "multiple_arrays.npz" # Ensure path is correct
 DT = 1.0 / 30.0
 skin_names = [
     "skin_box_posterior_top", "skin_box_medial_top",

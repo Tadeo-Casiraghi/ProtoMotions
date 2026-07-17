@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # --- CONFIGURATION ---
-FILE_PATH = "python-stuff/multiple_arrays.npz"   # Ensure path is correct
-FILE_PATH2 = "python-stuff/sim_torque.txt"       # CSV file from simulator logger
+FILE_PATH = "multiple_arrays.npz"   # Ensure path is correct
+FILE_PATH2 = "sim_torque.txt"       # CSV file from simulator logger
 DT = 1.0 / 30.0
 # ---------------------
 
@@ -60,74 +60,74 @@ def plot_data():
         # Expected header:
         # kp,kd,theta_des,theta_cur,vel_cur,torque_calc,torque_applied
         # ==========================================================
-        print(f"Loading {FILE_PATH2}...")
+        # print(f"Loading {FILE_PATH2}...")
 
-        sim_data = np.genfromtxt(
-            FILE_PATH2,
-            delimiter=",",
-            names=True,
-            dtype=float,
-        )
+        # sim_data = np.genfromtxt(
+        #     FILE_PATH2,
+        #     delimiter=",",
+        #     names=True,
+        #     dtype=float,
+        # )
 
-        sim_kp = sim_data["kp"]
-        sim_kd = sim_data["kd"]
+        # sim_kp = sim_data["kp"]
+        # sim_kd = sim_data["kd"]
 
-        sim_theta_des = sim_data["theta_des"]
-        sim_theta_cur = sim_data["theta_cur"]
+        # sim_theta_des = sim_data["theta_des"]
+        # sim_theta_cur = sim_data["theta_cur"]
 
-        sim_vel_cur = sim_data["vel_cur"]
+        # sim_vel_cur = sim_data["vel_cur"]
 
-        sim_torque_calc = sim_data["torque_calc"]
-        sim_torque_applied = sim_data["torque_applied"]
+        # sim_torque_calc = sim_data["torque_calc"]
+        # sim_torque_applied = sim_data["torque_applied"]
 
-        # ==========================================================
-        # FIGURE 1: KP
-        # ==========================================================
-        plt.figure(figsize=(12, 6))
-        plt.plot(sim_kp, label="Kp", color="blue")
-        # plt.plot(np.diff(sim_kp)/(1/360), label="Kp derivative", color="red")
-        plt.title("Kp")
-        plt.xlabel("Sample")
-        plt.ylabel("Kp")
-        plt.grid(True)
-        plt.legend()
+        # # ==========================================================
+        # # FIGURE 1: KP
+        # # ==========================================================
+        # plt.figure(figsize=(12, 6))
+        # plt.plot(sim_kp, label="Kp", color="blue")
+        # # plt.plot(np.diff(sim_kp)/(1/360), label="Kp derivative", color="red")
+        # plt.title("Kp")
+        # plt.xlabel("Sample")
+        # plt.ylabel("Kp")
+        # plt.grid(True)
+        # plt.legend()
 
-        # ==========================================================
-        # FIGURE 2: KD
-        # ==========================================================
-        plt.figure(figsize=(12, 6))
-        plt.plot(sim_kd, label="Kd", color="orange")
-        # plt.plot(np.diff(sim_kd)/(1/360), label="Kd derivative", color="red")
-        plt.title("Kd")
-        plt.xlabel("Sample")
-        plt.ylabel("Kd")
-        plt.grid(True)
-        plt.legend()
+        # # ==========================================================
+        # # FIGURE 2: KD
+        # # ==========================================================
+        # plt.figure(figsize=(12, 6))
+        # plt.plot(sim_kd, label="Kd", color="orange")
+        # # plt.plot(np.diff(sim_kd)/(1/360), label="Kd derivative", color="red")
+        # plt.title("Kd")
+        # plt.xlabel("Sample")
+        # plt.ylabel("Kd")
+        # plt.grid(True)
+        # plt.legend()
 
-        # ==========================================================
-        # FIGURE 3: Calculated Torque vs Applied Torque
-        # ==========================================================
-        plt.figure(figsize=(12, 6))
-        plt.plot(sim_torque_calc, label="Calculated Torque")
-        plt.plot(sim_torque_applied, label="Applied Torque")
-        plt.title("Calculated Torque vs Applied Torque")
-        plt.xlabel("Sample")
-        plt.ylabel("Torque")
-        plt.grid(True)
-        plt.legend()
+        # # ==========================================================
+        # # FIGURE 3: Calculated Torque vs Applied Torque
+        # # ==========================================================
+        # plt.figure(figsize=(12, 6))
+        # plt.plot(sim_torque_calc, label="Calculated Torque")
+        # plt.plot(sim_torque_applied, label="Applied Torque")
+        # plt.title("Calculated Torque vs Applied Torque")
+        # plt.xlabel("Sample")
+        # plt.ylabel("Torque")
+        # plt.grid(True)
+        # plt.legend()
 
-        # ==========================================================
-        # FIGURE 4: Desired Theta vs Current Theta
-        # ==========================================================
-        plt.figure(figsize=(12, 6))
-        plt.plot(sim_theta_des, label="Theta Desired")
-        # plt.plot(np.diff(sim_theta_des)/(1/360), label="Theta Desired Derivative", color="red")
-        plt.plot(sim_theta_cur, label="Theta Current")
-        plt.title("Theta Desired vs Theta Current")
-        plt.xlabel("Sample")
-        plt.ylabel("Angle (rad)")
-        plt.grid(True)
-        plt.legend()
+        # # ==========================================================
+        # # FIGURE 4: Desired Theta vs Current Theta
+        # # ==========================================================
+        # plt.figure(figsize=(12, 6))
+        # plt.plot(sim_theta_des, label="Theta Desired")
+        # # plt.plot(np.diff(sim_theta_des)/(1/360), label="Theta Desired Derivative", color="red")
+        # plt.plot(sim_theta_cur, label="Theta Current")
+        # plt.title("Theta Desired vs Theta Current")
+        # plt.xlabel("Sample")
+        # plt.ylabel("Angle (rad)")
+        # plt.grid(True)
+        # plt.legend()
 
         # ==========================================================
         # Optional: Original NPZ plots for comparison
@@ -167,7 +167,115 @@ def plot_data():
         plt.grid(True)
         plt.legend()
 
+        # # ==========================================================
+        # # Time axis and plotting mask
+        # # ==========================================================
+        # DT = 1/360
+        # MAX_PLOT_TIME = 10
+        # time = np.arange(len(sim_kp)) * DT
+
+        # if MAX_PLOT_TIME is None:
+        #     mask = np.ones_like(time, dtype=bool)
+        # else:
+        #     mask = time <= MAX_PLOT_TIME
+
+        # # ==========================================================
+        # # FIGURE: Policy outputs over time
+        # # ==========================================================
+        # fig, axs = plt.subplots(
+        #     3, 1,
+        #     figsize=(12, 8),
+        #     sharex=True
+        # )
+
+        # times = []
+        # kps = []
+        # kds = []
+        # thetas = []
+        # current = 0
+        # time0 = 0
+
+        # for t, kp, kd, th in zip(time, sim_kp, sim_kd, sim_theta_des):
+        #     if times == []:
+        #         times.append([])
+        #         kps.append([])
+        #         kds.append([])
+        #         thetas.append([])
+            
+        #     elif abs(kds[current][-1] - kd) > 2:
+        #         current += 1
+        #         time0 = t
+        #         times.append([])
+        #         kps.append([])
+        #         kds.append([])
+        #         thetas.append([])
+
+        #     times[current].append(t-time0)
+        #     kps[current].append(kp)
+        #     kds[current].append(kd)
+        #     thetas[current].append(th)
+            
+        # for i in range(len(times)):
+        #     time = np.array(times[i])
+        #     kp = np.array(kps[i])
+        #     kd = np.array(kds[i])
+        #     theta = np.array(thetas[i])
+
+        #     tim1 = 1.079
+        #     mask1 = (time > 1.079) & (time < 2.549)
+        #     tim2 = 2.549
+        #     mask2 = (time > tim2)
+        #     t1 = time[mask1]-tim1
+        #     mask3 = t1 < 1.1
+        #     t1 = t1[mask3]
+        #     t2 = time[mask2]-tim2
+        #     mask4 = t2 < 1.1
+        #     t2 = t2[mask4]
+        #     kp1 = kp[mask1]
+        #     kp1 = kp1[mask3]
+        #     kp2 = kp[mask2]
+        #     kp2 = kp2[mask4]
+
+        #     kd1 = kd[mask1]
+        #     kd1 = kd1[mask3]
+        #     kd2 = kd[mask2]
+        #     kd2 = kd2[mask4]
+
+        #     th1 = theta[mask1]
+        #     th1 = th1[mask3]
+        #     th2 = theta[mask2]
+        #     th2 = th2[mask4]
+
+            
+
+        #     axs[0].plot(t1, kp1, color="tab:blue", alpha=0.5)
+        #     axs[0].plot(t2, kp2, color="tab:blue", alpha=0.5)
+
+        #     axs[1].plot(t1, kd1, color="tab:orange", alpha=0.5)
+        #     axs[1].plot(t2, kd2, color="tab:orange", alpha=0.5)
+
+        #     axs[2].plot(t1, th1, color="tab:green", alpha=0.5)
+        #     axs[2].plot(t2, th2, color="tab:green", alpha=0.5)
+            
+        
+        # axs[0].set_ylabel("Kp")
+        # axs[0].set_title("Policy Kp")
+        # axs[0].grid(True)
+
+        # axs[1].set_ylabel("Kd")
+        # axs[1].set_title("Policy Kd")
+        # # axs[1].axvline(1344)
+        # axs[1].grid(True)
+
+        # axs[2].set_ylabel("Theta (rad)")
+        # axs[2].set_xlabel("Time (s)")
+        # axs[2].set_title("Policy Theta")
+        # axs[2].grid(True)
+
+        # plt.tight_layout()
+
         print("Displaying plots...")
+
         plt.show()
 
     except Exception as e:

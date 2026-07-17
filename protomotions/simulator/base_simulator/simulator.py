@@ -38,6 +38,7 @@ import os
 from collections import deque
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Tuple, Callable
+import numpy as np
 
 import torch
 from protomotions.utils import rotations
@@ -191,11 +192,14 @@ class Simulator(ABC):
         self.kp_old = torch.zeros(self.num_envs, 1, device=self.device)
         self.kd_old = torch.zeros(self.num_envs, 1, device=self.device)
         self.theta_old = torch.zeros(self.num_envs, 1, device=self.device)
-        self.alpha_params = 0.05
-
-        fc = 15
+        
+        fc_target = 20
+        fc_torque = 100
         pi = 3.14159265359
-        self.alpha = (2*pi*fc*self.physics_dt)/(1 + 2*pi*fc*self.physics_dt)
+
+        self.alpha = 1.0 - np.exp(-2.0 * pi * fc_torque * self.physics_dt)
+
+        self.alpha_params = 1.0 - np.exp(-2.0 * pi * fc_target * self.physics_dt)
 
     def _initialize_with_markers(
         self, visualization_markers: Optional[Dict[str, VisualizationMarkerConfig]]
