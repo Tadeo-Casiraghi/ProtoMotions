@@ -288,7 +288,7 @@ class MimicEvaluator(BaseEvaluator):
             obs_td = self.agent.obs_dict_to_tensordict(obs)
             # Update metrics
             self.update_metrics_from_env_extras(
-                metrics, extras, active_env_ids, active_motion_ids, prefix=True,
+                metrics, extras, active_env_ids, active_motion_ids, prefix=False,
             )
 
     def add_extra_obs_to_agent(self, obs: Tensor):
@@ -328,7 +328,7 @@ class MimicEvaluator(BaseEvaluator):
         # print("\n=== ALL extras keys ===")
         # for k in sorted(extras.keys()):
         #     print(k)
-
+        
         for k in metrics.keys():
             value = None
 
@@ -459,40 +459,40 @@ class MimicEvaluator(BaseEvaluator):
         ), "Simple test policy only supported for single process"
 
 
-        # 1. SETUP STORAGE
-        # Initialize a list to store the joint positions
-        prismatic_data = []
-        rotation_x = []
-        rotation_y = []
-        rotation_z = []
+        # # 1. SETUP STORAGE
+        # # Initialize a list to store the joint positions
+        # prismatic_data = []
+        # rotation_x = []
+        # rotation_y = []
+        # rotation_z = []
 
-        skin_forces_data = []
-        skin_forces_world_data = []  
-        skin_forces_knee_data = [] 
+        # skin_forces_data = []
+        # skin_forces_world_data = []  
+        # skin_forces_knee_data = [] 
 
-        target_body_name = "R_Knee" 
-        try:
-            # Depending on your config structure, body names might be in kinematic_info
-            # or you can look at self.env.simulator._body_names if accessible.
-            # Assuming standard ProtoMotions config structure:
-            sim_body_names = self.env.robot_config.kinematic_info.body_names
-            knee_body_idx = sim_body_names.index(target_body_name)
-            print(f"Found {target_body_name} at index {knee_body_idx}")
-        except ValueError:
-            print(f"ERROR: Could not find body '{target_body_name}'. Available: {sim_body_names}")
-            return # Stop execution if we can't find the knee
+        # target_body_name = "R_Knee" 
+        # try:
+        #     # Depending on your config structure, body names might be in kinematic_info
+        #     # or you can look at self.env.simulator._body_names if accessible.
+        #     # Assuming standard ProtoMotions config structure:
+        #     sim_body_names = self.env.robot_config.kinematic_info.body_names
+        #     knee_body_idx = sim_body_names.index(target_body_name)
+        #     print(f"Found {target_body_name} at index {knee_body_idx}")
+        # except ValueError:
+        #     print(f"ERROR: Could not find body '{target_body_name}'. Available: {sim_body_names}")
+        #     return # Stop execution if we can't find the knee
 
-        joint_name = "suspension_slide"
-        joint_idx = self.env.robot_config.kinematic_info.dof_names.index(joint_name)
+        # joint_name = "suspension_slide"
+        # joint_idx = self.env.robot_config.kinematic_info.dof_names.index(joint_name)
 
-        joint_name_x = "suspension_x"
-        joint_idx_x = self.env.robot_config.kinematic_info.dof_names.index(joint_name_x)
+        # joint_name_x = "suspension_x"
+        # joint_idx_x = self.env.robot_config.kinematic_info.dof_names.index(joint_name_x)
 
-        joint_name_y = "suspension_y"
-        joint_idx_y = self.env.robot_config.kinematic_info.dof_names.index(joint_name_y)
+        # joint_name_y = "suspension_y"
+        # joint_idx_y = self.env.robot_config.kinematic_info.dof_names.index(joint_name_y)
 
-        joint_name_z = "suspension_z"
-        joint_idx_z = self.env.robot_config.kinematic_info.dof_names.index(joint_name_z)
+        # joint_name_z = "suspension_z"
+        # joint_idx_z = self.env.robot_config.kinematic_info.dof_names.index(joint_name_z)
 
         num_motions = self.motion_lib.num_motions()
         motion_lengths = self.motion_lib.get_motion_length(None)
@@ -554,89 +554,89 @@ class MimicEvaluator(BaseEvaluator):
 
                 dof_state = self.env.simulator.get_dof_state()
                 
-                current_val = dof_state.dof_pos[0, joint_idx].item()
-                current_val_x = dof_state.dof_pos[0, joint_idx_x].item()
-                current_val_y = dof_state.dof_pos[0, joint_idx_y].item()
-                current_val_z = dof_state.dof_pos[0, joint_idx_z].item()
+                # current_val = dof_state.dof_pos[0, joint_idx].item()
+                # current_val_x = dof_state.dof_pos[0, joint_idx_x].item()
+                # current_val_y = dof_state.dof_pos[0, joint_idx_y].item()
+                # current_val_z = dof_state.dof_pos[0, joint_idx_z].item()
                 
-                prismatic_data.append(current_val)
-                rotation_x.append(current_val_x)
-                rotation_y.append(current_val_y)
-                rotation_z.append(current_val_z)
+                # prismatic_data.append(current_val)
+                # rotation_x.append(current_val_x)
+                # rotation_y.append(current_val_y)
+                # rotation_z.append(current_val_z)
 
-                # ------------------------------------------
-                # 1. Get Forces (World Frame)
-                # We stick to get_bodies_contact_buf for forces as we know it works
-                contact_buf = self.env.simulator.get_bodies_contact_buf()
-                all_forces = contact_buf.rigid_body_contact_forces
-                skin_forces_world_tensor = all_forces[:, self.env.skin_body_indices, :]
+                # # ------------------------------------------
+                # # 1. Get Forces (World Frame)
+                # # We stick to get_bodies_contact_buf for forces as we know it works
+                # contact_buf = self.env.simulator.get_bodies_contact_buf()
+                # all_forces = contact_buf.rigid_body_contact_forces
+                # skin_forces_world_tensor = all_forces[:, self.env.skin_body_indices, :]
 
-                forces_world_np = all_forces[0, self.env.skin_body_indices, :].detach().cpu().numpy()
+                # forces_world_np = all_forces[0, self.env.skin_body_indices, :].detach().cpu().numpy()
 
-                robot_state = self.env.simulator.get_robot_state()
-                # Shape: [4] (x, y, z, w) for env 0
-                knee_quat_np = robot_state.rigid_body_rot[0, knee_body_idx, :].detach().cpu().numpy()
-                r_knee = R.from_quat(knee_quat_np)
+                # robot_state = self.env.simulator.get_robot_state()
+                # # Shape: [4] (x, y, z, w) for env 0
+                # knee_quat_np = robot_state.rigid_body_rot[0, knee_body_idx, :].detach().cpu().numpy()
+                # r_knee = R.from_quat(knee_quat_np)
 
-                forces_knee_np = r_knee.inv().apply(forces_world_np)
-                # 2. Get Orientations (Using your new method)
-                # This returns the RobotState dataclass
+                # forces_knee_np = r_knee.inv().apply(forces_world_np)
+                # # 2. Get Orientations (Using your new method)
+                # # This returns the RobotState dataclass
                 
-                all_quats = robot_state.rigid_body_rot
-                skin_quats_tensor = all_quats[:, self.env.skin_body_indices, :]
+                # all_quats = robot_state.rigid_body_rot
+                # skin_quats_tensor = all_quats[:, self.env.skin_body_indices, :]
 
-                # 3. Convert to Numpy
-                forces_np = skin_forces_world_tensor[0].detach().cpu().numpy()
-                quats_np = skin_quats_tensor[0].detach().cpu().numpy()
+                # # 3. Convert to Numpy
+                # forces_np = skin_forces_world_tensor[0].detach().cpu().numpy()
+                # quats_np = skin_quats_tensor[0].detach().cpu().numpy()
 
-                # 4. Rotate to Local Frame (SciPy)
-                # RobotState uses (x, y, z, w). SciPy uses (x, y, z, w).
-                # No formatting/rolling needed.
-                rot = R.from_quat(quats_np)
+                # # 4. Rotate to Local Frame (SciPy)
+                # # RobotState uses (x, y, z, w). SciPy uses (x, y, z, w).
+                # # No formatting/rolling needed.
+                # rot = R.from_quat(quats_np)
                 
-                # Apply Inverse Rotation (World -> Local)
-                forces_local_np = rot.inv().apply(forces_np)
+                # # Apply Inverse Rotation (World -> Local)
+                # forces_local_np = rot.inv().apply(forces_np)
 
-                # 5. Store
-                skin_forces_data.append(forces_local_np)
-                skin_forces_world_data.append(forces_world_np)
-                skin_forces_knee_data.append(forces_knee_np)
-                # ------------------------------------------
+                # # 5. Store
+                # skin_forces_data.append(forces_local_np)
+                # skin_forces_world_data.append(forces_world_np)
+                # skin_forces_knee_data.append(forces_knee_np)
+                # # ------------------------------------------
 
-                blind_obs_tensor = obs["blind_body_obs"][0]
+                # blind_obs_tensor = obs["blind_body_obs"][0]
 
-                # 2. Calculate indices
-                # We know forces are appended at the very end.
-                # Size = Num_Bodies * 3 (X, Y, Z per body)
-                num_bodies = self.env.robot_config.kinematic_info.num_bodies
-                force_block_size = num_bodies * 3
+                # # 2. Calculate indices
+                # # We know forces are appended at the very end.
+                # # Size = Num_Bodies * 3 (X, Y, Z per body)
+                # num_bodies = self.env.robot_config.kinematic_info.num_bodies
+                # force_block_size = num_bodies * 3
 
-                # 3. Slice the tail of the observation
-                # This gives us [All_Bodies_Local_Force_X, All_Bodies_Local_Force_Y, ...]
-                obs_forces_flat = blind_obs_tensor[-force_block_size:]
+                # # 3. Slice the tail of the observation
+                # # This gives us [All_Bodies_Local_Force_X, All_Bodies_Local_Force_Y, ...]
+                # obs_forces_flat = blind_obs_tensor[-force_block_size:]
                 
-                # 4. Reshape to [Num_Bodies, 3]
-                obs_forces_all = obs_forces_flat.reshape(num_bodies, 3)
+                # # 4. Reshape to [Num_Bodies, 3]
+                # obs_forces_all = obs_forces_flat.reshape(num_bodies, 3)
 
-                # 5. Select only the Skin Indices (to compare apples-to-apples)
-                obs_skin_forces = obs_forces_all[self.env.skin_body_indices, :]
+                # # 5. Select only the Skin Indices (to compare apples-to-apples)
+                # obs_skin_forces = obs_forces_all[self.env.skin_body_indices, :]
                 
-                # 6. Store
-                observed_skin_forces_data.append(obs_skin_forces.detach().cpu().numpy())
+                # # 6. Store
+                # observed_skin_forces_data.append(obs_skin_forces.detach().cpu().numpy())
 
-                if len(prismatic_data) % 100 == 0:
-                    # Save all data including the new skin_forces
-                    np.savez('python-stuff/multiple_arrays.npz', 
-                             prismatic=prismatic_data, 
-                             rotx=rotation_x,
-                             roty=rotation_y,
-                             rotz=rotation_z,
-                             skin_forces=skin_forces_data,
-                             skin_forces_world=skin_forces_world_data,
-                             skin_forces_knee=skin_forces_knee_data,
-                             skin_forces_obs=observed_skin_forces_data)
-                    # Optional: Print a dot so you know it's working without spamming logs
-                    print(".", end="", flush=True)
+                # if len(prismatic_data) % 100 == 0:
+                #     # Save all data including the new skin_forces
+                #     np.savez('python-stuff/multiple_arrays.npz', 
+                #              prismatic=prismatic_data, 
+                #              rotx=rotation_x,
+                #              roty=rotation_y,
+                #              rotz=rotation_z,
+                #              skin_forces=skin_forces_data,
+                #              skin_forces_world=skin_forces_world_data,
+                #              skin_forces_knee=skin_forces_knee_data,
+                #              skin_forces_obs=observed_skin_forces_data)
+                #     # Optional: Print a dot so you know it's working without spamming logs
+                #     print(".", end="", flush=True)
 
                 if collect_metrics:
                     # remove duplicate motions sampled
@@ -648,7 +648,7 @@ class MimicEvaluator(BaseEvaluator):
                         device=self.device
                     )
                     self.update_metrics_from_env_extras(
-                        metrics, extras, cur_env_ids, cur_motion_ids, prefix=True,
+                        metrics, extras, cur_env_ids, cur_motion_ids, prefix=False,
                     )
 
                 done_indices = dones.nonzero(as_tuple=False).squeeze(-1)

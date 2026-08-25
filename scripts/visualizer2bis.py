@@ -10,9 +10,7 @@ def main():
     
     args = parser.parse_args()
 
-    tests = [(360,16,1),
-             (360,16,4),
-             (360,16,8)]
+    tests = [(360,16,4)]
     
     # Define file paths
     ground_truth_path = os.path.join(args.dir, "movement_freq4800hz_pos32_vel4.csv")

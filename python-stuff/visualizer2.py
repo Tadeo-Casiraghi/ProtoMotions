@@ -1,8 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 # --- CONFIGURATION ---
 FILE_PATH = "multiple_arrays.npz" # Ensure path is correct
+OUTPUT_DIR = "plots"
+
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
 DT = 1.0 / 30.0
 skin_names = [
     "skin_box_posterior_top", "skin_box_medial_top",
@@ -241,7 +246,25 @@ def plot_data():
             print(f"Verification Plot Generated. If yellow dashes overlap blue lines perfectly, data is correct.")
 
         print("Displaying plots...")
-        plt.show()
+        fig1.savefig(os.path.join(OUTPUT_DIR, "figure1_kinematics.png"),
+             dpi=300, bbox_inches="tight")
+        
+        fig2.savefig(os.path.join(OUTPUT_DIR, "figure2_local_forces.png"),
+             dpi=300, bbox_inches="tight")
+
+        fig3.savefig(os.path.join(OUTPUT_DIR, "figure3_knee_forces.png"),
+                    dpi=300, bbox_inches="tight")
+
+        fig4.savefig(os.path.join(OUTPUT_DIR, "figure4_net_knee_force.png"),
+                    dpi=300, bbox_inches="tight")
+
+        fig5.savefig(os.path.join(OUTPUT_DIR, "figure5_verification_z.png"),
+                    dpi=300, bbox_inches="tight")
+
+        fig6.savefig(os.path.join(OUTPUT_DIR, "figure6_verification_xy.png"),
+                    dpi=300, bbox_inches="tight")
+        
+        # plt.show()
 
     except Exception as e:
         print(f"An error occurred: {e}")

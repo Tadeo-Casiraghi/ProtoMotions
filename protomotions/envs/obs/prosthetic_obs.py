@@ -147,6 +147,7 @@ def compute_prosthetic_observations(
     ankle_dof_index: int,
     motor_dof_index: int,
     shank_body_index: int,
+    foot_body_index: int,
     dof_pos: Tensor,
     dof_vel: Tensor,
     body_lin_acc: Tensor,
@@ -198,11 +199,16 @@ def compute_prosthetic_observations(
         # --- Simulated IMU ---
 
         shank_rot = body_rot[:, shank_body_index]
+        foot_rot = body_rot[:, foot_body_index]
 
         # 9. Gyro: Local Angular Velocity
         global_ang_vel = body_ang_vel[:, shank_body_index]
         rot_inv = rotations.quat_conjugate(shank_rot, w_last)
         local_ang_vel = rotations.quat_rotate(rot_inv, global_ang_vel, w_last)
+
+        global_ang_vel_foot = body_ang_vel[:, foot_body_index]
+        rot_inv_foot = rotations.quat_conjugate(foot_rot, w_last)
+        local_ang_vel_foot = rotations.quat_rotate(rot_inv_foot, global_ang_vel_foot, w_last)
         if debug:
             # turn to 5.0, 6.0, 7.0 for debugging to see if these values are seen in the prosthetic input
             base_gyro = torch.tensor([5.0, 6.0, 7.0], device=local_ang_vel.device)
@@ -212,16 +218,23 @@ def compute_prosthetic_observations(
     
         # A. Get exact kinematic acceleration from simulator
         global_lin_acc = body_lin_acc[:, shank_body_index]
+        foot_lin_acc = body_lin_acc[:, foot_body_index]
         
         # B. Add Gravity Component to get Proper Acceleration
         # IMU reads 1g (9.81) upwards when stationary.
         gravity_vec = torch.zeros_like(global_lin_acc)
-        gravity_vec[:, 2] = 9.81
+        gravity_vec[:, 2] = -1.0
         
-        global_proper_acc = global_lin_acc + gravity_vec
+        global_proper_acc = global_lin_acc #  + gravity_vec
+        global_proper_acc_foot = foot_lin_acc #  + gravity_vec
         
         # C. Rotate to Local Frame
         local_acc = rotations.quat_rotate(rot_inv, global_proper_acc, w_last)
+        projected_gravity = rotations.quat_rotate(rot_inv, gravity_vec, w_last)
+
+        local_acc_foot = rotations.quat_rotate(rot_inv_foot, global_proper_acc_foot, w_last)
+        projected_gravity_foot = rotations.quat_rotate(rot_inv_foot, gravity_vec, w_last)
+
         if debug:
             # turn to 8.0, 9.0, 10.0 for debugging to see if these values are seen in the prosthetic input
             base_acc = torch.tensor([8.0, 9.0, 10.0], device=local_acc.device)
@@ -237,7 +250,11 @@ def compute_prosthetic_observations(
             motor_angle, 
             motor_vel, 
             local_ang_vel, 
-            local_acc
+            local_acc,
+            projected_gravity,
+            projected_gravity_foot,
+            local_ang_vel_foot,
+            local_acc_foot
         ], dim=-1)
 
 
@@ -268,6 +285,12 @@ class ProstheticObs:
         self._initialized = False
 
         self.step = 0  # For debugging purposes to track time in compute_observations
+
+        for indx, name in enumerate(self.env.simulator._robot.data.joint_names):
+            if name == "Motor":
+                self.config.sim_motor_dof_index = indx
+                break
+
 
     def post_physics_step(self):
         env_ids = torch.arange(self.env.num_envs, device=self.device)
@@ -320,6 +343,7 @@ class ProstheticObs:
                 ankle_dof_index=self.config.ankle_dof_index,
                 motor_dof_index=self.config.motor_dof_index,
                 shank_body_index=self.config.shank_body_index,
+                foot_body_index=self.config.foot_body_index,
                 dof_pos=current_state.dof_pos,
                 dof_vel=current_state.dof_vel,
                 body_lin_acc=current_state.rigid_body_acc,
@@ -333,7 +357,8 @@ class ProstheticObs:
         # Pull the tensor for the specific envs and joint index
         # Shape goes from [num_envs, num_dofs] -> [len(env_ids)] -> [len(env_ids), 1]
         if hasattr(sim_ref, "_robot") and hasattr(sim_ref._robot, "data") and hasattr(sim_ref._robot.data, "applied_torque"):
-            prosthetic_torque = sim_ref._robot.data.applied_torque[env_ids, self.config.motor_dof_index].unsqueeze(-1)
+            # print(f"joint name {sim_ref._robot.data.joint_names[self.config.sim_motor_dof_index]}")
+            prosthetic_torque = sim_ref._robot.data.applied_torque[env_ids, self.config.sim_motor_dof_index].unsqueeze(-1)
         else:
             # Fallback if the cache isn't populated yet during the very first cold-start frame
             prosthetic_torque = torch.zeros(len(env_ids), 1, dtype=torch.float, device=self.device)

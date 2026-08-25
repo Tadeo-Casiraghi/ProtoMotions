@@ -724,6 +724,13 @@ class BaseEnv:
                     resolved is not None
                 ), f"indices_subset for '{reward_name}' resolved to None"
                 cache[reward_name] = resolved
+        for reward_name, component in self.config.secondary_reward_config.items():
+            if component.indices_subset is not None:
+                resolved = self._resolve_body_indices(component.indices_subset)
+                assert (
+                    resolved is not None
+                ), f"indices_subset for '{reward_name}' resolved to None"
+                cache[reward_name] = resolved
 
         return cache
 
@@ -773,20 +780,20 @@ class BaseEnv:
                         f"Failed to evaluate '{eval_string}' for reward '{reward_name}': {e}"
                     )
 
-            # # # === INSERT DEBUG PRINT HERE ===
-            # if reward_name == "theta_action":
+            # === INSERT DEBUG PRINT HERE ===
+            # if reward_name == "theta_reference":
             #     # Extract the tensors from the evaluated keyword arguments
-            #     current_actions = func_kwargs.get("x")
+            #     current_angle = func_kwargs.get("x")
             #     ankle_ref_pos = func_kwargs.get("ref_x")
             #     reward = component.function(**func_kwargs)
                 
             #     # Option B: Print values for the first environment env[0] as a sample
-            #     if current_actions is not None and ankle_ref_pos is not None:
-            #         print(f", {current_actions[0].item()}, {ankle_ref_pos[0]}, {reward[0].item()}")  # Print on the same line
-            # if reward_name == "action_bounds":
-            #     current_dof = func_kwargs.get("dof_pos")
-            #     print(f"{current_dof[0][self.simulator.common_torque_joints].item()}", end="")  # Print on the same line
-            # # # =================================
+            #     print(f"{current_angle[0].item()}, {ankle_ref_pos[0]}, {reward[0].item()}")  # Print on the same line
+            # if reward_name == "theta_is_angle_next":
+            #     current_dof = func_kwargs.get("ref_x")
+            #     current_actions = func_kwargs.get("x")
+            #     print(f"{current_dof[0].item()},{current_actions[0].item()}")  # Print on the same line
+            # =================================
 
             # Get cached indices if specified (pre-resolved at init time)
             if reward_name in self._reward_indices_cache:
@@ -846,8 +853,8 @@ class BaseEnv:
             if not hasattr(self, "_previous_applied_torque") or self._previous_applied_torque is None:
                 self._previous_applied_torque = self.current_torques.clone()
 
-            prosthetic_current_torque = self.current_torques[:, self.simulator.common_torque_joints]
-            prosthetic_previous_torque = self._previous_applied_torque[:, self.simulator.common_torque_joints]
+            prosthetic_current_torque = self.current_torques[:, self.simulator.sim_torque_joints]
+            prosthetic_previous_torque = self._previous_applied_torque[:, self.simulator.sim_torque_joints]
 
             # Grab the full actions from the simulator (now size 71)
             raw_current_actions = self.simulator.get_current_actions()
@@ -860,6 +867,16 @@ class BaseEnv:
             raw_previous_actions_prime[:, self.simulator.common_torque_joints] = 0.0
 
             current_state = self.simulator.get_robot_state()
+
+            # print(f'prosthetic_current_actions": {raw_current_actions[:, self.simulator.common_torque_joints].detach().cpu().numpy()[0]}')
+            # print(f'prosthetic_previous_actions": {raw_previous_actions[:, self.simulator.common_torque_joints].detach().cpu().numpy()[0]}')
+            # print(f'prosthetic_current_dof_pos": {current_state.dof_pos[:, self.simulator.common_torque_joints].detach().cpu().numpy()[0]}')
+
+            # print(f'prosthetic_current_torque": {prosthetic_current_torque.detach().cpu().numpy()[0]}')
+            # print(f'prosthetic_previous_torque": {prosthetic_previous_torque.detach().cpu().numpy()[0]}')
+
+            # print(f'prosthetic_current_gains: {raw_current_actions[:, num_dofs:].detach().cpu().numpy()[0]}')
+            # print(f'prosthetic_previous_gains: {raw_previous_actions[:, num_dofs:].detach().cpu().numpy()[0]}')
 
 
             return {
@@ -889,7 +906,8 @@ class BaseEnv:
                 
                 "humanoid_joints": self.simulator.humanoid_joints,
                 "prosthetic_joints": self.simulator.common_torque_joints,
-                "ankle_joint": self.config.ankle_dof_index,
+                "ankle_joint": 23, #self.config.ankle_dof_index,
+                "motor_joint": self.config.motor_dof_index,
 
                 "soft_dof_limits_lower": self.robot_config.kinematic_info.dof_limits_lower.to(
                     self.device

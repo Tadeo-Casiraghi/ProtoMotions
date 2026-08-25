@@ -76,10 +76,16 @@ class Smpl9RobotConfig(RobotConfig):
                 "skin_box_anterior_bottom",
                 "skin_box_lateral_bottom",
             ],
+            "end_effector_lower_bodies": [
+                "L_Ankle","R_Ankle",
+            ],
+            "end_effector_upper_bodies": [
+                "L_Hand", "R_Hand", "Head"
+            ],
             "tracking_bodies": [
                 "Pelvis",
                 "L_Hip", "L_Knee", "L_Ankle", "L_Toe",
-                "R_Hip", "R_Knee",
+                "R_Hip", # "R_Knee", removing knee (tibia) because its cut and the com is not the same as the reference model
                 "Torso", "Spine", "Chest", "Neck", "Head",
                 "L_Thorax", "L_Shoulder", "L_Elbow", "L_Wrist", "L_Hand",
                 "R_Thorax", "R_Shoulder", "R_Elbow", "R_Wrist", "R_Hand", 
@@ -151,7 +157,7 @@ class Smpl9RobotConfig(RobotConfig):
                 ),
 
                 "suspension_slide": ControlInfo(
-                   stiffness = 1000.0,
+                   stiffness = 5000.0,
                    damping = 0.0,
                    armature = 0.0,
                    effort_limit = 2000.0,

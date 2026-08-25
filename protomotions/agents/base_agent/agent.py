@@ -281,6 +281,16 @@ class BaseAgent:
 
             self.fabric.call("on_load_checkpoint_end")
 
+    def load_pretrained(self, state_dict):
+        """Load only pretrained network and normalization."""
+
+        if self.config.normalize_rewards:
+            self.running_reward_norm.load_state_dict(
+                state_dict["running_reward_norm"]
+            )
+
+        self.model.load_state_dict(state_dict["model"])
+
     def load_parameters(self, state_dict):
         """Load agent parameters from state dictionary.
 
@@ -696,11 +706,26 @@ class BaseAgent:
         Takes the full 'max_coords_obs' and removes the prosthetic data 
         based on indices passed in config.
         """
-        if "max_coords_obs" not in obs:
-            return obs
+        # ##
+        # # As a starting point we will print the number of bodies and dofs, and bodies to ignore
+        # num_bodies = self.config.total_num_bodies
+        # print(f"Total Bodies: {num_bodies}")
+        # print(f"Bodies to Ignore: {self.config.body_indices_to_remove}")
+        
 
-        if "blind_body_obs" in obs or not self.config.use_blind_body_indices:
-            return obs
+        # ##
+        # # First we are going to print every key in obs, its keys and sizes
+        # for key, value in obs.items():
+        #     if isinstance(value, torch.Tensor):
+        #         print(f"Obs Key: {key}, Shape: {value.shape}, Dtype: {value.dtype}")
+        #     else:
+        #         print(f"Obs Key: {key}, Type: {type(value)}")
+
+        # if "max_coords_obs" not in obs:
+        #     return obs
+
+        # if "blind_body_obs" in obs or not self.config.use_blind_body_indices:
+        #     return obs
 
         full_obs = obs["max_coords_obs"]
         batch_size = full_obs.shape[0]
@@ -790,6 +815,16 @@ class BaseAgent:
             blind_contact_forces
         ], dim=-1)
 
+        # ##
+        # # Now we are going to print the size of every key in blind body obs after adding blind_body_obs
+        # print("root_h shape:", root_h.shape)
+        # print("blind_pos shape:", blind_pos.shape)
+        # print("blind_rot shape:", blind_rot.shape)
+        # print("blind_vel shape:", blind_vel.shape)
+        # print("blind_ang_vel shape:", blind_ang_vel.shape)
+        # print("blind_contact_forces shape:", blind_contact_forces.shape)
+
+
         # --- NEW: FILTER ACTION HISTORY ---
         # We read the full history but save the filtered version to a NEW key.
         
@@ -809,6 +844,11 @@ class BaseAgent:
             
             # 3. Flatten & Save to NEW Key
             obs["agent_action_history"] = filtered_hist.reshape(batch_size, -1)
+
+
+            # ##
+            # # Finally, we print the shape of the new agent_action_history
+            # print("agent_action_history shape:", obs["agent_action_history"].shape)
 
         return obs
 
@@ -1012,7 +1052,7 @@ class BaseAgent:
         aggregated_log_dict = aggregate_scalar_metrics(log_dict, self.fabric)
 
         # wandb logger does this: assert rank_zero_only.rank == 0
-        self.fabric.log_dict(aggregated_log_dict)
+        self.fabric.log_dict(aggregated_log_dict, step=self.current_epoch)
 
     # -----------------------------
     # Helper Functions

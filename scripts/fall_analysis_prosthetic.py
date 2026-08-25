@@ -29,7 +29,7 @@ class ProstheticTestSceneCfg(InteractiveSceneCfg):
     prosthetic_leg: ArticulationCfg = ArticulationCfg(
         prim_path="{ENV_REGEX_NS}/ProstheticLeg",
         spawn=sim_utils.UsdFileCfg(
-            usd_path="prosthetic_leg_test.usda",
+            usd_path="prosthetic_leg_test2.usda",
             rigid_props=sim_utils.RigidBodyPropertiesCfg(),
             articulation_props=sim_utils.ArticulationRootPropertiesCfg(
                 enabled_self_collisions=True,

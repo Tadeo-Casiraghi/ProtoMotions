@@ -145,6 +145,8 @@ class Simulator(ABC):
         self.dt: float = self.decimation * 1.0 / self.config.sim.fps
         self.physics_dt = 1.0 / self.config.sim.fps
 
+        print(f"#################### physics dt = {self.physics_dt} ####################")
+
         self._num_bodies: int = self.robot_config.kinematic_info.num_bodies
         self._num_dof: int = self.robot_config.kinematic_info.num_dofs
         self._dof_names: List[str] = self.robot_config.kinematic_info.dof_names
@@ -169,6 +171,7 @@ class Simulator(ABC):
         self._user_recording_video_path = os.path.join(
             "output/renderings", f"{self.config.experiment_name}-%s"
         )
+
         self._common_actions = torch.zeros(
             self.num_envs,
             self.robot_config.number_of_actions,
@@ -188,18 +191,19 @@ class Simulator(ABC):
             None
         )
 
-        self.torque_old = torch.zeros(self.num_envs, len(self.robot_config.control.torque_joints), device=self.device)
-        self.kp_old = torch.zeros(self.num_envs, 1, device=self.device)
-        self.kd_old = torch.zeros(self.num_envs, 1, device=self.device)
-        self.theta_old = torch.zeros(self.num_envs, 1, device=self.device)
+        if self.robot_config.control.torque_joints is not None:
+            self.torque_old = torch.zeros(self.num_envs, len(self.robot_config.control.torque_joints), device=self.device)
+            self.kp_old = torch.zeros(self.num_envs, 1, device=self.device)
+            self.kd_old = torch.zeros(self.num_envs, 1, device=self.device)
+            self.theta_old = torch.zeros(self.num_envs, 1, device=self.device)
         
-        fc_target = 20
-        fc_torque = 100
-        pi = 3.14159265359
+            fc_target = 20
+            fc_torque = 100
+            pi = 3.14159265359
 
-        self.alpha = 1.0 - np.exp(-2.0 * pi * fc_torque * self.physics_dt)
+            self.alpha = 1.0 - np.exp(-2.0 * pi * fc_torque * self.physics_dt)
 
-        self.alpha_params = 1.0 - np.exp(-2.0 * pi * fc_target * self.physics_dt)
+            self.alpha_params = 1.0 - np.exp(-2.0 * pi * fc_target * self.physics_dt)
 
     def _initialize_with_markers(
         self, visualization_markers: Optional[Dict[str, VisualizationMarkerConfig]]
@@ -403,7 +407,7 @@ class Simulator(ABC):
         if not hasattr(self, "num_dofs"):
             self.num_dofs = self._get_simulator_dof_state().num_dofs
 
-        if not hasattr(self, "torque_joints_tensor"):
+        if not hasattr(self, "torque_joints_tensor") and self.robot_config.control.torque_joints is not None:
             self.torque_joints_tensor = torch.tensor(
                 self.common_torque_joints, device=self.device, dtype=torch.long
             )
@@ -421,25 +425,23 @@ class Simulator(ABC):
 
         self._common_actions = common_actions.to(self.device)
 
-        # ===============================================================
-        # CRITICAL PERFORMANCE FIX: CACHE IMPEDANCE TARGETS AT 30 HZ
-        # ===============================================================
-        # 1. Isolate down to physical DOFs once per policy step
-        physical_actions = self._common_actions[:, :self.num_dofs]
-        self.cached_pd_targets = self._action_to_pd_targets(physical_actions)
+        if hasattr(self, "torque_joints_tensor") and self.robot_config.control.torque_joints is not None:
+            # 1. Isolate down to physical DOFs once per policy step
+            physical_actions = self._common_actions[:, :self.num_dofs]
+            self.cached_pd_targets = self._action_to_pd_targets(physical_actions)
 
-        # 2. Extract prosthetic elements using fast advanced indexing
-        raw_theta = self._common_actions[:, self.torque_joints_tensor]
-        raw_kp    = self._common_actions[:, self.num_dofs + 0].unsqueeze(-1)
-        raw_kd    = self._common_actions[:, self.num_dofs + 1].unsqueeze(-1)
+            # 2. Extract prosthetic elements using fast advanced indexing
+            raw_theta = self._common_actions[:, self.torque_joints_tensor]
+            raw_kp    = self._common_actions[:, self.num_dofs + 0].unsqueeze(-1)
+            raw_kd    = self._common_actions[:, self.num_dofs + 1].unsqueeze(-1)
 
 
 
-        # 3. Pre-calculate physical constraints and cache them as instance variables
-        self.cached_kp_phys, self.cached_kd_phys, self.cached_desired_angle = (
-            self._action_to_impedance_targets(raw_theta, raw_kp, raw_kd)
-        )
-        # ===============================================================
+            # 3. Pre-calculate physical constraints and cache them as instance variables
+            self.cached_kp_phys, self.cached_kd_phys, self.cached_desired_angle = (
+                self._action_to_impedance_targets(raw_theta, raw_kp, raw_kd)
+            )
+            # ===============================================================
 
         self._physics_step()
 
@@ -470,18 +472,19 @@ class Simulator(ABC):
         self._set_simulator_env_state(new_states, new_object_states, env_ids)
 
         # --- Reset the low-pass filter history for specific envs ---
-        if env_ids is None:
-            # If env_ids is None, Isaac Lab is resetting ALL environments at once
-            self.torque_old.zero_()
-            self.kp_old.one_()*300
-            self.kd_old.one_()*5
-            self.theta_old.zero_()
-        else:
-            # Reset only the specific environments that just finished/crashed
-            self.torque_old[env_ids] = 0.0
-            self.kp_old[env_ids] = 300.0
-            self.kd_old[env_ids] = 5.0
-            self.theta_old[env_ids] = 0.0
+        if self.robot_config.control.torque_joints is not None:
+            if env_ids is None:
+                # If env_ids is None, Isaac Lab is resetting ALL environments at once
+                self.torque_old.zero_()
+                self.kp_old.one_()*300
+                self.kd_old.one_()*5
+                self.theta_old.zero_()
+            else:
+                # Reset only the specific environments that just finished/crashed
+                self.torque_old[env_ids] = 0.0
+                self.kp_old[env_ids] = 300.0
+                self.kd_old[env_ids] = 5.0
+                self.theta_old[env_ids] = 0.0
 
     @abstractmethod
     def _set_simulator_env_state(
@@ -894,11 +897,11 @@ class Simulator(ABC):
         # Map [-1, 1] -> [-pi, pi]
         desired_angle = raw_theta * 3.14 + 0.0
         
-        # Map [-1, 1] -> [0, 2000]
-        kp_phys       = raw_kp * 1000.0 + 1000.0
+        # Map [-1, 1] -> [0, 1000]
+        kp_phys       = raw_kp * 500.0 + 500.0
         
-        # Map [-1, 1] -> [0, 10]
-        kd_phys       = raw_kd * 5.0 + 5.0
+        # Map [-1, 1] -> [0, 20]
+        kd_phys       = raw_kd * 10.0 + 10.0
         
         return kp_phys, kd_phys, desired_angle
 

@@ -1,9 +1,12 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 
 # --- CONFIGURATION ---
-FILE_PATH = "multiple_arrays.npz"   # Ensure path is correct
-FILE_PATH2 = "sim_torque.txt"       # CSV file from simulator logger
+FILE_PATH = "python-stuff/multiple_arrays.npz"   # Ensure path is correct
+FILE_PATH2 = "python-stuff/sim_torque.txt"       # CSV file from simulator logger
+OUTPUT_DIR = "python-stuff/plots"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 DT = 1.0 / 30.0
 # ---------------------
 
@@ -134,30 +137,57 @@ def plot_data():
         # ==========================================================
 
         # Kp and Kd from policy
-        plt.figure(figsize=(12, 6))
-        plt.plot(kp_data, label="Policy Kp")
-        plt.plot(kd_data, label="Policy Kd")
+        fig, ax1 = plt.subplots(figsize=(12, 6))
+
+        # Left y-axis for Kp
+        color1 = "tab:blue"
+        ax1.plot(kp_data[:100], color=color1, label="Policy Kp")
+        ax1.set_xlabel("Time Step")
+        ax1.set_ylabel("Kp", color=color1)
+        ax1.tick_params(axis="y", labelcolor=color1)
+        ax1.grid(True)
+
+        # Right y-axis for Kd
+        ax2 = ax1.twinx()
+        color2 = "tab:red"
+        ax2.plot(kd_data[:100], color=color2, label="Policy Kd")
+        ax2.set_ylabel("Kd", color=color2)
+        ax2.tick_params(axis="y", labelcolor=color2)
+
+        # Combined legend
+        lines1, labels1 = ax1.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax1.legend(lines1 + lines2, labels1 + labels2, loc="best")
+
         plt.title("Policy Kp and Kd")
-        plt.xlabel("Time Step")
-        plt.ylabel("Value")
-        plt.grid(True)
-        plt.legend()
+
+        fig.savefig(
+            os.path.join(OUTPUT_DIR, "policy_kp_kd.png"),
+            dpi=300,
+            bbox_inches="tight",
+        )
 
         # Desired vs actual angle from NPZ
-        plt.figure(figsize=(12, 6))
-        plt.plot(desired_angle_data, label="Desired Angle")
-        plt.plot(motor_angle_data, label="Motor Angle")
+        fig2 = plt.figure(figsize=(12, 6))
+        plt.plot(desired_angle_data[:100], label="Desired Angle")
+        plt.plot(motor_angle_data[:100], label="Motor Angle")
         plt.title("Policy Desired Angle vs Motor Angle")
         plt.xlabel("Time Step")
         plt.ylabel("Angle (rad)")
         plt.grid(True)
         plt.legend()
 
+        fig2.savefig(
+            os.path.join(OUTPUT_DIR, "desired_vs_motor_angle.png"),
+            dpi=300,
+            bbox_inches="tight",
+        )
+
         # Torque comparison from NPZ
-        plt.figure(figsize=(12, 6))
-        plt.plot(motor_torque_data, label="Motor Torque")
+        fig3 = plt.figure(figsize=(12, 6))
+        plt.plot(motor_torque_data[:100], label="Motor Torque")
         plt.plot(
-            total_torque,
+            total_torque[:100],
             label="Reconstructed Torque (Kp + Kd)",
             linestyle="--",
         )
@@ -166,6 +196,12 @@ def plot_data():
         plt.ylabel("Torque")
         plt.grid(True)
         plt.legend()
+
+        fig3.savefig(
+            os.path.join(OUTPUT_DIR, "motor_vs_reconstructed_torque.png"),
+            dpi=300,
+            bbox_inches="tight",
+        )
 
         # # ==========================================================
         # # Time axis and plotting mask
@@ -276,7 +312,7 @@ def plot_data():
 
         print("Displaying plots...")
 
-        plt.show()
+        # plt.show()
 
     except Exception as e:
         print(f"An error occurred: {e}")

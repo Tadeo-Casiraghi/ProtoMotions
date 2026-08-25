@@ -285,6 +285,7 @@ def power_consumption_sum(
         Power consumption [num_envs]
     """
     if indices is not None:
+        # print("Subsetting DOFs for power consumption reward:", indices)
         dof_forces = dof_forces[:, indices]
         dof_vel = dof_vel[:, indices]
 

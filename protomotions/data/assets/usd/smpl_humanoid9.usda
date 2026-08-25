@@ -176,7 +176,7 @@ over "Flattened_Prototype_93"
         )
         {
             float physxCollision:contactOffset = 0.002
-            float physxCollision:restOffset = 0.0005
+            float physxCollision:restOffset = 0.001
             
             float3[] extent = [(-0.005, -0.005, -0.008767), (0.005, 0.005, 0.008767)]
         }
@@ -218,7 +218,7 @@ over "Flattened_Prototype_95"
         )
         {
             float physxCollision:contactOffset = 0.002
-            float physxCollision:restOffset = 0.0005
+            float physxCollision:restOffset = 0.001
             
             float3[] extent = [(-0.005, -0.005, -0.005277), (0.005, 0.005, 0.005277)]
         }
@@ -724,7 +724,7 @@ over "Flattened_Prototype_120"
         )
         {
             float physxCollision:contactOffset = 0.002
-            float physxCollision:restOffset = 0.0005
+            float physxCollision:restOffset = 0.001
             
             float3[] extent = [(-0.005, -0.005, -0.008767), (0.005, 0.005, 0.008767)]
         }
@@ -745,7 +745,7 @@ over "Flattened_Prototype_121"
         )
         {
             float physxCollision:contactOffset = 0.002
-            float physxCollision:restOffset = 0.0005
+            float physxCollision:restOffset = 0.001
             
             float3[] extent = [(-0.005, -0.005, -0.008767), (0.005, 0.005, 0.008767)]
         }
@@ -1124,7 +1124,7 @@ over "Flattened_Prototype_142"
         )
         {
             float physxCollision:contactOffset = 0.002
-            float physxCollision:restOffset = 0.0005
+            float physxCollision:restOffset = 0.001
             
             float3[] extent = [(-0.005, -0.005, -0.008767), (0.005, 0.005, 0.008767)]
         }
@@ -1188,7 +1188,7 @@ over "Flattened_Prototype_145"
         )
         {
             float physxCollision:contactOffset = 0.002
-            float physxCollision:restOffset = 0.0005
+            float physxCollision:restOffset = 0.001
             
             float3[] extent = [(-0.005, -0.005, -0.005277), (0.005, 0.005, 0.005277)]
         }
@@ -1395,7 +1395,7 @@ over "Flattened_Prototype_156"
         )
         {
             float physxCollision:contactOffset = 0.002
-            float physxCollision:restOffset = 0.0005
+            float physxCollision:restOffset = 0.001
             
             float3[] extent = [(-0.005, -0.005, -0.005277), (0.005, 0.005, 0.005277)]
         }
@@ -1442,7 +1442,7 @@ over "Flattened_Prototype_159"
         )
         {
             float physxCollision:contactOffset = 0.002
-            float physxCollision:restOffset = 0.0005
+            float physxCollision:restOffset = 0.001
             
             float3[] extent = [(-0.005, -0.005, -0.005277), (0.005, 0.005, 0.005277)]
         }
@@ -3443,6 +3443,9 @@ def Xform "smpl_humanoid9" (
                 add references = </Flattened_Prototype_124>
             )
             {
+                rel material:binding = </smpl_humanoid9/Looks/FootContact> (
+                    bindMaterialAs = "weakerThanDescendants"
+                )
                 token visibility = "invisible"
             }
         }
@@ -3474,6 +3477,9 @@ def Xform "smpl_humanoid9" (
                 add references = </Flattened_Prototype_161>
             )
             {
+                rel material:binding = </smpl_humanoid9/Looks/FootContact> (
+                    bindMaterialAs = "weakerThanDescendants"
+                )
                 token visibility = "invisible"
             }
         }
@@ -4137,6 +4143,9 @@ def Xform "smpl_humanoid9" (
                 add references = </Flattened_Prototype_136>
             )
             {
+                rel material:binding = </smpl_humanoid9/Looks/FootContact> (
+                    bindMaterialAs = "weakerThanDescendants"
+                )
                 token visibility = "invisible"
             }
         }
@@ -4168,6 +4177,9 @@ def Xform "smpl_humanoid9" (
                 add references = </Flattened_Prototype_141>
             )
             {
+                rel material:binding = </smpl_humanoid9/Looks/FootContact> (
+                    bindMaterialAs = "weakerThanDescendants"
+                )
                 token visibility = "invisible"
             }
         }
@@ -6023,10 +6035,10 @@ def Xform "smpl_humanoid9" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 0.12
-            float physics:staticFriction = 0.12
+            float physics:dynamicFriction = 0.15
+            float physics:staticFriction = 0.15
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 1300.0
+            float physxMaterial:compliantContactDamping = 6000.0
             float physxMaterial:compliantContactStiffness = 140000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
@@ -6038,10 +6050,10 @@ def Xform "smpl_humanoid9" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 0.12
-            float physics:staticFriction = 0.12
+            float physics:dynamicFriction = 0.15
+            float physics:staticFriction = 0.15
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 1300.0
+            float physxMaterial:compliantContactDamping = 6000.0
             float physxMaterial:compliantContactStiffness = 104000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
@@ -6053,10 +6065,10 @@ def Xform "smpl_humanoid9" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 0.12
-            float physics:staticFriction = 0.12
+            float physics:dynamicFriction = 0.15
+            float physics:staticFriction = 0.15
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 1300.0
+            float physxMaterial:compliantContactDamping = 6000.0
             float physxMaterial:compliantContactStiffness = 46666
             uniform token ui:nodegraph:node:expansionState = "open"
         }
@@ -6068,10 +6080,10 @@ def Xform "smpl_humanoid9" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 0.12
-            float physics:staticFriction = 0.12
+            float physics:dynamicFriction = 0.15
+            float physics:staticFriction = 0.15
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 1300.0
+            float physxMaterial:compliantContactDamping = 6000.0
             float physxMaterial:compliantContactStiffness = 74500
             uniform token ui:nodegraph:node:expansionState = "open"
         }
@@ -6080,9 +6092,24 @@ def Xform "smpl_humanoid9" (
             apiSchemas = ["PhysicsMaterialAPI"]
         )
         {
-            float physics:staticFriction = 0.12
-            float physics:dynamicFriction = 0.12
+            float physics:dynamicFriction = 0.09
+            float physics:staticFriction = 0.09
             float physics:restitution = 0.0
+        }
+
+        def Material "FootContact" (
+            apiSchemas = ["PhysicsMaterialAPI", "PhysxMaterialAPI"]
+        )
+        {
+            token outputs:mdl:displacement
+            token outputs:mdl:surface
+            token outputs:mdl:volume
+            float physics:dynamicFriction = 0.8
+            float physics:staticFriction = 0.8
+            float physics:restitution = 0.1
+            float physxMaterial:compliantContactDamping = 600.0
+            float physxMaterial:compliantContactStiffness = 80000.0
+            uniform token ui:nodegraph:node:expansionState = "open"
         }
     }
 }

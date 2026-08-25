@@ -259,6 +259,12 @@ def create_parser():
         help="Config overrides in format key=value (e.g., env.max_episode_length=1000 simulator.num_envs=4096)",
     )
     parser.add_argument(
+        "--load-pretrained-humanoid",
+        action="store_true",
+        default=False,
+        help="Load a pretrained humanoid model",
+    )
+    parser.add_argument(
         "--create-config-only",
         action="store_true",
         default=False,
@@ -308,7 +314,7 @@ def detect_checkpoint_mode(args, save_dir):
     checkpoint_config_path = save_dir / "config.yaml"
 
     # Search for any multi-agent 'last' checkpoints (e.g., humanoid_last.ckpt)
-    last_checkpoints = list(save_dir.glob("*_last.ckpt"))
+    last_checkpoints = list(save_dir.glob("*last.ckpt"))
 
     # Priority 1: Resume - continuing same run
     if len(last_checkpoints) > 0:
@@ -846,7 +852,10 @@ def main():
 
     agent.setup()
     agent.fabric.strategy.barrier()
-    agent.load(args.checkpoint)
+    if args.load_pretrained_humanoid:
+        agent.load(args.checkpoint, load_pretrained_humanoid=True)
+    else:
+        agent.load(args.checkpoint)
 
     # ===================================================================
     # 6. Save Configs (First Run Only - Warm Start or Fresh)

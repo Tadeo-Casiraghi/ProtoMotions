@@ -467,6 +467,9 @@ class IsaacLabSimulator(Simulator):
             for dof_idx, physical_val in self.passive_dof_defaults.items():
                 # Overwrite the target with the EXACT physical value from your config.
                 # e.g., -0.025 meters
+                # if dof_idx == 21:
+                #     physical_val = -0.075
+                #     # print(dof_idx, physical_val)
                 pd_targets[..., dof_idx] = physical_val
 
         # 2. SEND POSITIONS (Drivers: Body + Passive)

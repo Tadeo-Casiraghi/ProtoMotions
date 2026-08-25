@@ -713,6 +713,8 @@ class MotionLib:
         Reorders and pads motion data to match the Simulation Body and DoF order exactly
         using string name matching.
         """
+
+
         if self.num_motions() == 0:
             return
 
@@ -819,6 +821,19 @@ class MotionLib:
         self.contacts = remap_tensor(self.contacts, body_indices, dim=1, default_val=0.0)
 
         # Remap DoFs
+        # print("REFERENCE DOFS:")
+        # for i, name in enumerate(ref_dof_names):
+        #     print(i, name)
+
+        # print("\nSIM DOFS:")
+        # for i, name in enumerate(sim_dof_names):
+        #     print(i, name)
+
+        # print("\nDOF MAPPING:")
+        # for sim_i, (sim_name, ref_i) in enumerate(zip(sim_dof_names, dof_indices)):
+        #     ref_name = ref_dof_names[ref_i] if ref_i >= 0 else "PAD"
+        #     print(f"{sim_i:3d}: {sim_name:30s} <- {ref_i:3d} {ref_name}")
+
         self.dps = remap_tensor(self.dps, dof_indices, dim=1, default_val=0.0)
         self.dvs = remap_tensor(self.dvs, dof_indices, dim=1, default_val=0.0)
 
@@ -828,7 +843,6 @@ class MotionLib:
              self.lrs[:, padded_mask, 3] = 1.0
 
         print(f"MotionLib: Remapped to {len(body_indices)} Bodies and {len(dof_indices)} DoFs.")
-
 
 if __name__ == "__main__":
     import argparse

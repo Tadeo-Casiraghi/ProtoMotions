@@ -104,7 +104,7 @@ class CoLearningMimicEvaluator(MimicEvaluator):
             # kd_offset = 5
             
             # # Example: Map [-1, 1] -> [-pi, pi] for Angle
-            # angle_scale = 3.14
+            # angle_scale = 
             # angle_offset = 0.0
 
             # desired_angle = raw_theta * angle_scale + angle_offset
@@ -617,7 +617,7 @@ class CoLearningOrchestrator:
             config=self.agents['humanoid'].config.evaluator # Use humanoid config
         )
 
-    def load(self, checkpoint: Path, load_env: bool = True):
+    def load(self, checkpoint: Path, load_env: bool = True, load_pretrained_humanoid: bool = False):
         """Load checkpoints for all sub-agents.
 
         Expects checkpoints to be named per-agent, e.g.:
@@ -631,6 +631,7 @@ class CoLearningOrchestrator:
             checkpoint: Path to a checkpoint file OR a directory containing
                         per-agent checkpoint files.
             load_env:   Whether to also restore environment state after loading.
+            load_pretrained_humanoid:   Whether to load the pre-trained humanoid checkpoint.
         """
         if checkpoint is None:
             return
@@ -639,7 +640,13 @@ class CoLearningOrchestrator:
 
         for agent_name, agent in self.agents.items():
             # --- Resolve per-agent checkpoint path ---
-            if checkpoint.is_dir():
+            if load_pretrained_humanoid and agent_name == "humanoid":
+                agent_ckpt_path = checkpoint
+            elif load_pretrained_humanoid and agent_name == "prosthetic":
+                # Skip loading prosthetic if load_pretrained_humanoid is True
+                print(f"[Orchestrator] Skipping prosthetic checkpoint load due to load_pretrained_humanoid=True.")
+                continue
+            elif checkpoint.is_dir():
                 # Directory mode: look for <dir>/<agent_name>.ckpt
                 agent_ckpt_path = checkpoint / f"{agent_name}.ckpt"
             else:
@@ -667,16 +674,22 @@ class CoLearningOrchestrator:
             state_dict = torch.load(
                 agent_ckpt_path, map_location=self.device, weights_only=False
             )
-            agent.load_parameters(state_dict)
+            if load_pretrained_humanoid and agent_name == "humanoid":
+                agent.load_pretrained(state_dict)
+            else:
+                agent.load_parameters(state_dict)
 
         # --- Restore shared orchestrator-level state ---
         # Pull epoch/step from the first agent that has them, so the orchestrator
         # resumes at the right point rather than restarting from 0.
-        first_agent = next(iter(self.agents.values()))
-        self.current_epoch = first_agent.current_epoch
+        if not load_pretrained_humanoid:
+            first_agent = next(iter(self.agents.values()))
+            self.current_epoch = first_agent.current_epoch
+        else:
+            self.current_epoch = 0  # Reset epoch if load_pretrained_humanoid is True
 
         # --- Restore environment state (once, shared across all agents) ---
-        if load_env:
+        if load_env and not load_pretrained_humanoid:
             task_id = self.env.get_task_id()
             # Root dir is taken from the checkpoint's parent directory
             env_ckpt_dir = checkpoint if checkpoint.is_dir() else checkpoint.parent
@@ -694,7 +707,7 @@ class CoLearningOrchestrator:
                     f"skipping env restore."
                 )
 
-        self.just_loaded_checkpoint_should_evaluate = True
+        self.just_loaded_checkpoint_should_evaluate = not load_pretrained_humanoid
 
     def _setup_agent_buffers(self):
         """Initialize buffers using the agent's own logic."""
@@ -799,7 +812,7 @@ class CoLearningOrchestrator:
                         for key, env_tensor in obs_td.items():
                             agent.experience_buffer.update_data(key, step, env_tensor)
 
-                        # 3. Get Action (Small dimension, e.g., 10)
+                    # 3. Get Action (Small dimension, e.g., 10)
                     action_h = self.agents['humanoid'].collect_rollout_step(obs_td, step)
                     self.agents['humanoid'].check_obs_for_nans(obs_td, action_h)
 

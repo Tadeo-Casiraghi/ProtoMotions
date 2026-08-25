@@ -1463,6 +1463,9 @@ def Xform "prosthesis" (
                 add references = </Flattened_Prototype_136>
             )
             {
+                rel material:binding = </prosthesis/Looks/FootContact> (
+                    bindMaterialAs = "weakerThanDescendants"
+                )
                 token visibility = "invisible"
             }
         }
@@ -1494,6 +1497,9 @@ def Xform "prosthesis" (
                 add references = </Flattened_Prototype_141>
             )
             {
+                rel material:binding = </prosthesis/Looks/FootContact> (
+                    bindMaterialAs = "weakerThanDescendants"
+                )
                 token visibility = "invisible"
             }
         }
@@ -1946,10 +1952,10 @@ def Xform "prosthesis" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 0.12
-            float physics:staticFriction = 0.12
+            float physics:dynamicFriction = 0.09
+            float physics:staticFriction = 0.09
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 1300.0
+            float physxMaterial:compliantContactDamping = 6000.0
             float physxMaterial:compliantContactStiffness = 140000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
@@ -1961,10 +1967,10 @@ def Xform "prosthesis" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 0.12
-            float physics:staticFriction = 0.12
+            float physics:dynamicFriction = 0.09
+            float physics:staticFriction = 0.09
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 1300.0
+            float physxMaterial:compliantContactDamping = 6000.0
             float physxMaterial:compliantContactStiffness = 104000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
@@ -1976,10 +1982,10 @@ def Xform "prosthesis" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 0.12
-            float physics:staticFriction = 0.12
+            float physics:dynamicFriction = 0.09
+            float physics:staticFriction = 0.09
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 1300.0
+            float physxMaterial:compliantContactDamping = 6000.0
             float physxMaterial:compliantContactStiffness = 46666
             uniform token ui:nodegraph:node:expansionState = "open"
         }
@@ -1991,10 +1997,10 @@ def Xform "prosthesis" (
             token outputs:mdl:displacement
             token outputs:mdl:surface
             token outputs:mdl:volume
-            float physics:dynamicFriction = 0.12
-            float physics:staticFriction = 0.12
+            float physics:dynamicFriction = 0.09
+            float physics:staticFriction = 0.09
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 1300.0
+            float physxMaterial:compliantContactDamping = 6000.0
             float physxMaterial:compliantContactStiffness = 74500
             uniform token ui:nodegraph:node:expansionState = "open"
         }
@@ -2003,9 +2009,24 @@ def Xform "prosthesis" (
             apiSchemas = ["PhysicsMaterialAPI"]
         )
         {
-            float physics:staticFriction = 0.12
-            float physics:dynamicFriction = 0.12
+            float physics:dynamicFriction = 0.09
+            float physics:staticFriction = 0.09
             float physics:restitution = 0.0
+        }
+
+        def Material "FootContact" (
+            apiSchemas = ["PhysicsMaterialAPI", "PhysxMaterialAPI"]
+        )
+        {
+            token outputs:mdl:displacement
+            token outputs:mdl:surface
+            token outputs:mdl:volume
+            float physics:dynamicFriction = 0.25
+            float physics:staticFriction = 0.25
+            float physics:restitution = 0.1
+            float physxMaterial:compliantContactDamping = 600.0
+            float physxMaterial:compliantContactStiffness = 90000.0
+            uniform token ui:nodegraph:node:expansionState = "open"
         }
     }
 }

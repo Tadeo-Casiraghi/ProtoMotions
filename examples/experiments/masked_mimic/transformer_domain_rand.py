@@ -138,7 +138,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             function=mean_squared_error_exp,
             variables={
                 "x": "current_state.rigid_body_pos",
-                "ref_x": "ref_state.rigid_body_pos",
+                "ref_x": ".rigid_body_pos",
                 "coefficient": "-100.0",
             },
             weight=0.5,
@@ -147,7 +147,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             function=rotation_error_exp,
             variables={
                 "q": "current_state.rigid_body_rot",
-                "ref_q": "ref_state.rigid_body_rot",
+                "ref_q": ".rigid_body_rot",
                 "coefficient": "-5.0",
             },
             weight=0.3,
