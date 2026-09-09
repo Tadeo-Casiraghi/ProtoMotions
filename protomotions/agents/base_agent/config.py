@@ -137,5 +137,8 @@ class BaseAgentConfig(ConfigBuilder):
     use_blind_body_indices: bool = False
 
     action_indices: Optional[List[int]] = None  # Indices of action dimensions to control (for partial control scenarios)
+    prosthetic_magic_index: Optional[int] = None  # Index of the prosthetic control signal in the action space (for magic prosthetic scenarios)
+    prosthetic_magic_kp: Optional[float] = None  # Proportional gain for the prosthetic control signal (if applicable)
+    prosthetic_magic_kd: Optional[float] = None  # Derivative gain for the prosthetic control signal (if applicable)
 
     dof_to_get: Optional[List[int]] = None  # For partial control, specify which DOFs to include in the observations

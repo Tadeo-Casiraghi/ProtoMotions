@@ -13,7 +13,7 @@ linestyles = ["-", "--"]
 style_cycle = list(product(colors, linestyles))
 
 # Path to the directory containing the TensorBoard event file
-test = "magic_prosthetic_base_14"
+test = "magic_prosthetic_base_90hz_2"
 log_dir = f"results/{test}/lightning_logs/version_0"
 
 
@@ -68,7 +68,7 @@ plt.title("Scaled Reward Terms")
 plt.grid(True)
 
 plt.legend(
-    fontsize=7,
+    fontsize=15,
     bbox_to_anchor=(1.02, 1),
     loc="upper left",
 )

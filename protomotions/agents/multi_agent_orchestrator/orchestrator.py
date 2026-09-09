@@ -179,8 +179,12 @@ class CoLearningMimicEvaluator(MimicEvaluator):
         Kd_data = []
         desired_angle_data = []
         motor_angle_data = []
+        ankle_angle_data = []
         motor_velocity_data = []
         motor_torque_data = []
+        ref_angle_data = []
+
+        lower_body_power_data = []
 
         # ============================================================
         # BODY / JOINT LOOKUPS
@@ -213,6 +217,10 @@ class CoLearningMimicEvaluator(MimicEvaluator):
 
         joint_idx_common_motor =  self.env.robot_config.kinematic_info.dof_names.index(
             "Motor"
+        )
+
+        joint_idx_common_ankle =  self.env.robot_config.kinematic_info.dof_names.index(
+            "R_Ankle_y"
         )
 
         joint_idx_motor = self.env.simulator.sim_torque_joints[0]
@@ -438,6 +446,35 @@ class CoLearningMimicEvaluator(MimicEvaluator):
                 )
 
                 # ====================================================
+                # LOWER-BODY POWER
+                # ====================================================
+
+                sim_ref = self.env.simulator
+
+                dof_state = sim_ref.get_dof_state()
+
+                # Applied torque: [num_envs, num_dofs]
+                dof_torque = sim_ref._robot.data.applied_torque
+
+                # Joint velocity: [num_envs, num_dofs]
+                dof_vel = dof_state.dof_vel
+
+                # Same subset used by the reward
+                lower_body_joint_indices = sim_ref.lower_body_joints
+                lower_torques = dof_torque[:, lower_body_joint_indices]
+                lower_vel = dof_vel[:, lower_body_joint_indices]
+
+                # Same computation as power_consumption_sum()
+                lower_body_power = torch.abs(
+                    lower_torques * lower_vel
+                ).sum(dim=-1)
+
+                # Store env 0
+                lower_body_power_data.append(
+                    lower_body_power[0].item()
+                )
+
+                # ====================================================
                 # OBSERVED Motor Torque
                 # ====================================================
 
@@ -458,22 +495,31 @@ class CoLearningMimicEvaluator(MimicEvaluator):
 
 
                 # ====================================================
-                # OBSERVED Motor Angle and Velocity
+                # OBSERVED Motor Angle and Velocity and Ankle Angle
                 # ====================================================
 
                 motor_angle_val = dof_state.dof_pos[0, joint_idx_common_motor].item()
+                ankle_angle_val = dof_state.dof_pos[0, joint_idx_common_ankle].item()
                 motor_vel_val = dof_state.dof_vel[0, joint_idx_common_motor].item()
 
                 motor_angle_data.append(motor_angle_val)
+                ankle_angle_data.append(ankle_angle_val)
                 motor_velocity_data.append(motor_vel_val) 
 
-
+                # ====================================================
+                # REFERENCE Motor Angle
+                # ====================================================
+                ref_state = self.motion_lib.get_motion_state(
+                    self.motion_manager.motion_ids, self.motion_manager.motion_times
+                )
+                ref_angle_val = ref_state.dof_pos[0, joint_idx_common_ankle].item()
+                ref_angle_data.append(ref_angle_val)
 
                 # ====================================================
                 # SAVE DATA
                 # ====================================================
 
-                if len(prismatic_data) % 100 == 0:
+                if len(prismatic_data) % 300 == 0:
 
                     np.savez(
                         "python-stuff/multiple_arrays.npz",
@@ -489,8 +535,11 @@ class CoLearningMimicEvaluator(MimicEvaluator):
                         kd_data=Kd_data,
                         desired_angle_data=desired_angle_data,
                         motor_angle_data=motor_angle_data,
+                        ankle_angle_data=ankle_angle_data,
                         motor_velocity_data=motor_velocity_data,
+                        ref_angle_data=ref_angle_data,
                         motor_torque_data=motor_torque_data,
+                        lower_body_power_data=lower_body_power_data,
                     )
 
                     print(".", end="", flush=True)
@@ -817,9 +866,11 @@ class CoLearningOrchestrator:
                     self.agents['humanoid'].check_obs_for_nans(obs_td, action_h)
 
                     env_action = self.agents['humanoid'].expand_action_to_env(action_h, num_extra_actions=2)
-
-                    action_p = self.agents['prosthetic'].collect_rollout_step(obs_td, step)
-                    env_action += self.agents['prosthetic'].expand_action_to_env(action_p, num_extra_actions=2)
+                    
+                    # if there is a prosthetic agent, collect its action and merge it into the env_action
+                    if self.agents.get('prosthetic') is not None:
+                        action_p = self.agents['prosthetic'].collect_rollout_step(obs_td, step)
+                        env_action += self.agents['prosthetic'].expand_action_to_env(action_p, num_extra_actions=2)
 
                     # --- D. Step Environment ---
                     next_global_obs, rewards, raw_dones, raw_terminated, extras = self.env.step(env_action)

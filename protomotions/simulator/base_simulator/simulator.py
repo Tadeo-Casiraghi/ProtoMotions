@@ -198,7 +198,7 @@ class Simulator(ABC):
             self.theta_old = torch.zeros(self.num_envs, 1, device=self.device)
         
             fc_target = 20
-            fc_torque = 100
+            fc_torque = 10
             pi = 3.14159265359
 
             self.alpha = 1.0 - np.exp(-2.0 * pi * fc_torque * self.physics_dt)
@@ -898,10 +898,10 @@ class Simulator(ABC):
         desired_angle = raw_theta * 3.14 + 0.0
         
         # Map [-1, 1] -> [0, 1000]
-        kp_phys       = raw_kp * 500.0 + 500.0
+        kp_phys       = raw_kp * 250.0 + 250.0
         
         # Map [-1, 1] -> [0, 20]
-        kd_phys       = raw_kd * 10.0 + 10.0
+        kd_phys       = raw_kd * 2.5 + 2.5
         
         return kp_phys, kd_phys, desired_angle
 
@@ -982,12 +982,12 @@ class Simulator(ABC):
             #     self._printed_pd_header = True
 
             # print(
-            #     f"{current_kp[0, 0].item()},"
-            #     f"{current_kd[0, 0].item()},"
-            #     f"{current_theta[0, 0].item()},"
-            #     f"{current_angle[0, 0].item()},"
-            #     f"{current_vel[0, 0].item()},"
-            #     f"{torque_desired[0, 0].item()},"
+            #     f"{current_kp[0, 0].item()},\t"
+            #     f"{current_kd[0, 0].item()},\t"
+            #     f"{current_theta[0, 0].item()},\t"
+            #     f"{current_angle[0, 0].item()},\t"
+            #     f"{current_vel[0, 0].item()},\t"
+            #     f"{torque_desired[0, 0].item()},\t"
             #     f"{torque[0, 0].item()}"
             # )
 

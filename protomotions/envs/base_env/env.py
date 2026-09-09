@@ -194,16 +194,28 @@ class BaseEnv:
             sim_torque_joints = []
             common_torque_joints = []
             humanoid_joints = []
+            lower_body_joints = []
             for i, (name_sim, name_env) in enumerate(zip(sim_dof_names, env_dof_names)):
                 if name_sim in self.robot_config.control.torque_joints:
                     sim_torque_joints.append(i)
                 if name_env in self.robot_config.control.torque_joints:
                     common_torque_joints.append(i)
-                else:
+                elif name_env not in ["suspension_slide",
+                                      "suspension_x",
+                                      "suspension_y",
+                                      "suspension_z",
+                                      "Motor",
+                                      "R_Ankle_y"]:
                     humanoid_joints.append(i)
+                else:
+                    print(f"Skipping joint {name_env} for humanoid joints")
+                if name_env[:-2] in ["L_Hip", "L_Knee", "L_Ankle", "R_Hip", "R_Knee"]:
+                    print(f"Adding joint {name_env} to lower body joints")
+                    lower_body_joints.append(i)
             self.simulator.sim_torque_joints = sim_torque_joints
             self.simulator.common_torque_joints = common_torque_joints
             self.simulator.humanoid_joints = humanoid_joints
+            self.simulator.lower_body_joints = lower_body_joints
 
         if hasattr(self.config, "passive_dof_names") and self.config.passive_dof_names is not None:
             
@@ -254,7 +266,7 @@ class BaseEnv:
             for index in human_joints:
                 if index not in passive_defaults_indices:
                     temp_human.append(index)
-            
+
             self.simulator.humanoid_joints = temp_human
             
             # C. CRITICAL: SYNC ROBOT CONFIG
@@ -796,7 +808,7 @@ class BaseEnv:
             # =================================
 
             # Get cached indices if specified (pre-resolved at init time)
-            if reward_name in self._reward_indices_cache:
+            if reward_name in self._reward_indices_cache and "pow" not in reward_name:
                 func_kwargs["indices"] = self._reward_indices_cache[reward_name]
 
             # Call the reward function
@@ -905,8 +917,9 @@ class BaseEnv:
                 "prosthetic_current_kp": raw_current_actions[:, num_dofs:num_dofs+1],
                 
                 "humanoid_joints": self.simulator.humanoid_joints,
+                "lower_body_joints": self.simulator.lower_body_joints,
                 "prosthetic_joints": self.simulator.common_torque_joints,
-                "ankle_joint": 23, #self.config.ankle_dof_index,
+                "ankle_joint": self.config.ankle_dof_index,
                 "motor_joint": self.config.motor_dof_index,
 
                 "soft_dof_limits_lower": self.robot_config.kinematic_info.dof_limits_lower.to(

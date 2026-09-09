@@ -254,6 +254,8 @@ def main():
         apply_config_overrides,
     )
 
+    from examples.experiments.mimic.mlp_marl import apply_inference_overrides   
+
     cli_overrides = parse_cli_overrides(args.overrides) if args.overrides else None
 
     if cli_overrides:
@@ -267,6 +269,15 @@ def main():
             motion_lib_config,
             scene_lib_config,
         )
+
+    # Apply experiment-specific inference overrides
+    apply_inference_overrides(
+        robot_config,
+        simulator_config,
+        env_config,
+        agent_config,
+        args,
+    )
 
     # Create fabric config for inference (simplified)
     fabric_config = FabricConfig(
@@ -294,6 +305,9 @@ def main():
         if hasattr(env_config, "save_dir")
         else None
     )
+
+
+
     components = build_all_components(
         terrain_config=terrain_config,
         scene_lib_config=scene_lib_config,

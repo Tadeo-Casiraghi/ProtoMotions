@@ -615,7 +615,8 @@ class Mimic(BaseEnv):
         ref_gr = ref_state.rigid_body_rot
 
         left_foot_indices = self._resolve_body_indices(["all_left_foot_bodies"])
-        right_foot_indices = self._resolve_body_indices(["all_right_foot_bodies"])
+        ref_right_foot_indices = self._resolve_body_indices(["all_right_foot_bodies"])
+        right_foot_indices = self._resolve_body_indices(["all_right_foot_bodies_contact"])
 
         # Use simulator's canonical method to compute binary contacts
         sim_contacts = current_state.rigid_body_contacts
@@ -661,7 +662,7 @@ class Mimic(BaseEnv):
             ref_state.rigid_body_contacts[:, left_foot_indices].float().mean(dim=-1)
         )
         gt_right_foot_contact = (
-            ref_state.rigid_body_contacts[:, right_foot_indices].float().mean(dim=-1)
+            ref_state.rigid_body_contacts[:, ref_right_foot_indices].float().mean(dim=-1)
         )
         pred_left_foot_contact = (
             current_state.rigid_body_contacts[:, left_foot_indices].float().mean(dim=-1)

@@ -468,6 +468,11 @@ class BaseAgent:
             if action.shape[1] == len(self.config.action_indices):
                 # Standard agent (Humanoid): maps cleanly to its physical slots
                 full_action[:, self.config.action_indices] = action
+            elif action.shape[1] == len(self.config.action_indices) + 1: # magic prosthetic case
+                # Humanoid agent: has an extra action (e.g., a control signal for the prosthetic)
+                full_action[:, self.config.action_indices] = action[:, :-1]
+                full_action[:, self.config.prosthetic_magic_index] = action[:, -1]
+                full_action[:, -num_extra_actions:] = [self.config.prosthetic_magic_kp, self.config.prosthetic_magic_kd]
             else:
                 # Expanded agent (Prosthetic): 
                 # Separate the physical target from the extra impedance parameters

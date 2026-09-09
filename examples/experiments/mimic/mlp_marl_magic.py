@@ -17,6 +17,7 @@ from protomotions.robot_configs.base import RobotConfig
 from protomotions.simulator.base_simulator.config import SimulatorConfig
 from protomotions.envs.mimic.config import MimicEnvConfig
 from protomotions.agents.ppo.config import PPOAgentConfig
+from protomotions.agents.multi_agent_orchestrator.config import CoLearningConfig
 import argparse
 
 
@@ -74,6 +75,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         mean_squared_error_exp,
         rotation_error_exp,
         power_consumption_sum,
+        power_consumption_exp,
         joint_limit_violation,
         norm,
         squared_norm,
@@ -156,6 +158,16 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             indices_subset=["end_effector_lower_bodies"],
             weight=0.4,
         ),
+        "gt_ef_prosthetic_rew": RewardComponentConfig(
+            function=mean_squared_error_exp,
+            variables={
+                "x": "current_state.rigid_body_pos",
+                "ref_x": "ref_state.rigid_body_pos",
+                "coefficient": "-1000.0",
+            },
+            indices_subset=["R_foot"],
+            weight=0.4,
+        ),
         "gt_ef_upper_rew": RewardComponentConfig(
             function=mean_squared_error_exp,
             variables={
@@ -166,18 +178,18 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             indices_subset=["end_effector_upper_bodies"],
             weight=0.2,
         ),
-        "skin_rew": RewardComponentConfig(
-            function=skin_pressure_penalty,
-            variables={
-                "contact_forces": "current_state.rigid_body_contact_forces",
-                "body_quats": "current_state.rigid_body_rot",
-            },
-            indices_subset=["skin_bodies"],
-            weight=-3e-6,  # Negative = Penalty
-            min_value=-0.5,
-            # weight=-4e-4,  # Start with a small penalty and increase if needed
-            # min_value=-1.0,  # Cap the maximum penalty to prevent destabilization
-        ),
+        # "skin_rew": RewardComponentConfig(
+        #     function=skin_pressure_penalty,
+        #     variables={
+        #         "contact_forces": "current_state.rigid_body_contact_forces",
+        #         "body_quats": "current_state.rigid_body_rot",
+        #     },
+        #     indices_subset=["skin_bodies"],
+        #     weight=-3e-6,  # Negative = Penalty
+        #     min_value=-0.5,
+        #     # weight=-4e-4,  # Start with a small penalty and increase if needed
+        #     # min_value=-1.0,  # Cap the maximum penalty to prevent destabilization
+        # ),
         "gr_rew": RewardComponentConfig(
             function=rotation_error_exp,
             variables={
@@ -259,15 +271,15 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             weight=0.1,
         ),
         "gav_ef_upper_rew": RewardComponentConfig(
-                    function=mean_squared_error_exp,
-                    variables={
-                        "x": "current_state.rigid_body_ang_vel",
-                        "ref_x": "ref_state.rigid_body_ang_vel",
-                        "coefficient": "-0.2",
-                    },
-                    indices_subset=["end_effector_upper_bodies"],
-                    weight=0.05,
-                ),
+            function=mean_squared_error_exp,
+            variables={
+                "x": "current_state.rigid_body_ang_vel",
+                "ref_x": "ref_state.rigid_body_ang_vel",
+                "coefficient": "-0.2",
+            },
+            indices_subset=["end_effector_upper_bodies"],
+            weight=0.05,
+        ),
         "rh_rew": RewardComponentConfig(
             function=mean_squared_error_exp,
             variables={
@@ -275,7 +287,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "ref_state.rigid_body_pos[:, 0, 2]",
                 "coefficient": "-100.0",
             },
-            weight=0.1,
+            weight=0.15,
         ),
         "pow_rew": RewardComponentConfig(
             function=power_consumption_sum,
@@ -283,10 +295,11 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "dof_forces": "current_state.dof_forces",
                 "dof_vel": "current_state.dof_vel",
                 "use_torque_squared": "False",
+                "indices": "humanoid_joints",  # Only penalize power for humanoid joints, not prosthetic
             },
-            weight=-7.5e-5,
-            min_value=-1.75,
-            zero_during_grace_period=False,
+            weight=-4.0e-4, # TADEO -7.5e-5,
+            # min_value=-1.75,
+            zero_during_grace_period=True,
         ),
         "contact_match_rew": RewardComponentConfig(
             function=contact_mismatch_sum,
@@ -294,7 +307,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "sim_contacts": "current_state.rigid_body_contacts",
                 "ref_contacts": "ref_state.rigid_body_contacts",
             },
-            indices_subset=["all_left_foot_bodies", "all_right_foot_bodies"],
+            indices_subset=["all_left_foot_bodies", "all_right_foot_bodies_contact"],
             weight=-0.2,
             zero_during_grace_period=True,
         ),
@@ -304,12 +317,13 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "current_forces": "current_contact_force_magnitudes",
                 "previous_forces": "prev_contact_force_magnitudes",
             },
-            indices_subset=["all_left_foot_bodies", "all_right_foot_bodies"],
-            weight=-1e-5,
+            indices_subset=["all_left_foot_bodies", "all_right_foot_bodies_contact"],
+            weight=-1e-4,
             min_value=-0.5,
             zero_during_grace_period=True,
         ),
     }
+
 
     env_config: MimicEnvConfig = MimicEnvConfig(
         ref_contact_smooth_window=7,
@@ -356,7 +370,6 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         active_dof_indices=None,
         passive_dof_defaults=None,
     )
-
     return env_config
 
 
@@ -373,32 +386,63 @@ def humanoid_agent_config(
     from protomotions.agents.evaluators.config import MimicEvaluatorConfig
 
     body_names = robot_config.kinematic_info.body_names
+    body_indices_to_remove = []
+    contact_indices_to_remove = []
+
+    for i, name in enumerate(body_names):
+        n_low = name.lower()
+        if (
+            "prosthetic" in n_low 
+            or "skin" in n_low 
+            or "socket" in n_low 
+            or name in ["R_Ankle", "R_Toe"] # Ensure these match your URDF exact casing
+        ):
+            body_indices_to_remove.append(i)
+        if (name in ["R_Ankle", "R_Toe"] or "socket" in n_low or "prosthetic" in n_low):
+            contact_indices_to_remove.append(i)
     
     dofs = robot_config.kinematic_info.dof_names
-    num_active_actions = len(dofs)
+    action_indices = []
+    prosthetic_magic_index = None
+
+    for i, dof_name in enumerate(dofs):
+        n_low = dof_name.lower()
+        if (
+            "suspension" in n_low 
+            or dof_name in ["R_Ankle_y", "Motor"] # Ensure these match your URDF exact casing
+        ):
+            print(dof_name, " Skipped")
+            continue  # Skip this DOF
+        print(dof_name, " Included")
+        action_indices.append(i)
+        if dof_name == "Motor":
+            prosthetic_magic_index = i  # Store the index of the Motor DOF
+
+    num_active_actions = len(action_indices)
+    print("Number of humanoid active joints:", num_active_actions)
 
     actor_config = PPOActorConfig(
-        num_out=num_active_actions,
+        num_out=num_active_actions+1,
         actor_logstd=-2.9,
-        in_keys=["max_coords_obs", "mimic_target_poses", "historical_previous_actions"],
+        in_keys=["blind_body_obs", "mimic_target_poses", "agent_action_history"],
         mu_key="actor_trunk_out",
         mu_model=MLPWithConcatConfig(
             in_keys=[
-                "max_coords_obs",
+                "blind_body_obs",
                 "mimic_target_poses",
-                "historical_previous_actions",
+                "agent_action_history",
             ],
             normalize_obs=True,
             norm_clamp_value=5,
             out_keys=["actor_trunk_out"],
-            num_out=num_active_actions,
+            num_out=num_active_actions+1,
             layers=[MLPLayerConfig(units=1024, activation="relu") for _ in range(6)],
             output_activation="tanh",
         ),
     )
 
     critic_config = MLPWithConcatConfig(
-        in_keys=["max_coords_obs", "mimic_target_poses", "historical_previous_actions"],
+        in_keys=["historical_prosthetic_obs", "historical_prosthetic_previous_actions", "max_coords_obs", "mimic_target_poses", "agent_action_history"],
         out_keys=["value"],
         normalize_obs=True,
         norm_clamp_value=5,
@@ -407,16 +451,12 @@ def humanoid_agent_config(
     )
     agent_config: PPOAgentConfig = PPOAgentConfig(
         model=PPOModelConfig(
-            in_keys=[
-                "max_coords_obs",
-                "mimic_target_poses",
-                "historical_previous_actions",
-            ],
+            in_keys=["historical_prosthetic_obs", "historical_prosthetic_previous_actions", "max_coords_obs", "mimic_target_poses", "agent_action_history", "blind_body_obs"],
             out_keys=["action", "mean_action", "neglogp", "value"],
             actor=actor_config,
             critic=critic_config,
-            actor_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=2e-5),
-            critic_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=1e-4),
+            actor_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=2e-5),  # lr=2e-5),
+            critic_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=1e-4), # lr=1e-4),
         ),
         batch_size=args.batch_size,
         training_max_steps=args.training_max_steps,
@@ -424,6 +464,8 @@ def humanoid_agent_config(
         clip_critic_loss=True,
 
         use_blind_body_indices=True,
+        body_indices_to_remove=body_indices_to_remove,
+        contact_indices_to_remove=contact_indices_to_remove,
         total_num_bodies=len(body_names),
 
         evaluator=MimicEvaluatorConfig(
@@ -435,13 +477,38 @@ def humanoid_agent_config(
                 "gt_rew",
                 "gr_rew",
                 "pow_rew",
-                "contact_force_change_rew",
+                # "contact_force_change_rew",
             ],
         ),
         advantage_normalization=AdvantageNormalizationConfig(
             enabled=True, shift_mean=True
         ),
+        action_indices=action_indices,
+        prosthetic_magic_index=prosthetic_magic_index
+        prosthetic_magic_kp=500.0,  # Example proportional gain for the prosthetic control signal
+        prosthetic_magic_kd=5.0,  # Example derivative gain for the prosthetic control signal
     )
+
+    print(f"[{agent_type.upper()}] Config: Controlling {num_active_actions} DOFs")
+    return agent_config
+
+
+def agent_config(
+    robot_config: RobotConfig, env_config: MimicEnvConfig, args: argparse.Namespace
+) -> PPOAgentConfig:
+
+
+    humanoid_agent_cfg = humanoid_agent_config(robot_config, env_config, args, agent_type="humanoid")
+
+    agent_config = CoLearningConfig(
+        agents={
+            "humanoid": humanoid_agent_cfg,
+        },
+        sync_updates=True,
+        batch_size=args.batch_size,
+        training_max_steps=args.training_max_steps,
+    )
+
     return agent_config
 
 
@@ -464,3 +531,5 @@ def apply_inference_overrides(
                 env_cfg.motion_manager.resample_on_reset = True
             if hasattr(env_cfg.motion_manager, "init_start_prob"):
                 env_cfg.motion_manager.init_start_prob = 1.0
+
+

@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 import os
 
 # --- CONFIGURATION ---
-FILE_PATH = "multiple_arrays.npz" # Ensure path is correct
-OUTPUT_DIR = "plots"
+FILE_PATH = "python-stuff/multiple_arrays.npz" # Ensure path is correct
+OUTPUT_DIR = "python-stuff/plots"
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-DT = 1.0 / 30.0
+DT = 1.0 / 90.0
 skin_names = [
     "skin_box_posterior_top", "skin_box_medial_top",
     "skin_box_anterior_top", "skin_box_lateral_top",

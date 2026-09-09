@@ -6,6 +6,7 @@ outputs/*
 rendered_images/*
 *tmp*
 results/*
+results_old/*
 .DS_Store
 **/.DS_Store
 
