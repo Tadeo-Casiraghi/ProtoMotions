@@ -449,6 +449,14 @@ class BaseAgent:
             hasattr(self.config, "action_indices") 
             and self.config.action_indices is not None
         ):
+            is_magic_action = (
+                getattr(self.config, "prosthetic_magic_index", None) is not None
+                and getattr(self.config, "prosthetic_magic_kp", None) is not None
+                and getattr(self.config, "prosthetic_magic_kd", None) is not None
+            )
+            if is_magic_action and num_extra_actions == 0:
+                num_extra_actions = 2
+
             # 1. Get dimensions
             batch_size = action.shape[0]
             total_dofs = self.env.robot_config.kinematic_info.num_dofs + num_extra_actions
@@ -469,10 +477,15 @@ class BaseAgent:
                 # Standard agent (Humanoid): maps cleanly to its physical slots
                 full_action[:, self.config.action_indices] = action
             elif action.shape[1] == len(self.config.action_indices) + 1: # magic prosthetic case
+                if not is_magic_action:
+                    raise ValueError(
+                        "Received an extra action, but no magic prosthetic index and gains are configured."
+                    )
                 # Humanoid agent: has an extra action (e.g., a control signal for the prosthetic)
                 full_action[:, self.config.action_indices] = action[:, :-1]
                 full_action[:, self.config.prosthetic_magic_index] = action[:, -1]
-                full_action[:, -num_extra_actions:] = [self.config.prosthetic_magic_kp, self.config.prosthetic_magic_kd]
+                full_action[:, -2] = self.config.prosthetic_magic_kp
+                full_action[:, -1] = self.config.prosthetic_magic_kd
             else:
                 # Expanded agent (Prosthetic): 
                 # Separate the physical target from the extra impedance parameters

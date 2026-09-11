@@ -179,8 +179,8 @@ over "Flattened_Prototype_93"
             apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
-            float physxCollision:restOffset = 0.001
+            float physxCollision:contactOffset = 0.005
+            float physxCollision:restOffset = 0.003
             
             float3[] extent = [(-0.005, -0.005, -0.008767), (0.005, 0.005, 0.008767)]
         }
@@ -221,8 +221,8 @@ over "Flattened_Prototype_95"
             apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
-            float physxCollision:restOffset = 0.001
+            float physxCollision:contactOffset = 0.005
+            float physxCollision:restOffset = 0.003
             
             float3[] extent = [(-0.005, -0.005, -0.005277), (0.005, 0.005, 0.005277)]
         }
@@ -719,8 +719,8 @@ over "Flattened_Prototype_120"
             apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
-            float physxCollision:restOffset = 0.001
+            float physxCollision:contactOffset = 0.005
+            float physxCollision:restOffset = 0.003
             
             float3[] extent = [(-0.005, -0.005, -0.008767), (0.005, 0.005, 0.008767)]
         }
@@ -740,8 +740,8 @@ over "Flattened_Prototype_121"
             apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
-            float physxCollision:restOffset = 0.001
+            float physxCollision:contactOffset = 0.005
+            float physxCollision:restOffset = 0.003
             
             float3[] extent = [(-0.005, -0.005, -0.008767), (0.005, 0.005, 0.008767)]
         }
@@ -779,6 +779,9 @@ over "Flattened_Prototype_124"
             apiSchemas = ["PhysicsCollisionAPI"]
         )
         {
+            float physxCollision:contactOffset = 0.002
+            float physxCollision:restOffset = 0.0
+
             float3[] extent = [(-0.085, -0.0483, -0.0464), (0.085, 0.0483, 0.0464)]
         }
     }
@@ -1083,8 +1086,8 @@ over "Flattened_Prototype_142"
             apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
-            float physxCollision:restOffset = 0.001
+            float physxCollision:contactOffset = 0.005
+            float physxCollision:restOffset = 0.003
             
             float3[] extent = [(-0.005, -0.005, -0.008767), (0.005, 0.005, 0.008767)]
         }
@@ -1147,8 +1150,8 @@ over "Flattened_Prototype_145"
             apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
-            float physxCollision:restOffset = 0.001
+            float physxCollision:contactOffset = 0.005
+            float physxCollision:restOffset = 0.003
             
             float3[] extent = [(-0.005, -0.005, -0.005277), (0.005, 0.005, 0.005277)]
         }
@@ -1354,8 +1357,8 @@ over "Flattened_Prototype_156"
             apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
-            float physxCollision:restOffset = 0.001
+            float physxCollision:contactOffset = 0.005
+            float physxCollision:restOffset = 0.003
             
             float3[] extent = [(-0.005, -0.005, -0.005277), (0.005, 0.005, 0.005277)]
         }
@@ -1401,8 +1404,8 @@ over "Flattened_Prototype_159"
             apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
-            float physxCollision:restOffset = 0.001
+            float physxCollision:contactOffset = 0.005
+            float physxCollision:restOffset = 0.003
             
             float3[] extent = [(-0.005, -0.005, -0.005277), (0.005, 0.005, 0.005277)]
         }
@@ -1441,6 +1444,8 @@ over "Flattened_Prototype_161"
             apiSchemas = ["PhysicsCollisionAPI"]
         )
         {
+            float physxCollision:contactOffset = 0.005
+            float physxCollision:restOffset = 0.0
             float3[] extent = [(-0.0496, -0.0478, -0.02), (0.0496, 0.0478, 0.02)]
         }
     }
@@ -1622,6 +1627,8 @@ over "Flattened_Prototype_9"
             apiSchemas = ["PhysicsCollisionAPI"]
         )
         {
+            float physxCollision:contactOffset = 0.002
+            float physxCollision:restOffset = 0.0
             float3[] extent = [(-0.129, -0.01, -0.03), (0.129, 0.01, 0.03)]
         }
     }
@@ -2732,7 +2739,7 @@ def Xform "smpl_humanoid10" (
             point3f physics:centerOfMass = (0, 0, 0)
             float3 physics:diagonalInertia = (0.00001, 0.00001, 0.00001)
             float physics:mass = 0.001
-            rel physics:filteredPairs = </smpl_humanoid9/bodies/L_Knee>
+            rel physics:filteredPairs = </smpl_humanoid10/bodies/L_Knee>
             rel physics:simulationOwner
             quatd xformOp:orient = (1, 0,0,0)
             double3 xformOp:scale = (1, 1, 1)
@@ -3185,12 +3192,12 @@ def Xform "smpl_humanoid10" (
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            float limit:rotX:physics:high = 180
-            float limit:rotX:physics:low = -180
-            float limit:rotY:physics:high = 180
-            float limit:rotY:physics:low = -180
-            float limit:rotZ:physics:high = 180
-            float limit:rotZ:physics:low = -180
+            float limit:rotX:physics:high = 115
+            float limit:rotX:physics:low = -115
+            float limit:rotY:physics:high = 115
+            float limit:rotY:physics:low = -115
+            float limit:rotZ:physics:high = 115
+            float limit:rotZ:physics:low = -115
             float limit:transX:physics:high = -1
             float limit:transX:physics:low = 1
             float limit:transY:physics:high = -1
@@ -3230,12 +3237,12 @@ def Xform "smpl_humanoid10" (
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            float limit:rotX:physics:high = 180
-            float limit:rotX:physics:low = -180
-            float limit:rotY:physics:high = 180
-            float limit:rotY:physics:low = -180
-            float limit:rotZ:physics:high = 180
-            float limit:rotZ:physics:low = -180
+            float limit:rotX:physics:high = 0.01
+            float limit:rotX:physics:low = -0.01
+            float limit:rotY:physics:high = 130
+            float limit:rotY:physics:low = 0
+            float limit:rotZ:physics:high = 0.01
+            float limit:rotZ:physics:low = -0.01
             float limit:transX:physics:high = -1
             float limit:transX:physics:low = 1
             float limit:transY:physics:high = -1
@@ -3275,12 +3282,12 @@ def Xform "smpl_humanoid10" (
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            float limit:rotX:physics:high = 180
-            float limit:rotX:physics:low = -180
-            float limit:rotY:physics:high = 180
-            float limit:rotY:physics:low = -180
-            float limit:rotZ:physics:high = 180
-            float limit:rotZ:physics:low = -180
+            float limit:rotX:physics:high = 60
+            float limit:rotX:physics:low = -60
+            float limit:rotY:physics:high = 60
+            float limit:rotY:physics:low = -60
+            float limit:rotZ:physics:high = 60
+            float limit:rotZ:physics:low = -60
             float limit:transX:physics:high = -1
             float limit:transX:physics:low = 1
             float limit:transY:physics:high = -1
@@ -3365,12 +3372,12 @@ def Xform "smpl_humanoid10" (
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            float limit:rotX:physics:high = 180
-            float limit:rotX:physics:low = -180
-            float limit:rotY:physics:high = 180
-            float limit:rotY:physics:low = -180
-            float limit:rotZ:physics:high = 180
-            float limit:rotZ:physics:low = -180
+            float limit:rotX:physics:high = 115
+            float limit:rotX:physics:low = -115
+            float limit:rotY:physics:high = 115
+            float limit:rotY:physics:low = -115
+            float limit:rotZ:physics:high = 115
+            float limit:rotZ:physics:low = -115
             float limit:transX:physics:high = -1
             float limit:transX:physics:low = 1
             float limit:transY:physics:high = -1
@@ -3410,12 +3417,12 @@ def Xform "smpl_humanoid10" (
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
             int isaac:physics:Rot_Z:DofOffset
-            float limit:rotX:physics:high = 180
-            float limit:rotX:physics:low = -180
-            float limit:rotY:physics:high = 180
-            float limit:rotY:physics:low = -180
-            float limit:rotZ:physics:high = 180
-            float limit:rotZ:physics:low = -180
+            float limit:rotX:physics:high = 0.01
+            float limit:rotX:physics:low = -0.01
+            float limit:rotY:physics:high = 130
+            float limit:rotY:physics:low = 0
+            float limit:rotZ:physics:high = 0.01
+            float limit:rotZ:physics:low = -0.01
             float limit:transX:physics:high = -1
             float limit:transX:physics:low = 1
             float limit:transY:physics:high = -1
@@ -4669,7 +4676,7 @@ def Xform "smpl_humanoid10" (
             float physics:dynamicFriction = 0.15
             float physics:staticFriction = 0.15
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 1000.0
+            float physxMaterial:compliantContactDamping = 2000.0
             float physxMaterial:compliantContactStiffness = 140000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
@@ -4684,7 +4691,7 @@ def Xform "smpl_humanoid10" (
             float physics:dynamicFriction = 0.15
             float physics:staticFriction = 0.15
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 1000.0
+            float physxMaterial:compliantContactDamping = 2000.0
             float physxMaterial:compliantContactStiffness = 104000
             uniform token ui:nodegraph:node:expansionState = "open"
         }
@@ -4699,7 +4706,7 @@ def Xform "smpl_humanoid10" (
             float physics:dynamicFriction = 0.15
             float physics:staticFriction = 0.15
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 1000.0
+            float physxMaterial:compliantContactDamping = 2000.0
             float physxMaterial:compliantContactStiffness = 46666
             uniform token ui:nodegraph:node:expansionState = "open"
         }
@@ -4714,7 +4721,7 @@ def Xform "smpl_humanoid10" (
             float physics:dynamicFriction = 0.001
             float physics:staticFriction = 0.001
             float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 1000.0
+            float physxMaterial:compliantContactDamping = 2000.0
             float physxMaterial:compliantContactStiffness = 74500
             uniform token ui:nodegraph:node:expansionState = "open"
         }
@@ -4736,9 +4743,10 @@ def Xform "smpl_humanoid10" (
             token outputs:mdl:surface
             token outputs:mdl:volume
             float physics:dynamicFriction = 0.8
-            float physics:staticFriction = 0.8
-            float physics:restitution = 0.1
-            float physxMaterial:compliantContactDamping = 1000.0
+            float physics:staticFriction = 0.9
+            float physics:restitution = 0.0
+
+            float physxMaterial:compliantContactDamping = 60.0
             float physxMaterial:compliantContactStiffness = 120000.0
             uniform token ui:nodegraph:node:expansionState = "open"
         }

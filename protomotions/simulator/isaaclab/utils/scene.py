@@ -253,6 +253,8 @@ class SceneCfg(InteractiveSceneCfg):
                 static_friction=terrain.sim_config.static_friction,
                 dynamic_friction=terrain.sim_config.dynamic_friction,
                 restitution=terrain.sim_config.restitution,
+                compliant_contact_damping=terrain.sim_config.compliant_contact_damping,
+                compliant_contact_stiffness=terrain.sim_config.compliant_contact_stiffness,
             )
             terrain_visual_material = sim_utils.MdlFileCfg(
                 mdl_path="{NVIDIA_NUCLEUS_DIR}/Materials/Base/Architecture/Shingles_01.mdl",

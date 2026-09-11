@@ -95,6 +95,8 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         "R_Ankle_y",
     ]
 
+    non_actuated_joints = []
+
     for i, name in enumerate(all_dof_names):
         if name == "R_Ankle_y":
             print(f"Found ankle DOF at index {i}")
@@ -110,6 +112,16 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         if name == "R_Ankle":
             print(f"Found foot body at index {i}")
             foot_body_index = i
+
+    required_indices = {
+        "R_Ankle_y": locals().get("ankle_dof_index"),
+        "Motor": locals().get("motor_dof_index"),
+        "prosthetic_assembly2": locals().get("shank_body_index"),
+        "R_Ankle": locals().get("foot_body_index"),
+    }
+    missing_indices = [name for name, index in required_indices.items() if index is None]
+    if missing_indices:
+        raise ValueError(f"Required robot names were not found: {missing_indices}")
     
     
     # Store the defaults by NAME
@@ -145,7 +157,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "ref_state.rigid_body_pos",
                 "coefficient": "-100.0",
             },
-            indices_subset=["tracking_bodies"],
+            indices_subset=["tracking_bodies", "output_ankle"],
             weight=0.4,
         ),
         "gt_ef_rew": RewardComponentConfig(
@@ -163,7 +175,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             variables={
                 "x": "current_state.rigid_body_pos",
                 "ref_x": "ref_state.rigid_body_pos",
-                "coefficient": "-1000.0",
+                "coefficient": "-200.0",
             },
             indices_subset=["R_foot"],
             weight=0.4,
@@ -197,7 +209,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_q": "ref_state.rigid_body_rot",
                 "coefficient": "-5.0",
             },
-            indices_subset=["tracking_bodies"],
+            indices_subset=["tracking_bodies", "output_ankle"],
             weight=0.3,
         ),
         "gr_ef_rew": RewardComponentConfig(
@@ -227,7 +239,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "ref_state.rigid_body_vel",
                 "coefficient": "-0.5",
             },
-            indices_subset=["tracking_bodies"],
+            indices_subset=["tracking_bodies", "output_ankle"],
             weight=0.1,
         ),
         "gv_ef_rew": RewardComponentConfig(
@@ -240,7 +252,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             indices_subset=["end_effector_lower_bodies"],
             weight=0.1,
         ),
-        "gv_ef_rew": RewardComponentConfig(
+        "gv_ef_upper_rew": RewardComponentConfig(
             function=mean_squared_error_exp,
             variables={
                 "x": "current_state.rigid_body_vel",
@@ -257,7 +269,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "ref_state.rigid_body_ang_vel",
                 "coefficient": "-0.1",
             },
-            indices_subset=["tracking_bodies"],
+            indices_subset=["tracking_bodies", "output_ankle"],
             weight=0.1,
         ),
         "gav_ef_rew": RewardComponentConfig(
@@ -295,9 +307,22 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "dof_forces": "current_state.dof_forces",
                 "dof_vel": "current_state.dof_vel",
                 "use_torque_squared": "False",
-                "indices": "humanoid_joints",  # Only penalize power for humanoid joints, not prosthetic
+                "indices": "humanoid_and_prosthetic_joints",  # Only penalize power for humanoid joints, not prosthetic
             },
             weight=-4.0e-4, # TADEO -7.5e-5,
+            # min_value=-1.75,
+            zero_during_grace_period=True,
+        ),
+        "pow_rew_lower": RewardComponentConfig(
+            function=power_consumption_exp,
+            variables={
+                "dof_forces": "current_state.dof_forces",
+                "dof_vel": "current_state.dof_vel",
+                "coefficient": "0.001",
+                "use_torque_squared": "False",
+                "indices": "lower_body_joints",  # Only penalize power for humanoid joints, not prosthetic
+            },
+            weight=-2.0e-3, # TADEO -7.5e-5,
             # min_value=-1.75,
             zero_during_grace_period=True,
         ),
@@ -322,6 +347,15 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             min_value=-0.5,
             zero_during_grace_period=True,
         ),
+        "theta_reference": RewardComponentConfig(
+            function=mean_squared_error_exp,
+            variables={
+                "x": "current_state.dof_pos[:, motor_joint] + current_state.dof_pos[:, ankle_joint]",
+                "ref_x": "ref_state.dof_pos[:, ankle_joint]",
+                "coefficient": "-250.0",
+            },
+            weight=4e-1,
+        ),
     }
 
 
@@ -335,21 +369,21 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             ),
             action_history=ActionHistoryConfig(
                 enabled=True,
-                num_historical_steps=5,
+                num_historical_steps=15,
             ),
         ),
         ankle_dof_index=ankle_dof_index,
         motor_dof_index=motor_dof_index,
         prosthetic_obs=ProstheticObsConfig(
             enabled = True,
-            num_historical_steps = 30,
+            num_historical_steps = 10,
             ankle_dof_index = ankle_dof_index,
             motor_dof_index = motor_dof_index,
             shank_body_index = shank_body_index,
             foot_body_index = foot_body_index,
             action_history=ActionHistoryConfig(
                 enabled=True,
-                num_historical_steps=30,
+                num_historical_steps=10,
             ),
         ),
         reward_config=reward_config,
@@ -366,9 +400,11 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             resample_on_reset=True,
         ),
         passive_dof_names=passive_dof_names,
+        non_actuated_joints=non_actuated_joints,
         passive_defaults_map=passive_defaults_by_name,
         active_dof_indices=None,
         passive_dof_defaults=None,
+        secondary_reward_flag=True,
     )
     return env_config
 
@@ -398,7 +434,7 @@ def humanoid_agent_config(
             or name in ["R_Ankle", "R_Toe"] # Ensure these match your URDF exact casing
         ):
             body_indices_to_remove.append(i)
-        if (name in ["R_Ankle", "R_Toe"] or "socket" in n_low or "prosthetic" in n_low):
+        if (name in ["R_Ankle", "R_Ankle_foot", "R_Toe"] or "socket" in n_low or "prosthetic" in n_low):
             contact_indices_to_remove.append(i)
     
     dofs = robot_config.kinematic_info.dof_names
@@ -407,6 +443,8 @@ def humanoid_agent_config(
 
     for i, dof_name in enumerate(dofs):
         n_low = dof_name.lower()
+        if dof_name == "Motor":
+            prosthetic_magic_index = i
         if (
             "suspension" in n_low 
             or dof_name in ["R_Ankle_y", "Motor"] # Ensure these match your URDF exact casing
@@ -415,8 +453,6 @@ def humanoid_agent_config(
             continue  # Skip this DOF
         print(dof_name, " Included")
         action_indices.append(i)
-        if dof_name == "Motor":
-            prosthetic_magic_index = i  # Store the index of the Motor DOF
 
     num_active_actions = len(action_indices)
     print("Number of humanoid active joints:", num_active_actions)
@@ -484,9 +520,15 @@ def humanoid_agent_config(
             enabled=True, shift_mean=True
         ),
         action_indices=action_indices,
-        prosthetic_magic_index=prosthetic_magic_index
-        prosthetic_magic_kp=500.0,  # Example proportional gain for the prosthetic control signal
-        prosthetic_magic_kd=5.0,  # Example derivative gain for the prosthetic control signal
+        prosthetic_magic_index=prosthetic_magic_index,
+        # Fix Kp value at 500. The corresponding action is 1.0 since the action space
+        # is normalized to [-1, 1]. This means the effective Kp applied to the prosthetic
+        # control signal is 250 * 1.0 + 250 = 500.
+        prosthetic_magic_kp=0.99,
+        # Fix Kd value at 5.0. The corresponding action is 1.0 since the action space
+        # is normalized to [-1, 1]. This means the effective Kd applied to the prosthetic
+        # control signal is 2.5 * 1.0 + 2.5 = 5.0.
+        prosthetic_magic_kd=0.99,  # Example derivative gain for the prosthetic control signal
     )
 
     print(f"[{agent_type.upper()}] Config: Controlling {num_active_actions} DOFs")
@@ -531,5 +573,4 @@ def apply_inference_overrides(
                 env_cfg.motion_manager.resample_on_reset = True
             if hasattr(env_cfg.motion_manager, "init_start_prob"):
                 env_cfg.motion_manager.init_start_prob = 1.0
-
 

@@ -254,7 +254,30 @@ def main():
         apply_config_overrides,
     )
 
-    from examples.experiments.mimic.mlp_marl import apply_inference_overrides   
+    import importlib.util
+
+    experiment_source_path = resolved_configs.get("experiment_source_path")
+    if experiment_source_path is None:
+        experiment_source_path = checkpoint.parent / "experiment_config.py"
+    else:
+        experiment_source_path = Path(experiment_source_path)
+        copied_experiment_path = checkpoint.parent / "experiment_config.py"
+        if copied_experiment_path.exists():
+            experiment_source_path = copied_experiment_path
+
+    if not experiment_source_path.exists():
+        raise FileNotFoundError(
+            f"Could not find experiment module for inference: {experiment_source_path}"
+        )
+
+    experiment_spec = importlib.util.spec_from_file_location(
+        "checkpoint_experiment", experiment_source_path
+    )
+    if experiment_spec is None or experiment_spec.loader is None:
+        raise ImportError(f"Could not load experiment module: {experiment_source_path}")
+    experiment_module = importlib.util.module_from_spec(experiment_spec)
+    experiment_spec.loader.exec_module(experiment_module)
+    apply_inference_overrides = experiment_module.apply_inference_overrides
 
     cli_overrides = parse_cli_overrides(args.overrides) if args.overrides else None
 

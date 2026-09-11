@@ -106,6 +106,7 @@ class EnvConfig(ConfigBuilder):
     secondary_reward_config: Dict[str, RewardComponentConfig] = field(default_factory=dict)
 
     passive_dof_names: Optional[List[str]] = None
+    non_actuated_joints: Optional[List[str]] = None
     passive_defaults_map: Optional[Dict[str, float]] = None
     active_dof_indices: Optional[List[int]] = None
     passive_dof_defaults: Optional[Dict[int, float]] = None

@@ -54,6 +54,8 @@ class TerrainSimConfig(ConfigBuilder):
     height_offset: float = (
         0.0  # Height offset for the terrain (negative values move terrain down)
     )
+    compliant_contact_damping: float = 500.0
+    compliant_contact_stiffness: float = 500000.0
     combine_mode: CombineMode = CombineMode.AVERAGE
 
 

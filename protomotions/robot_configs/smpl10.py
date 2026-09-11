@@ -81,7 +81,7 @@ class Smpl10RobotConfig(RobotConfig):
                 "L_Ankle","R_Ankle",
             ],
             "R_foot": [
-                "R_Hip", "R_Ankle", # TODO: Add R_Knee fake body like with R_Ankle to enable tracking
+                "R_Hip", "R_Knee", "R_Ankle",
             ],
             "lower_body_remaining_bodies": [
                 "L_Hip", "L_Knee", "L_Ankle",
@@ -93,7 +93,7 @@ class Smpl10RobotConfig(RobotConfig):
             "tracking_bodies": [
                 "Pelvis",
                 "L_Hip", "L_Knee", "L_Ankle", "L_Toe",
-                "R_Hip", # "R_Knee", removing knee (tibia) because its cut and the com is not the same as the reference model
+                "R_Hip", "R_Knee",
                 "Torso", "Spine", "Chest", "Neck", "Head",
                 "L_Thorax", "L_Shoulder", "L_Elbow", "L_Wrist", "L_Hand",
                 "R_Thorax", "R_Shoulder", "R_Elbow", "R_Wrist", "R_Hand", 
@@ -222,7 +222,7 @@ class Smpl10RobotConfig(RobotConfig):
                     num_position_iterations=16,
                     num_velocity_iterations=4, 
                     contact_offset=0.002,
-                    max_depenetration_velocity=1,
+                    max_depenetration_velocity=3,
                 ),
             ),
             genesis=GenesisSimParams(

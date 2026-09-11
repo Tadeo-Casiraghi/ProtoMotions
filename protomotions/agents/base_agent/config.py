@@ -116,7 +116,7 @@ class BaseAgentConfig(ConfigBuilder):
 
     # Checkpoint saving configuration
     save_epoch_checkpoint_every: Optional[int] = (
-        1000  # Save epoch_xxx.ckpt every N epochs (None = disabled)
+        500  # Save epoch_xxx.ckpt every N epochs (None = disabled)
     )
     save_last_checkpoint_every: int = 10  # Save/overwrite last.ckpt every K epochs
 

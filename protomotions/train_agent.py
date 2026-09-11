@@ -433,6 +433,7 @@ def save_configs(
         "motion_lib": motion_lib_config,
         "env": env_config,
         "agent": agent_config,
+        "experiment_source_path": str(Path(experiment_source_path).resolve()),
     }
     log.info(f"Saving resolved configs (pickled) to {resolved_configs_path}")
     torch.save(resolved_configs, resolved_configs_path)

@@ -288,7 +288,7 @@ class MimicEvaluator(BaseEvaluator):
             obs_td = self.agent.obs_dict_to_tensordict(obs)
             # Update metrics
             self.update_metrics_from_env_extras(
-                metrics, extras, active_env_ids, active_motion_ids, prefix=False,
+                metrics, extras, active_env_ids, active_motion_ids, prefix=True,
             )
 
     def add_extra_obs_to_agent(self, obs: Tensor):
@@ -648,7 +648,7 @@ class MimicEvaluator(BaseEvaluator):
                         device=self.device
                     )
                     self.update_metrics_from_env_extras(
-                        metrics, extras, cur_env_ids, cur_motion_ids, prefix=False,
+                        metrics, extras, cur_env_ids, cur_motion_ids, prefix=True,
                     )
 
                 done_indices = dones.nonzero(as_tuple=False).squeeze(-1)

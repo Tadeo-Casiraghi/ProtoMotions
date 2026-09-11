@@ -195,6 +195,7 @@ class BaseEnv:
             common_torque_joints = []
             humanoid_joints = []
             lower_body_joints = []
+            sea = []
             for i, (name_sim, name_env) in enumerate(zip(sim_dof_names, env_dof_names)):
                 if name_sim in self.robot_config.control.torque_joints:
                     sim_torque_joints.append(i)
@@ -212,10 +213,14 @@ class BaseEnv:
                 if name_env[:-2] in ["L_Hip", "L_Knee", "L_Ankle", "R_Hip", "R_Knee"]:
                     print(f"Adding joint {name_env} to lower body joints")
                     lower_body_joints.append(i)
+                if name_env in ["R_Ankle_y"]:
+                    print(f"Adding joint {name_env} to SEA joints")
+                    sea.append(i)
             self.simulator.sim_torque_joints = sim_torque_joints
             self.simulator.common_torque_joints = common_torque_joints
             self.simulator.humanoid_joints = humanoid_joints
             self.simulator.lower_body_joints = lower_body_joints
+            self.simulator.sea_joints = sea
 
         if hasattr(self.config, "passive_dof_names") and self.config.passive_dof_names is not None:
             
@@ -236,6 +241,7 @@ class BaseEnv:
             # (Handle case where these might be None)
             target_passive_names = getattr(self.config, "passive_dof_names", [])
             target_defaults_map = getattr(self.config, "passive_defaults_map", {})
+            non_actuated_indices = getattr(self.config, "non_actuated_joints", [])
 
             print("\n--- RESOLVING JOINT INDICES ---")
             for i, (name_sim, name_env) in enumerate(zip(sim_dof_names, env_dof_names)):
@@ -249,7 +255,8 @@ class BaseEnv:
                     val = target_defaults_map.get(name_env, target_defaults_map.get("default", 0.0))
                     passive_defaults_indices_env[i] = val
                     print(f"Locked Joint '{name_env}' (Index {i}) -> {val}")
-                else:
+                elif name_env not in non_actuated_indices:
+                    print(f"Adding Active Joint '{name_env}' (Index {i})")
                     active_indices.append(i)
 
             # 4. UPDATE COMPONENTS WITH CORRECT INDICES
@@ -258,7 +265,7 @@ class BaseEnv:
             self.simulator.passive_dof_defaults = passive_defaults_indices
             
             # B. Update Config (So Agent/Orchestrator know active indices)
-            self.config.active_dof_indices = active_indices # TODO TADEO: Ojo con esto que tiene en cuenta el motor de la protesis
+            self.config.active_dof_indices = active_indices
             # print("Set Active DOF indices to", self.config.active_dof_indices)
             self.config.passive_dof_defaults = passive_defaults_indices_env # For reference
 
@@ -918,6 +925,7 @@ class BaseEnv:
                 
                 "humanoid_joints": self.simulator.humanoid_joints,
                 "lower_body_joints": self.simulator.lower_body_joints,
+                "humanoid_and_prosthetic_joints": self.simulator.humanoid_joints + self.simulator.common_torque_joints + self.simulator.sea_joints,
                 "prosthetic_joints": self.simulator.common_torque_joints,
                 "ankle_joint": self.config.ankle_dof_index,
                 "motor_joint": self.config.motor_dof_index,
@@ -1153,6 +1161,8 @@ class BaseEnv:
         # Reset observation history buffers
         default_mask = ~torch.isin(env_ids, ref_env_ids)
         self.self_obs_cb.reset_hist_buf(env_ids, default_mask, motion_ids, motion_times)
+        if self.prosthetic_obs_cb is not None:
+            self.prosthetic_obs_cb.reset_hist(env_ids)
 
         self.progress_buf[env_ids] = 0
         self.reset_buf[env_ids] = False

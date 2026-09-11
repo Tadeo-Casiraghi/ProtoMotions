@@ -69,7 +69,6 @@ class CoLearningMimicEvaluator(MimicEvaluator):
         
         # --- MULTI-AGENT OBSERVATION CHAIN ---
         obs = self.agent.add_agent_info_to_obs(obs)                  # Humanoid
-        # obs = self.prosthetic_agent.add_agent_history_to_obs(obs)    # Prosthetic
         obs_td = self.agent.obs_dict_to_tensordict(obs)
 
         # 3. Evaluation Loop
@@ -143,13 +142,15 @@ class CoLearningMimicEvaluator(MimicEvaluator):
             
             # --- F. Prepare Next Step ---
             obs = self.agent.add_agent_info_to_obs(obs)
-            # obs = self.prosthetic_agent.add_agent_history_to_obs(obs)
             obs_td = self.agent.obs_dict_to_tensordict(obs)
             
             # --- G. Update Metrics ---
             self.update_metrics_from_env_extras(
                 metrics, extras, active_env_ids, active_motion_ids, prefix=True,
             )
+
+            if torch.any((dones | terminated)[active_env_ids]):
+                break
 
     def simple_test_policy(self, collect_metrics: bool = False) -> None:
         """
@@ -266,7 +267,6 @@ class CoLearningMimicEvaluator(MimicEvaluator):
 
                 # SAME OBS CHAIN AS TRAINING
                 obs = self.agent.add_agent_info_to_obs(obs)
-                # obs = self.prosthetic_agent.add_agent_history_to_obs(obs)
 
                 obs_td = self.agent.obs_dict_to_tensordict(obs)
 
@@ -341,7 +341,6 @@ class CoLearningMimicEvaluator(MimicEvaluator):
                 # ====================================================
 
                 obs = self.agent.add_agent_info_to_obs(obs)
-                # obs = self.prosthetic_agent.add_agent_history_to_obs(obs)
                 obs_td = self.agent.obs_dict_to_tensordict(obs)
 
                 # ====================================================
@@ -659,12 +658,19 @@ class CoLearningOrchestrator:
         self.time_report = TimeReport()
         self.time_report.add_timer("Main Timer")
 
-        self.evaluator = CoLearningMimicEvaluator(
-            humanoid_agent=self.agents['humanoid'],
-            prosthetic_agent=self.agents['prosthetic'],
-            fabric=self.fabric,
-            config=self.agents['humanoid'].config.evaluator # Use humanoid config
-        )
+        if "prosthetic" in self.agents:
+            self.evaluator = CoLearningMimicEvaluator(
+                humanoid_agent=self.agents["humanoid"],
+                prosthetic_agent=self.agents["prosthetic"],
+                fabric=self.fabric,
+                config=self.agents["humanoid"].config.evaluator,
+            )
+        else:
+            self.evaluator = MimicEvaluator(
+                self.agents["humanoid"],
+                self.fabric,
+                self.agents["humanoid"].config.evaluator,
+            )
 
     def load(self, checkpoint: Path, load_env: bool = True, load_pretrained_humanoid: bool = False):
         """Load checkpoints for all sub-agents.
@@ -770,9 +776,6 @@ class CoLearningOrchestrator:
         # A. Humanoid adds "blind_body_obs" to current_obs
         current_obs = self.agents['humanoid'].add_agent_info_to_obs(current_obs)
         
-        # # B. Prosthetic adds "history" and "torque" to THE SAME current_obs
-        # current_obs = self.agents['prosthetic'].add_agent_history_to_obs(current_obs)
-        
         # C. Convert to TensorDict
         # (Assuming both agents share the same tensordict logic, calling it from one is fine)
         obs_td = self.agents['humanoid'].obs_dict_to_tensordict(current_obs)
@@ -847,9 +850,6 @@ class CoLearningOrchestrator:
                     # A. Humanoid adds "blind_body_obs" to current_obs
                     obs = self.agents['humanoid'].add_agent_info_to_obs(global_obs)
 
-                    # B. Prosthetic adds "history" and "torque" to THE SAME current_obs
-                    # obs = self.agents['prosthetic'].add_agent_history_to_obs(obs)
-        
                     # C. Convert to TensorDict
                     # (Assuming both agents share the same tensordict logic, calling it from one is fine)
                     obs_td = self.agents['humanoid'].obs_dict_to_tensordict(obs)
@@ -920,7 +920,6 @@ class CoLearningOrchestrator:
 
                     # Construct Next Observations
                     next_obs = self.agents['humanoid'].add_agent_info_to_obs(next_global_obs)
-                    # next_obs = self.agents['prosthetic'].add_agent_history_to_obs(next_obs)
                     next_obs_td = self.agents['humanoid'].obs_dict_to_tensordict(next_obs)
 
                     # -----------------------------------------------------------
@@ -1119,15 +1118,16 @@ class CoLearningOrchestrator:
         exactly what fit() does at every rollout step:
 
             obs = humanoid.add_agent_info_to_obs(global_obs)      # step A
-            obs = prosthetic.add_agent_history_to_obs(obs)        # step B
             obs_td = humanoid.obs_dict_to_tensordict(obs)         # step C
 
-        Each agent gets a lambda that produces the obs dict it would
-        actually see during training, so lazy modules (LazyLinear,
-        RunningMeanStd) materialize with the right shapes.
+        The humanoid agent gets a lambda that produces the obs dict it
+        would actually see during training, so lazy modules materialize
+        with the right shapes.
+
+        obs_td = humanoid.obs_dict_to_tensordict(obs)         # step B
         """
-        humanoid   = self.agents['humanoid']
-        prosthetic = self.agents['prosthetic']
+        humanoid = self.agents["humanoid"]
+        prosthetic = self.agents["prosthetic"]
 
         humanoid._obs_pipeline = lambda raw_obs: (
             humanoid.add_agent_info_to_obs(raw_obs)

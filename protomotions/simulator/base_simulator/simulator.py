@@ -476,8 +476,8 @@ class Simulator(ABC):
             if env_ids is None:
                 # If env_ids is None, Isaac Lab is resetting ALL environments at once
                 self.torque_old.zero_()
-                self.kp_old.one_()*300
-                self.kd_old.one_()*5
+                self.kp_old.fill_(250)
+                self.kd_old.fill_(2.5)
                 self.theta_old.zero_()
             else:
                 # Reset only the specific environments that just finished/crashed
