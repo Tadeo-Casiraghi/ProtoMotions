@@ -64,6 +64,21 @@ TMP_SMPL_DIR = "/tmp/smpl"
 
 app = typer.Typer(pretty_exceptions_enable=False)
 
+def get_motion_key(filename, data_dir, folder_name):
+    relative_path_dir = filename.relative_to(data_dir).parent
+
+    motion_name = (
+        filename.name.replace(".npz", ".motion")
+        .replace(".pkl", ".motion")
+        .replace("-", "_")
+        .replace(" ", "_")
+        .replace("(", "_")
+        .replace(")", "_")
+    )
+
+    motion_relative_path = str(relative_path_dir / motion_name)
+
+    return folder_name + "/" + motion_relative_path
 
 def closest_divisor_larger_than_target(rounded_fps, target_fps):
     # Find divisors of rounded_fps
@@ -361,7 +376,14 @@ def main(
         all_files_in_folder = [
             f
             for f in Path(data_dir).glob("**/*.[np][pk][lz]")
-            if (f.name != "shape.npz" and "stagei.npz" not in f.name)
+            if (
+                f.name != "shape.npz"
+                and "stagei.npz" not in f.name
+                and (
+                    not motion_timings
+                    or get_motion_key(f, data_dir, folder_name) in motion_timings
+                )
+            )
         ]
 
         if not force_remake:
@@ -404,7 +426,14 @@ def main(
         files = [
             f
             for f in Path(data_dir).glob("**/*.[np][pk][lz]")
-            if (f.name != "shape.npz" and "stagei.npz" not in f.name)
+            if (
+                f.name != "shape.npz"
+                and "stagei.npz" not in f.name
+                and (
+                    not motion_timings
+                    or get_motion_key(f, data_dir, folder_name) in motion_timings
+                )
+            )
         ]
         print(f"Processing {len(files)} files")
 

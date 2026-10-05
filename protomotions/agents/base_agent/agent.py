@@ -457,6 +457,9 @@ class BaseAgent:
             if is_magic_action and num_extra_actions == 0:
                 num_extra_actions = 2
 
+            if getattr(self.config, "discard_prosthetic_action", False):
+                action = action[:, :-1]  # Discard the last action (prosthetic control signal) if configured
+                
             # 1. Get dimensions
             batch_size = action.shape[0]
             total_dofs = self.env.robot_config.kinematic_info.num_dofs + num_extra_actions

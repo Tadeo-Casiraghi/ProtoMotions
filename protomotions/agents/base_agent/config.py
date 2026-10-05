@@ -140,5 +140,6 @@ class BaseAgentConfig(ConfigBuilder):
     prosthetic_magic_index: Optional[int] = None  # Index of the prosthetic control signal in the action space (for magic prosthetic scenarios)
     prosthetic_magic_kp: Optional[float] = None  # Proportional gain for the prosthetic control signal (if applicable)
     prosthetic_magic_kd: Optional[float] = None  # Derivative gain for the prosthetic control signal (if applicable)
+    discard_prosthetic_action: bool = False  # Whether to discard the prosthetic action from the humanoid agent's action space
 
     dof_to_get: Optional[List[int]] = None  # For partial control, specify which DOFs to include in the observations

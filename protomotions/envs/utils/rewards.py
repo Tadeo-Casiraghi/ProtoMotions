@@ -550,3 +550,112 @@ def path_following_reward(
         reward = pos_reward
 
     return reward
+
+
+def prosthetic_directional_force_reward(
+    contact_forces: Tensor,
+    ref_root_vel: Tensor,
+    contact_threshold: float = 10.0,
+    min_ref_speed: float = 0.05,
+    force_scale: float = 100.0,
+    indices: Optional[Tensor] = None,
+) -> Tensor:
+    """Reward prosthetic ground force aligned with reference human motion.
+
+    The reference root velocity defines the intended direction of human
+    movement. Prosthetic force is rewarded when it has a positive component
+    along that direction.
+
+    Args:
+        contact_forces:
+            Global contact forces [num_envs, num_bodies, 3].
+
+        ref_root_vel:
+            Reference root velocity [num_envs, 3].
+
+        indices:
+            Indices of prosthetic bodies that can contact the ground.
+
+        contact_threshold:
+            Minimum prosthetic contact force magnitude required to consider
+            the prosthesis grounded.
+
+        min_ref_speed:
+            Minimum reference horizontal root speed required for the reward
+            to be active.
+
+        force_scale:
+            Force normalization scale.
+
+    Returns:
+        Reward [num_envs] approximately in [0, 1].
+    """
+
+    # ------------------------------------------------------------
+    # 1. Reference human movement direction
+    # ------------------------------------------------------------
+    ref_vel_xy = ref_root_vel[..., :2]
+
+    ref_speed = torch.linalg.vector_norm(
+        ref_vel_xy,
+        dim=-1,
+    )
+
+    moving_mask = ref_speed > min_ref_speed
+
+    ref_dir = ref_vel_xy / (
+        ref_speed.unsqueeze(-1) + 1e-6
+    )
+
+    # ------------------------------------------------------------
+    # 2. Prosthetic contact forces
+    # ------------------------------------------------------------
+    prosthetic_forces = contact_forces[:, indices]
+
+    total_prosthetic_force = prosthetic_forces.sum(dim=1)
+
+    prosthetic_force_xy = total_prosthetic_force[..., :2]
+
+    # ------------------------------------------------------------
+    # 3. Force in intended human direction
+    # ------------------------------------------------------------
+    directional_force = torch.sum(
+        prosthetic_force_xy * ref_dir,
+        dim=-1,
+    )
+
+    # Only reward force assisting the intended direction.
+    useful_force = torch.relu(directional_force)
+
+    # ------------------------------------------------------------
+    # 4. Ground contact
+    # ------------------------------------------------------------
+    prosthetic_force_magnitude = torch.linalg.vector_norm(
+        prosthetic_forces,
+        dim=-1,
+    )
+
+    prosthetic_ground_contact = (
+        prosthetic_force_magnitude > contact_threshold
+    ).any(dim=-1)
+
+    # ------------------------------------------------------------
+    # 5. Activate only when:
+    #    - reference says human is moving
+    #    - prosthesis is grounded
+    # ------------------------------------------------------------
+    reward_mask = (
+        moving_mask
+        & prosthetic_ground_contact
+    )
+
+    useful_force = useful_force * reward_mask.float()
+
+    # ------------------------------------------------------------
+    # 6. Bounded reward
+    # ------------------------------------------------------------
+    reward = 1.0 - torch.exp(
+        -useful_force / force_scale
+    )
+
+    return reward

@@ -167,6 +167,8 @@ def plot_data():
             ax4.legend(loc='upper right')
 
             print(f"Max Net Force (Knee Frame): {np.max(net_mag):.2f} N")
+
+            ax4.set_ylim([-50,1450])
             plt.tight_layout()
 
         # =========================================================

@@ -82,6 +82,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         contact_mismatch_sum,
         impact_force_penalty,
         skin_pressure_penalty,
+        prosthetic_directional_force_reward,
     )
 
     body_names = robot_cfg.kinematic_info.body_names
@@ -133,7 +134,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
 
     mimic_early_termination = [
         MimicEarlyTerminationEntry(
-            mimic_early_termination_key="max_joint_err",
+            mimic_early_termination_key="max_joint_err_filtered",
             mimic_early_termination_thresh=0.5,
             less_than=False,
         )
@@ -347,6 +348,76 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             min_value=-0.5,
             zero_during_grace_period=True,
         ),
+    }
+
+    secondary_reward_config = {
+        # "action_smoothness_human": RewardComponentConfig(
+        #     function=norm,
+        #     variables={
+        #         "x": "current_actions - previous_actions",
+        #     },
+        #     weight=-0.05,
+        # ),
+        "action_smoothness_prosthetic_angle": RewardComponentConfig(
+            function=squared_norm,
+            variables={"x": "prosthetic_current_actions - prosthetic_previous_actions"},
+            weight=1e0,  # Maybe stiffer penalty for prosthetic?
+        ),
+        "action_smoothness_prosthetic_kp": RewardComponentConfig(
+            function=squared_norm,
+            variables={"x": "prosthetic_current_gains[:,0:1] - prosthetic_previous_gains[:,0:1]"},
+            weight=3e-1,  # Maybe stiffer penalty for prosthetic?
+        ),
+        "action_smoothness_prosthetic_kd": RewardComponentConfig(
+            function=squared_norm,
+            variables={"x": "prosthetic_current_gains[:,1:2] - prosthetic_previous_gains[:,1:2]"},
+            weight=2e-1,  
+        ), 
+        "torque_smoothness_prosthetic_ankle": RewardComponentConfig(
+            function=squared_norm,
+            variables={"x": "prosthetic_current_torque - prosthetic_previous_torque"},
+            weight=-1e-5,  # Start small; torque magnitudes are much larger than actions/gains
+        ),
+        # "torque_bounds": RewardComponentConfig(
+        #     function=norm,
+        #     variables={"x": "prosthetic_current_torque"},
+        #     weight=-1e-4,
+        # ),
+        # "Kp_bounds": RewardComponentConfig(
+        #     function=norm,
+        #     variables={"x": "prosthetic_current_kp + 1"},
+        #     # Add 1 so that instead of centering in 0 --> 500,
+        #     # we center in -1 --> 0, which is the actual output range of the agent.
+        #     # This way we can directly penalize large gains without needing to shift the output distribution.
+        #     weight=0.0,
+        # ),
+        # "action_bounds": RewardComponentConfig(
+        #     function=joint_limit_violation,
+        #     variables={"dof_pos": "current_state.dof_pos",
+        #                "dof_limits_lower": "soft_dof_limits_lower",
+        #                "dof_limits_upper": "soft_dof_limits_upper",},
+        #     weight=-8e-1,
+        #     indices_subset=["motor_joints"],
+        # ),
+        "theta_is_angle_next": RewardComponentConfig(
+            function=mean_squared_error_exp,
+            variables={
+                "x": "prosthetic_previous_actions * 3.14",
+                "ref_x": "prosthetic_current_dof_pos",
+                "coefficient": "-200.0",
+            },
+            weight=3e-1,
+        ),
+        # "skin_rew": RewardComponentConfig(
+        #     function=skin_pressure_penalty,
+        #     variables={
+        #         "contact_forces": "current_state.rigid_body_contact_forces",
+        #         "body_quats": "current_state.rigid_body_rot",
+        #     },
+        #     indices_subset=["skin_bodies"],
+        #     weight=-6e-5, 
+        #     # min_value=-1.0, #TODO tadeo revisar
+        # ),
         "theta_reference": RewardComponentConfig(
             function=mean_squared_error_exp,
             variables={
@@ -354,9 +425,157 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "ref_state.dof_pos[:, ankle_joint]",
                 "coefficient": "-250.0",
             },
-            weight=1e-2,
+            weight=0.3e-1,
         ),
+        # "useful_work": RewardComponentConfig(
+        #     function=prosthetic_directional_force_reward,
+        #     variables={
+        #         "contact_forces": "current_contact_force_magnitudes",
+        #         "ref_root_vel": "ref_state.rigid_body_vel[:, 0, :]",
+        #     },
+        #     indices_subset=["all_right_foot_bodies_contact"],
+        #     weight=5.0e-2
+        # ),
+        "gt_rew_ankle": RewardComponentConfig(
+            function=mean_squared_error_exp,
+            variables={
+                "x": "current_state.rigid_body_pos",
+                "ref_x": "ref_state.rigid_body_pos",
+                "coefficient": "-100.0",
+            },
+            indices_subset=["output_ankle"],
+            weight=1.8e-3,
+        ),
+        "gr_rew_ankle": RewardComponentConfig(
+            function=rotation_error_exp,
+            variables={
+                "q": "current_state.rigid_body_rot",
+                "ref_q": "ref_state.rigid_body_rot",
+                "coefficient": "-10.0",
+            },
+            indices_subset=["output_ankle"],
+            weight=0.6e-2,
+        ),
+        "gv_rew_ankle": RewardComponentConfig(
+            function=mean_squared_error_exp,
+            variables={
+                "x": "current_state.rigid_body_vel",
+                "ref_x": "ref_state.rigid_body_vel",
+                "coefficient": "-0.5",
+            },
+            indices_subset=["output_ankle"],
+            weight=0.5e-3,
+        ),
+        "gav_rew_ankle": RewardComponentConfig(
+            function=mean_squared_error_exp,
+            variables={
+                "x": "current_state.rigid_body_ang_vel",
+                "ref_x": "ref_state.rigid_body_ang_vel",
+                "coefficient": "-0.1",
+            },
+            indices_subset=["output_ankle"],
+            weight=0.2e-2,
+        ),
+        # "gt_rew": RewardComponentConfig(
+        #     function=mean_squared_error_exp,
+        #     variables={
+        #         "x": "current_state.rigid_body_pos",
+        #         "ref_x": "ref_state.rigid_body_pos",
+        #         "coefficient": "-100.0",
+        #     },
+        #     indices_subset=["tracking_bodies"],
+        #     weight=1e-2,
+        # ),
+        # "gr_rew": RewardComponentConfig(
+        #     function=rotation_error_exp,
+        #     variables={
+        #         "q": "current_state.rigid_body_rot",
+        #         "ref_q": "ref_state.rigid_body_rot",
+        #         "coefficient": "-5.0",
+        #     },
+        #     indices_subset=["tracking_bodies"],
+        #     weight=0.2/10,
+        # ),
+        # "gv_rew": RewardComponentConfig(
+        #     function=mean_squared_error_exp,
+        #     variables={
+        #         "x": "current_state.rigid_body_vel",
+        #         "ref_x": "ref_state.rigid_body_vel",
+        #         "coefficient": "-0.5",
+        #     },
+        #     indices_subset=["tracking_bodies"],
+        #     weight=0.05,
+        # ),
+        # "gav_rew": RewardComponentConfig(
+        #     function=mean_squared_error_exp,
+        #     variables={
+        #         "x": "current_state.rigid_body_ang_vel",
+        #         "ref_x": "ref_state.rigid_body_ang_vel",
+        #         "coefficient": "-0.1",
+        #     },
+        #     indices_subset=["tracking_bodies"],
+        #     weight=0.05,
+        # ),
+        "pow_rew_human": RewardComponentConfig(
+            function=power_consumption_exp,
+            variables={
+                "dof_forces": "current_state.dof_forces",
+                "dof_vel": "current_state.dof_vel",
+                "coefficient": "0.001",
+                "use_torque_squared": "False",
+                "indices": "lower_body_joints"
+            },
+            weight=-2e-1,  # Maybe softer power penalty for secondary reward?
+            min_value=-5.0,
+            zero_during_grace_period=True,
+            # TADEO ACA HAY QUE REVISAR ESTO indices_subset=["all_physical_dofs"]
+        ),
+        # "pow_rew_prosthetic": RewardComponentConfig(
+        #     function=power_consumption_sum,
+        #     variables={
+        #         "dof_forces": "current_state.dof_forces",
+        #         "dof_vel": "current_state.dof_vel",
+        #         "use_torque_squared": "False",
+        #         "indices": "prosthetic_joints",  # Only penalize power for humanoid joints, not prosthetic
+        #     },
+        #     weight=-5.0e-4,  # Maybe softer power penalty for secondary reward?
+        #     min_value=-0.75,
+        #     zero_during_grace_period=True,
+        #     # TADEO ACA HAY QUE REVISAR ESTO indices_subset=["all_physical_dofs"]
+        # ),
+        # "contact_match_rew": RewardComponentConfig(
+        #     function=contact_mismatch_sum,
+        #     variables={
+        #         "sim_contacts": "current_state.rigid_body_contacts",
+        #         "ref_contacts": "ref_state.rigid_body_contacts",
+        #     },
+        #     indices_subset=["all_left_foot_bodies", "all_right_foot_bodies_contact"],
+        #     weight=-0.05,
+        #     zero_during_grace_period=True,
+        # ),
+        "contact_force_change_rew": RewardComponentConfig(
+            function=impact_force_penalty,
+            variables={
+                "current_forces": "current_contact_force_magnitudes",
+                "previous_forces": "prev_contact_force_magnitudes",
+            },
+            indices_subset=["all_left_foot_bodies", "all_right_foot_bodies_contact"],
+            weight=-2e-4,
+            min_value=-0.5,
+            zero_during_grace_period=True,
+        ),
+        # "rh_rew_prosthetic": RewardComponentConfig(
+        #     function=mean_squared_error_exp,
+        #     variables={
+        #         "x": "current_state.rigid_body_pos[:, 0, 2]",  # Root height (z-coord of body 0)
+        #         "ref_x": "ref_state.rigid_body_pos[:, 0, 2]",
+        #         "coefficient": "-200.0",
+        #     },
+        #     weight=4e-2,
+        # ),
     }
+
+
 
 
     env_config: MimicEnvConfig = MimicEnvConfig(
@@ -400,11 +619,13 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             resample_on_reset=True,
         ),
         passive_dof_names=passive_dof_names,
-        non_actuated_joints=non_actuated_joints,
         passive_defaults_map=passive_defaults_by_name,
+        non_actuated_joints=non_actuated_joints,
         active_dof_indices=None,
         passive_dof_defaults=None,
+
         secondary_reward_flag=True,
+        secondary_reward_config=secondary_reward_config,
     )
     return env_config
 
@@ -491,8 +712,8 @@ def humanoid_agent_config(
             out_keys=["action", "mean_action", "neglogp", "value"],
             actor=actor_config,
             critic=critic_config,
-            actor_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=2e-5),  # lr=2e-5),
-            critic_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=1e-4), # lr=1e-4),
+            actor_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=2e-8),  # lr=2e-5),
+            critic_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=1e-7), # lr=1e-4),
         ),
         batch_size=args.batch_size,
         training_max_steps=args.training_max_steps,
@@ -520,20 +741,86 @@ def humanoid_agent_config(
             enabled=True, shift_mean=True
         ),
         action_indices=action_indices,
-        prosthetic_magic_index=prosthetic_magic_index,
-        # Fix Kp value at 500. The corresponding action is 1.0 since the action space
-        # is normalized to [-1, 1]. This means the effective Kp applied to the prosthetic
-        # control signal is 250 * 1.0 + 250 = 500.
-        prosthetic_magic_kp=0.99,
-        # Fix Kd value at 5.0. The corresponding action is 1.0 since the action space
-        # is normalized to [-1, 1]. This means the effective Kd applied to the prosthetic
-        # control signal is 2.5 * 1.0 + 2.5 = 5.0.
-        prosthetic_magic_kd=0.99,  # Example derivative gain for the prosthetic control signal
+        discard_prosthetic_action=True,  # Discard prosthetic action from humanoid agent's action space
     )
 
     print(f"[{agent_type.upper()}] Config: Controlling {num_active_actions} DOFs")
     return agent_config
 
+def prosthetic_agent_config(
+    robot_config: RobotConfig, env_config: MimicEnvConfig, args: argparse.Namespace, agent_type: str
+) -> PPOAgentConfig:
+    from protomotions.agents.common.config import MLPWithConcatConfig, MLPLayerConfig
+    from protomotions.agents.ppo.config import (
+        PPOActorConfig,
+        PPOModelConfig,
+        AdvantageNormalizationConfig,
+    )
+    from protomotions.agents.base_agent.config import OptimizerConfig
+    from protomotions.agents.evaluators.config import MimicEvaluatorConfig
+
+    gSDE = False  # Enable gSDE for the prosthetic agent
+    dofs = robot_config.kinematic_info.dof_names
+    action_indices = []
+
+    for i, dof_name in enumerate(dofs):
+        if dof_name == "Motor":
+            action_indices.append(i)
+
+    actor_config = PPOActorConfig(
+        num_out=3,
+        actor_logstd=-2.9,
+        in_keys=["historical_prosthetic_obs", "historical_prosthetic_previous_actions"],
+        mu_key="actor_trunk_out",
+        mu_model=MLPWithConcatConfig(
+            in_keys=[
+                "historical_prosthetic_obs",
+                "historical_prosthetic_previous_actions",
+            ],
+            normalize_obs=True,
+            norm_clamp_value=5,
+            out_keys=["actor_trunk_out"],
+            num_out=3,
+            layers=[MLPLayerConfig(units=1024, activation="relu") for _ in range(6)],
+            output_activation="tanh",
+        ),
+    )
+
+    critic_config = MLPWithConcatConfig(
+        in_keys=["historical_prosthetic_obs", "historical_prosthetic_previous_actions", "max_coords_obs", "mimic_target_poses", "agent_action_history"],
+        out_keys=["value"],
+        normalize_obs=True,
+        norm_clamp_value=5,
+        num_out=1,
+        layers=[MLPLayerConfig(units=1024, activation="relu") for _ in range(4)],
+    )
+    agent_config: PPOAgentConfig = PPOAgentConfig(
+        model=PPOModelConfig(
+            in_keys=["historical_prosthetic_obs",
+                     "historical_prosthetic_previous_actions",
+                     "max_coords_obs",
+                     "mimic_target_poses",
+                     "agent_action_history"],
+            out_keys=["action", "mean_action", "neglogp", "value"],
+            actor=actor_config,
+            critic=critic_config,
+            actor_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=8e-5),
+            critic_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=4e-4),
+        ),
+        batch_size=args.batch_size,
+        training_max_steps=args.training_max_steps,
+        gradient_clip_val=50.0,
+        clip_critic_loss=True,
+
+        use_blind_body_indices=True,
+
+        advantage_normalization=AdvantageNormalizationConfig(
+            enabled=True, shift_mean=True
+        ),
+        action_indices=action_indices,
+        gSDE=gSDE,  # Pass the gSDE flag to the agent config
+    )
+    return agent_config
 
 def agent_config(
     robot_config: RobotConfig, env_config: MimicEnvConfig, args: argparse.Namespace
@@ -541,10 +828,12 @@ def agent_config(
 
 
     humanoid_agent_cfg = humanoid_agent_config(robot_config, env_config, args, agent_type="humanoid")
+    prosthetic_agent_cfg = prosthetic_agent_config(robot_config, env_config, args, agent_type="prosthetic")
 
     agent_config = CoLearningConfig(
         agents={
             "humanoid": humanoid_agent_cfg,
+            "prosthetic": prosthetic_agent_cfg,
         },
         sync_updates=True,
         batch_size=args.batch_size,

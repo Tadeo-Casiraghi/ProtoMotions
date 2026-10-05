@@ -1,0 +1,465 @@
+motions:
+- file: CMU/07/07_04_poses.motion
+  fps: 120.0
+  idx: 1497
+  sub_motions:
+  - timings:
+      end: 3.7416666666666667
+      start: 0.0
+  weight: 1.0
+- file: CMU/07/07_12_poses.motion
+  fps: 120.0
+  idx: 1498
+  sub_motions:
+  - timings:
+      end: 2.191666666666667
+      start: 0.0
+  weight: 1.0
+- file: CMU/07/07_08_poses.motion
+  fps: 120.0
+  idx: 1499
+  sub_motions:
+  - timings:
+      end: 3.0166666666666666
+      start: 0.0
+  weight: 1.0
+- file: CMU/07/07_06_poses.motion
+  fps: 120.0
+  idx: 1500
+  sub_motions:
+  - timings:
+      end: 3.475
+      start: 0.0
+  weight: 1.0
+- file: CMU/07/07_01_poses.motion
+  fps: 120.0
+  idx: 1501
+  sub_motions:
+  - timings:
+      end: 2.6333333333333333
+      start: 0.0
+  weight: 1.0
+- file: CMU/07/07_02_poses.motion
+  fps: 120.0
+  idx: 1502
+  sub_motions:
+  - timings:
+      end: 2.7416666666666667
+      start: 0.0
+  weight: 1.0
+- file: CMU/07/07_11_poses.motion
+  fps: 120.0
+  idx: 1503
+  sub_motions:
+  - timings:
+      end: 2.625
+      start: 0.0
+  weight: 1.0
+- file: CMU/07/07_10_poses.motion
+  fps: 120.0
+  idx: 1504
+  sub_motions:
+  - timings:
+      end: 2.5083333333333333
+      start: 0.0
+  weight: 1.0
+- file: CMU/07/07_03_poses.motion
+  fps: 120.0
+  idx: 1505
+  sub_motions:
+  - timings:
+      end: 3.4583333333333335
+      start: 0.0
+  weight: 1.0
+- file: CMU/07/07_09_poses.motion
+  fps: 120.0
+  idx: 1506
+  sub_motions:
+  - timings:
+      end: 2.55
+      start: 0.0
+  weight: 1.0
+- file: CMU/07/07_07_poses.motion
+  fps: 120.0
+  idx: 1507
+  sub_motions:
+  - timings:
+      end: 3.158333333333333
+      start: 0.0
+  weight: 1.0
+- file: CMU/07/07_05_poses.motion
+  fps: 120.0
+  idx: 1508
+  sub_motions:
+  - timings:
+      end: 4.308333333333334
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Walking_c3d/B9___walk_turn_left__90__poses.motion
+  fps: 120.0
+  idx: 6572
+  sub_motions:
+  - timings:
+      end: 7.1
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Walking_c3d/B12___walk_turn_right__90__poses.motion
+  fps: 120.0
+  idx: 6573
+  sub_motions:
+  - timings:
+      end: 7.758333333333334
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Walking_c3d/B14___walk_turn_right__135__poses.motion
+  fps: 120.0
+  idx: 6574
+  sub_motions:
+  - timings:
+      end: 8.966666666666667
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Walking_c3d/B2___walk_to_stand_poses.motion
+  fps: 120.0
+  idx: 6575
+  sub_motions:
+  - timings:
+      end: 5.683333333333334
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Walking_c3d/B23___side_step_right_poses.motion
+  fps: 120.0
+  idx: 6576
+  sub_motions:
+  - timings:
+      end: 8.325
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Walking_c3d/B5___walk_backwards_poses.motion
+  fps: 120.0
+  idx: 6579
+  sub_motions:
+  - timings:
+      end: 11.533333333333333
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Walking_c3d/B15___walk_turn_around__same_direction__poses.motion
+  fps: 120.0
+  idx: 6581
+  sub_motions:
+  - timings:
+      end: 10.608333333333333
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Walking_c3d/B7___walk_backwards_turn_forwards_poses.motion
+  fps: 120.0
+  idx: 6582
+  sub_motions:
+  - timings:
+      end: 8.658333333333333
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Walking_c3d/B11___walk_turn_left__135__poses.motion
+  fps: 120.0
+  idx: 6584
+  sub_motions:
+  - timings:
+      end: 9.358333333333333
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Walking_c3d/B2___walk_to_stand_t2_poses.motion
+  fps: 120.0
+  idx: 6585
+  sub_motions:
+  - timings:
+      end: 4.9
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Walking_c3d/B10___walk_turn_left__45__poses.motion
+  fps: 120.0
+  idx: 6586
+  sub_motions:
+  - timings:
+      end: 7.916666666666667
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Walking_c3d/B3___walk1_poses.motion
+  fps: 120.0
+  idx: 6588
+  sub_motions:
+  - timings:
+      end: 7.625
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Walking_c3d/B4___stand_to_walk_back_poses.motion
+  fps: 120.0
+  idx: 6589
+  sub_motions:
+  - timings:
+      end: 7.55
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Walking_c3d/B13___walk_turn_right__45__poses.motion
+  fps: 120.0
+  idx: 6591
+  sub_motions:
+  - timings:
+      end: 8.308333333333334
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Walking_c3d/B16___walk_turn_change_direction_poses.motion
+  fps: 120.0
+  idx: 6592
+  sub_motions:
+  - timings:
+      end: 11.025
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Walking_c3d/B6___walk_backwards_to_stand_poses.motion
+  fps: 120.0
+  idx: 6594
+  sub_motions:
+  - timings:
+      end: 8.175
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Walking_c3d/B1___stand_to_walk_poses.motion
+  fps: 120.0
+  idx: 6595
+  sub_motions:
+  - timings:
+      end: 6.225
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1General_c3d/A1___Stand_poses.motion
+  fps: 120.0
+  idx: 6600
+  sub_motions:
+  - timings:
+      end: 3.0
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1General_c3d/A2___Sway_poses.motion
+  fps: 120.0
+  idx: 6601
+  sub_motions:
+  - timings:
+      end: 12.025
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1General_c3d/A2___Sway_t2_poses.motion
+  fps: 120.0
+  idx: 6605
+  sub_motions:
+  - timings:
+      end: 15.95
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1General_c3d/A3___Swing_poses.motion
+  fps: 120.0
+  idx: 6607
+  sub_motions:
+  - timings:
+      end: 14.508333333333333
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1General_c3d/A4___look_poses.motion
+  fps: 120.0
+  idx: 6608
+  sub_motions:
+  - timings:
+      end: 21.275
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Running_c3d/C15____run_turn_right___45__poses.motion
+  fps: 120.0
+  idx: 6612
+  sub_motions:
+  - timings:
+      end: 2.1166666666666667
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Running_c3d/C25____side_step_right_poses.motion
+  fps: 120.0
+  idx: 6620
+  sub_motions:
+  - timings:
+      end: 4.291666666666667
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Female1Running_c3d/C24____side_step_left_poses.motion
+  fps: 120.0
+  idx: 6626
+  sub_motions:
+  - timings:
+      end: 3.966666666666667
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male1Walking_c3d/Walk_B16___Walk_turn_change_poses.motion
+  fps: 120.0
+  idx: 6655
+  sub_motions:
+  - timings:
+      end: 12.116666666666667
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male1General_c3d/General_A2___Sway_poses.motion
+  fps: 120.0
+  idx: 6717
+  sub_motions:
+  - timings:
+      end: 9.033333333333333
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male1General_c3d/General_A2___Sway_t3_poses.motion
+  fps: 120.0
+  idx: 6721
+  sub_motions:
+  - timings:
+      end: 9.716666666666667
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male1General_c3d/General_A1___Stand_poses.motion
+  fps: 120.0
+  idx: 6722
+  sub_motions:
+  - timings:
+      end: 6.208333333333333
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male1General_c3d/General_A2___Sway_t2_poses.motion
+  fps: 120.0
+  idx: 6726
+  sub_motions:
+  - timings:
+      end: 9.366666666666667
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male1General_c3d/General_A3___Swing_Arms_While_Stand_poses.motion
+  fps: 120.0
+  idx: 6727
+  sub_motions:
+  - timings:
+      end: 5.733333333333333
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male1General_c3d/General_A4___Look_Around_poses.motion
+  fps: 120.0
+  idx: 6729
+  sub_motions:
+  - timings:
+      end: 15.941666666666666
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male2General_c3d/A1__Stand_poses.motion
+  fps: 120.0
+  idx: 6734
+  sub_motions:
+  - timings:
+      end: 3.808333333333333
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male2General_c3d/A4__Look_Around_poses.motion
+  fps: 120.0
+  idx: 6736
+  sub_motions:
+  - timings:
+      end: 16.05
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male2General_c3d/A3__Swing_arms_poses.motion
+  fps: 120.0
+  idx: 6738
+  sub_motions:
+  - timings:
+      end: 10.658333333333333
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male2General_c3d/A2__Sway_poses.motion
+  fps: 120.0
+  idx: 6741
+  sub_motions:
+  - timings:
+      end: 10.666666666666666
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male2Walking_c3d/B9____Walk_turn_left_90_poses.motion
+  fps: 120.0
+  idx: 6772
+  sub_motions:
+  - timings:
+      end: 5.033333333333333
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male2Walking_c3d/B23____side_step_right_poses.motion
+  fps: 120.0
+  idx: 6773
+  sub_motions:
+  - timings:
+      end: 3.0
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male2Walking_c3d/B10____Walk_turn_left_45_poses.motion
+  fps: 120.0
+  idx: 6776
+  sub_motions:
+  - timings:
+      end: 5.983333333333333
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male2Walking_c3d/B11____Walk_turn_left_135_poses.motion
+  fps: 120.0
+  idx: 6780
+  sub_motions:
+  - timings:
+      end: 6.491666666666666
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male2Walking_c3d/B15____Walk_turn_around_poses.motion
+  fps: 120.0
+  idx: 6781
+  sub_motions:
+  - timings:
+      end: 7.508333333333334
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male2Walking_c3d/B14____Walk_turn_right_45_poses.motion
+  fps: 120.0
+  idx: 6782
+  sub_motions:
+  - timings:
+      end: 4.091666666666667
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male2Walking_c3d/B14____Walk_turn_right_45_t2_poses.motion
+  fps: 120.0
+  idx: 6783
+  sub_motions:
+  - timings:
+      end: 5.8
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male2Walking_c3d/B5____Walk_backwards_poses.motion
+  fps: 120.0
+  idx: 6784
+  sub_motions:
+  - timings:
+      end: 8.125
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male2Walking_c3d/B4___Stand_to_Walk_backwards_poses.motion
+  fps: 120.0
+  idx: 6790
+  sub_motions:
+  - timings:
+      end: 4.608333333333333
+      start: 0.0
+  weight: 1.0
+- file: ACCAD/Male2Walking_c3d/B13____Walk_turn_right_90_poses.motion
+  fps: 120.0
+  idx: 6791
+  sub_motions:
+  - timings:
+      end: 5.616666666666666
+      start: 0.0
+  weight: 1.0

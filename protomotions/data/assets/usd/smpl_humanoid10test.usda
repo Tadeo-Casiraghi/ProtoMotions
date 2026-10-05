@@ -171,15 +171,15 @@ over "Flattened_Prototype_93"
     def Xform "_geom_9"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.010267000399529934)
-        double3 xformOp:translate = (0, 0, -0.0015)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.018767000399529934)
+        double3 xformOp:translate = (0, 0, 0.01)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_9" (
             apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
+            float physxCollision:contactOffset = 0.005
             float physxCollision:restOffset = 0.003
             
             float3[] extent = [(-0.005, -0.005, -0.008767), (0.005, 0.005, 0.008767)]
@@ -213,15 +213,15 @@ over "Flattened_Prototype_95"
     def Xform "_geom_12"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005976999901980162)
-        double3 xformOp:translate = (0, 0, -0.0007)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.015276999901980162)
+        double3 xformOp:translate = (0, 0, 0.01)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_12" (
             apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
+            float physxCollision:contactOffset = 0.005
             float physxCollision:restOffset = 0.003
             
             float3[] extent = [(-0.005, -0.005, -0.005277), (0.005, 0.005, 0.005277)]
@@ -450,8 +450,8 @@ over "Flattened_Prototype_107"
     {
         rel material:binding = </smpl_humanoid10/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.018767000399529934)
+        double3 xformOp:translate = (0, 0, 0.01)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_10"
@@ -534,8 +534,8 @@ over "Flattened_Prototype_111"
     {
         rel material:binding = </smpl_humanoid10/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.015276999901980162)
+        double3 xformOp:translate = (0, 0, 0.01)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_14"
@@ -711,15 +711,15 @@ over "Flattened_Prototype_120"
     def Xform "_geom_8"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.010267000399529934)
-        double3 xformOp:translate = (0, 0, -0.0015)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.018767000399529934)
+        double3 xformOp:translate = (0, 0, 0.01)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_8" (
             apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
+            float physxCollision:contactOffset = 0.005
             float physxCollision:restOffset = 0.003
             
             float3[] extent = [(-0.005, -0.005, -0.008767), (0.005, 0.005, 0.008767)]
@@ -732,15 +732,15 @@ over "Flattened_Prototype_121"
     def Xform "_geom_10"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.010267000399529934)
-        double3 xformOp:translate = (0, 0, -0.0015)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.018767000399529934)
+        double3 xformOp:translate = (0, 0, 0.01)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_10" (
             apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
+            float physxCollision:contactOffset = 0.005
             float physxCollision:restOffset = 0.003
             
             float3[] extent = [(-0.005, -0.005, -0.008767), (0.005, 0.005, 0.008767)]
@@ -923,8 +923,8 @@ over "Flattened_Prototype_132"
     {
         rel material:binding = </smpl_humanoid10/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.015276999901980162)
+        double3 xformOp:translate = (0, 0, 0.01)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_13"
@@ -983,8 +983,8 @@ over "Flattened_Prototype_135"
     {
         rel material:binding = </smpl_humanoid10/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.015276999901980162)
+        double3 xformOp:translate = (0, 0, 0.01)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_11"
@@ -1061,8 +1061,8 @@ over "Flattened_Prototype_140"
     {
         rel material:binding = </smpl_humanoid10/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.018767000399529934)
+        double3 xformOp:translate = (0, 0, 0.01)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_9"
@@ -1078,15 +1078,15 @@ over "Flattened_Prototype_142"
     def Xform "_geom_7"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.010267000399529934)
-        double3 xformOp:translate = (0, 0, -0.0015)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.018767000399529934)
+        double3 xformOp:translate = (0, 0, 0.01)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_7" (
             apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
+            float physxCollision:contactOffset = 0.005
             float physxCollision:restOffset = 0.003
             
             float3[] extent = [(-0.005, -0.005, -0.008767), (0.005, 0.005, 0.008767)]
@@ -1142,15 +1142,15 @@ over "Flattened_Prototype_145"
     def Xform "_geom_11"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005976999901980162)
-        double3 xformOp:translate = (0, 0, -0.0007)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.015276999901980162)
+        double3 xformOp:translate = (0, 0, 0.01)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_11" (
             apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
+            float physxCollision:contactOffset = 0.005
             float physxCollision:restOffset = 0.003
             
             float3[] extent = [(-0.005, -0.005, -0.005277), (0.005, 0.005, 0.005277)]
@@ -1184,8 +1184,8 @@ over "Flattened_Prototype_147"
     {
         rel material:binding = </smpl_humanoid10/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.018767000399529934)
+        double3 xformOp:translate = (0, 0, 0.01)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_7"
@@ -1349,15 +1349,15 @@ over "Flattened_Prototype_156"
     def Xform "_geom_14"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005976999901980162)
-        double3 xformOp:translate = (0, 0, -0.0007)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.015276999901980162)
+        double3 xformOp:translate = (0, 0, 0.01)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_14" (
             apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
+            float physxCollision:contactOffset = 0.005
             float physxCollision:restOffset = 0.003
             
             float3[] extent = [(-0.005, -0.005, -0.005277), (0.005, 0.005, 0.005277)]
@@ -1396,15 +1396,15 @@ over "Flattened_Prototype_159"
     def Xform "_geom_13"
     {
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005976999901980162)
-        double3 xformOp:translate = (0, 0, -0.0007)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.015276999901980162)
+        double3 xformOp:translate = (0, 0, 0.01)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_13" (
             apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
+            float physxCollision:contactOffset = 0.005
             float physxCollision:restOffset = 0.003
             
             float3[] extent = [(-0.005, -0.005, -0.005277), (0.005, 0.005, 0.005277)]
@@ -1420,8 +1420,8 @@ over "Flattened_Prototype_160"
     {
         rel material:binding = </smpl_humanoid10/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.005276999901980162)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.015276999901980162)
+        double3 xformOp:translate = (0, 0, 0.01)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_12"
@@ -1444,7 +1444,7 @@ over "Flattened_Prototype_161"
             apiSchemas = ["PhysicsCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
+            float physxCollision:contactOffset = 0.005
             float physxCollision:restOffset = 0.0
             float3[] extent = [(-0.0496, -0.0478, -0.02), (0.0496, 0.0478, 0.02)]
         }
@@ -1500,8 +1500,8 @@ over "Flattened_Prototype_164"
     {
         rel material:binding = </smpl_humanoid10/Looks/material_rgba_0>
         quatd xformOp:orient = (1, 0, 0, 0)
-        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.008767000399529934)
-        double3 xformOp:translate = (0, 0, 0)
+        double3 xformOp:scale = (0.009999999888241291, 0.009999999888241291, 0.018767000399529934)
+        double3 xformOp:translate = (0, 0, 0.01)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
         def Cube "_geom_8"
@@ -1627,7 +1627,7 @@ over "Flattened_Prototype_9"
             apiSchemas = ["PhysicsCollisionAPI"]
         )
         {
-            float physxCollision:contactOffset = 0.002
+            float physxCollision:contactOffset = 0.005
             float physxCollision:restOffset = 0.0
             float3[] extent = [(-0.129, -0.03, -0.03), (0.129, 0.03, 0.03)]
         }
@@ -2073,6 +2073,16 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
+            rel physics:filteredPairs = [
+                </smpl_humanoid10/bodies/R_Knee>,
+                </smpl_humanoid10/bodies/skin_box_medial_top>,
+                </smpl_humanoid10/bodies/skin_box_anterior_top>,
+                </smpl_humanoid10/bodies/skin_box_lateral_top>,
+                </smpl_humanoid10/bodies/skin_box_posterior_bottom>,
+                </smpl_humanoid10/bodies/skin_box_medial_bottom>,
+                </smpl_humanoid10/bodies/skin_box_anterior_bottom>,
+                </smpl_humanoid10/bodies/skin_box_lateral_bottom>,
+            ]
             float physics:density = 67442
             rel physics:simulationOwner
             quatd xformOp:orient = (0.5259542465209961, -0.4726226329803467, 0.492927610874176, -0.5069737434387207)
@@ -2104,6 +2114,16 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
+            rel physics:filteredPairs = [
+                </smpl_humanoid10/bodies/R_Knee>,
+                </smpl_humanoid10/bodies/skin_box_posterior_top>,
+                </smpl_humanoid10/bodies/skin_box_anterior_top>,
+                </smpl_humanoid10/bodies/skin_box_lateral_top>,
+                </smpl_humanoid10/bodies/skin_box_posterior_bottom>,
+                </smpl_humanoid10/bodies/skin_box_medial_bottom>,
+                </smpl_humanoid10/bodies/skin_box_anterior_bottom>,
+                </smpl_humanoid10/bodies/skin_box_lateral_bottom>,
+            ]
             float physics:density = 67442
             rel physics:simulationOwner
             quatd xformOp:orient = (0.1342133730649948, -0.04127012938261032, -0.64666348695755, 0.7497398853302002)
@@ -2135,6 +2155,16 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
+            rel physics:filteredPairs = [
+                </smpl_humanoid10/bodies/R_Knee>,
+                </smpl_humanoid10/bodies/skin_box_posterior_top>,
+                </smpl_humanoid10/bodies/skin_box_medial_top>,
+                </smpl_humanoid10/bodies/skin_box_lateral_top>,
+                </smpl_humanoid10/bodies/skin_box_posterior_bottom>,
+                </smpl_humanoid10/bodies/skin_box_medial_bottom>,
+                </smpl_humanoid10/bodies/skin_box_anterior_bottom>,
+                </smpl_humanoid10/bodies/skin_box_lateral_bottom>,
+            ]
             float physics:density = 67442
             rel physics:simulationOwner
             quatd xformOp:orient = (0.5727511048316956, -0.4146759808063507, -0.43686482310295105, 0.5560117959976196)
@@ -2166,6 +2196,16 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
+            rel physics:filteredPairs = [
+                </smpl_humanoid10/bodies/R_Knee>,
+                </smpl_humanoid10/bodies/skin_box_posterior_top>,
+                </smpl_humanoid10/bodies/skin_box_medial_top>,
+                </smpl_humanoid10/bodies/skin_box_anterior_top>,
+                </smpl_humanoid10/bodies/skin_box_posterior_bottom>,
+                </smpl_humanoid10/bodies/skin_box_medial_bottom>,
+                </smpl_humanoid10/bodies/skin_box_anterior_bottom>,
+                </smpl_humanoid10/bodies/skin_box_lateral_bottom>,
+            ]
             float physics:density = 67442
             rel physics:simulationOwner
             quatd xformOp:orient = (0.7745747566223145, -0.6166990399360657, -0.04651285707950592, 0.13248777389526367)
@@ -2197,6 +2237,16 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
+            rel physics:filteredPairs = [
+                </smpl_humanoid10/bodies/R_Knee>,
+                </smpl_humanoid10/bodies/skin_box_posterior_top>,
+                </smpl_humanoid10/bodies/skin_box_medial_top>,
+                </smpl_humanoid10/bodies/skin_box_anterior_top>,
+                </smpl_humanoid10/bodies/skin_box_lateral_top>,
+                </smpl_humanoid10/bodies/skin_box_medial_bottom>,
+                </smpl_humanoid10/bodies/skin_box_anterior_bottom>,
+                </smpl_humanoid10/bodies/skin_box_lateral_bottom>,
+            ]
             float physics:density = 67442
             rel physics:simulationOwner
             quatd xformOp:orient = (0.5259542465209961, -0.4726226329803467, 0.492927610874176, -0.5069737434387207)
@@ -2228,6 +2278,16 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
+            rel physics:filteredPairs = [
+                </smpl_humanoid10/bodies/R_Knee>,
+                </smpl_humanoid10/bodies/skin_box_posterior_top>,
+                </smpl_humanoid10/bodies/skin_box_medial_top>,
+                </smpl_humanoid10/bodies/skin_box_anterior_top>,
+                </smpl_humanoid10/bodies/skin_box_lateral_top>,
+                </smpl_humanoid10/bodies/skin_box_posterior_bottom>,
+                </smpl_humanoid10/bodies/skin_box_anterior_bottom>,
+                </smpl_humanoid10/bodies/skin_box_lateral_bottom>,
+            ]
             float physics:density = 67442
             rel physics:simulationOwner
             quatd xformOp:orient = (0.1342133730649948, -0.04127012938261032, -0.64666348695755, 0.7497398853302002)
@@ -2259,6 +2319,16 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
+            rel physics:filteredPairs = [
+                </smpl_humanoid10/bodies/R_Knee>,
+                </smpl_humanoid10/bodies/skin_box_posterior_top>,
+                </smpl_humanoid10/bodies/skin_box_medial_top>,
+                </smpl_humanoid10/bodies/skin_box_anterior_top>,
+                </smpl_humanoid10/bodies/skin_box_lateral_top>,
+                </smpl_humanoid10/bodies/skin_box_posterior_bottom>,
+                </smpl_humanoid10/bodies/skin_box_medial_bottom>,
+                </smpl_humanoid10/bodies/skin_box_lateral_bottom>,
+            ]
             float physics:density = 67442
             rel physics:simulationOwner
             quatd xformOp:orient = (0.5727511048316956, -0.4146759808063507, -0.43686482310295105, 0.5560117959976196)
@@ -2290,6 +2360,16 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
+            rel physics:filteredPairs = [
+                </smpl_humanoid10/bodies/R_Knee>,
+                </smpl_humanoid10/bodies/skin_box_posterior_top>,
+                </smpl_humanoid10/bodies/skin_box_medial_top>,
+                </smpl_humanoid10/bodies/skin_box_anterior_top>,
+                </smpl_humanoid10/bodies/skin_box_lateral_top>,
+                </smpl_humanoid10/bodies/skin_box_posterior_bottom>,
+                </smpl_humanoid10/bodies/skin_box_medial_bottom>,
+                </smpl_humanoid10/bodies/skin_box_anterior_bottom>,
+            ]
             float physics:density = 67442
             rel physics:simulationOwner
             quatd xformOp:orient = (0.7745747566223145, -0.6166990399360657, -0.04651285707950592, 0.13248777389526367)

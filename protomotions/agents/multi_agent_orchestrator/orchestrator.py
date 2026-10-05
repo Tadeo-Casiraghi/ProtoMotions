@@ -187,6 +187,8 @@ class CoLearningMimicEvaluator(MimicEvaluator):
 
         lower_body_power_data = []
 
+        separate_power = []
+
         # ============================================================
         # BODY / JOINT LOOKUPS
         # ============================================================
@@ -223,6 +225,12 @@ class CoLearningMimicEvaluator(MimicEvaluator):
         joint_idx_common_ankle =  self.env.robot_config.kinematic_info.dof_names.index(
             "R_Ankle_y"
         )
+
+        names = ['L_Hip_x', 'L_Hip_y', 'L_Hip_z', 'L_Knee_x', 'L_Knee_y', 'L_Knee_z', 'L_Ankle_x', 'L_Ankle_y', 'L_Ankle_z', 'L_Toe_x', 'L_Toe_y', 'L_Toe_z', 'R_Hip_x', 'R_Hip_y', 'R_Hip_z', 'R_Knee_x', 'R_Knee_y', 'R_Knee_z', 'Motor', 'R_Ankle_y']
+
+
+        env_dof_names = self.env.robot_config.kinematic_info.dof_names
+        indices = [env_dof_names.index(name) for name in names]
 
         joint_idx_motor = self.env.simulator.sim_torque_joints[0]
 
@@ -453,10 +461,12 @@ class CoLearningMimicEvaluator(MimicEvaluator):
                 dof_state = sim_ref.get_dof_state()
 
                 # Applied torque: [num_envs, num_dofs]
-                dof_torque = sim_ref._robot.data.applied_torque
+                dof_torque = sim_ref.get_dof_forces().dof_forces
 
                 # Joint velocity: [num_envs, num_dofs]
                 dof_vel = dof_state.dof_vel
+
+                dof_power = torch.abs(dof_torque * dof_vel)
 
                 # Same subset used by the reward
                 lower_body_joint_indices = sim_ref.lower_body_joints
@@ -471,6 +481,10 @@ class CoLearningMimicEvaluator(MimicEvaluator):
                 # Store env 0
                 lower_body_power_data.append(
                     lower_body_power[0].item()
+                )
+
+                separate_power.append(
+                    dof_power[0].detach().cpu().numpy()
                 )
 
                 # ====================================================
@@ -539,6 +553,10 @@ class CoLearningMimicEvaluator(MimicEvaluator):
                         ref_angle_data=ref_angle_data,
                         motor_torque_data=motor_torque_data,
                         lower_body_power_data=lower_body_power_data,
+                        index_names=names,
+                        indices=indices,
+                        separate_power=separate_power,
+
                     )
 
                     print(".", end="", flush=True)
@@ -1127,15 +1145,18 @@ class CoLearningOrchestrator:
         obs_td = humanoid.obs_dict_to_tensordict(obs)         # step B
         """
         humanoid = self.agents["humanoid"]
-        prosthetic = self.agents["prosthetic"]
-
+        
         humanoid._obs_pipeline = lambda raw_obs: (
             humanoid.add_agent_info_to_obs(raw_obs)
         )
 
-        prosthetic._obs_pipeline = lambda raw_obs: (
-            humanoid.add_agent_info_to_obs(raw_obs)
-        )
+        if "prosthetic" in self.agents:
+            prosthetic = self.agents["prosthetic"]
+
+
+            prosthetic._obs_pipeline = lambda raw_obs: (
+                humanoid.add_agent_info_to_obs(raw_obs)
+            )
         
     @property
     def _skip_next_policy_update(self):

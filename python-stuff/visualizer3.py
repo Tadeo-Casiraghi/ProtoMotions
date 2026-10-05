@@ -142,6 +142,166 @@ def plot_knee_angle_torque():
     except Exception as e:
         print(f"An error occurred: {e}")
 
+def plot_separate_power():
+    try:
+        print(f"Loading {FILE_PATH}...")
+        loaded_data = np.load(FILE_PATH, allow_pickle=True)
+
+        # ==========================================================
+        # Load per-DOF power
+        # ==========================================================
+
+        if "separate_power" not in loaded_data:
+            raise KeyError(
+                "`separate_power` array not found in dataset."
+            )
+
+        separate_power = loaded_data["separate_power"]
+
+        print(f"Separate power shape: {separate_power.shape}")
+
+        # ==========================================================
+        # Load joint names and selected indices
+        # ==========================================================
+
+        if "index_names" not in loaded_data:
+            raise KeyError(
+                "`index_names` array not found in dataset."
+            )
+
+        if "indices" not in loaded_data:
+            raise KeyError(
+                "`indices` array not found in dataset."
+            )
+
+        names = loaded_data["index_names"]
+        indices = loaded_data["indices"]
+
+        names = [str(name) for name in names]
+        indices = np.asarray(indices).astype(int)
+
+        print("Plotting selected DOFs:")
+
+        for i, index in enumerate(indices):
+            print(f"  {index}: {names[i]}")
+
+        # ==========================================================
+        # Time axis
+        # ==========================================================
+
+        num_frames = separate_power.shape[0]
+
+        time_axis = np.arange(num_frames) * DT
+
+        mask = (
+            (time_axis >= START_TIME)
+            & (time_axis <= END_TIME)
+        )
+
+        t_plot = time_axis[mask]
+
+        # ==========================================================
+        # Plot
+        # ==========================================================
+
+        fig, ax = plt.subplots(figsize=(11, 6))
+
+        # Different line styles
+        line_styles = [
+            "-",
+            "--",
+            "-.",
+            ":",
+        ]
+
+        # Matplotlib color cycle
+        colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+
+        # ----------------------------------------------------------
+        # Plot each selected DOF
+        # ----------------------------------------------------------
+
+        for i, index in enumerate(indices):
+
+            print(
+                f"plotting index {index} for {names[i]}"
+            )
+
+            # Power corresponding to this DOF
+            power = separate_power[:, index]
+
+            # Apply time mask
+            power_plot = power[mask]
+
+            # Name corresponding to this selected index
+            name = names[i]
+
+            # Cycle through colors and line styles
+            color = colors[i % len(colors)]
+            linestyle = line_styles[
+                (i // len(colors)) % len(line_styles)
+            ]
+
+            ax.plot(
+                t_plot,
+                power_plot,
+                color=color,
+                linestyle=linestyle,
+                linewidth=1.5,
+                label=name,
+            )
+
+        ax.set_xlabel(
+            "Tiempo (s)",
+            fontweight="bold",
+        )
+
+        ax.set_ylabel(
+            "Potencia (W)",
+            fontweight="bold",
+        )
+
+        ax.set_title(
+            "Consumo de Potencia por DOF",
+            fontweight="bold",
+        )
+
+        ax.grid(
+            True,
+            linestyle="--",
+            alpha=0.6,
+        )
+
+        ax.legend(
+            loc="upper left",
+            bbox_to_anchor=(1.02, 1),
+            fontsize=8,
+        )
+
+        plt.tight_layout()
+
+        output_file = os.path.join(
+            OUTPUT_DIR,
+            "separate_power_by_dof.png",
+        )
+
+        fig.savefig(
+            output_file,
+            dpi=300,
+            bbox_inches="tight",
+        )
+
+        print(
+            f"Separate power plot saved to: {output_file}"
+        )
+
+        plt.show()
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+
 
 if __name__ == "__main__":
     plot_knee_angle_torque()
+    plot_separate_power()

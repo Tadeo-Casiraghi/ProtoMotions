@@ -558,13 +558,16 @@ class Mimic(BaseEnv):
         current_state = reward_context["current_state"]
         lr = dof_to_local(current_state.dof_pos, hinge_axes_map, True)
 
+        contact_forces = current_state.rigid_body_contact_forces.clone()
+        contact_forces[:, self.skin_body_indices, :] = 0.0
+
         reward_context.update(
             {
                 "ref_state": ref_state,
                 "ref_lr": ref_lr,
                 "lr": lr,
                 "current_contact_force_magnitudes": torch.norm(
-                    current_state.rigid_body_contact_forces, dim=-1
+                    contact_forces, dim=-1
                 ),
                 "prev_contact_force_magnitudes": self.prev_contact_force_magnitudes,
             }
@@ -618,6 +621,8 @@ class Mimic(BaseEnv):
         ref_right_foot_indices = self._resolve_body_indices(["all_right_foot_bodies"])
         right_foot_indices = self._resolve_body_indices(["all_right_foot_bodies_contact"])
 
+        r_ankle_dof_idx = self.robot_config.kinematic_info.dof_names.index("R_Ankle_y")
+
         # Use simulator's canonical method to compute binary contacts
         sim_contacts = current_state.rigid_body_contacts
 
@@ -638,6 +643,9 @@ class Mimic(BaseEnv):
         masked_per_joint_err = gt_per_joint_err.clone()
         masked_per_joint_err[valid_body_mask == 0] = -1.0
         max_joint_err = masked_per_joint_err.max(-1)[0]
+
+        masked_per_joint_err[:, r_ankle_dof_idx] = -1.0
+        max_joint_err_filtered = masked_per_joint_err.max(-1)[0]
 
         # 2. Rotation Error
         gr_diff = quat_diff_norm(gr, ref_gr, True)
@@ -680,6 +688,7 @@ class Mimic(BaseEnv):
             "gr_err_degrees": gr_err_degrees,
             "lr_err_degrees": lr_err_degrees,
             "max_joint_err": max_joint_err,
+            "max_joint_err_filtered": max_joint_err_filtered,
             "max_lr_err_degrees": max_lr_err_degrees,
             "max_gr_err_degrees": max_gr_err_degrees,
             "root_height_error": rh_err,
@@ -740,9 +749,11 @@ class Mimic(BaseEnv):
         for name, value in other_log_terms.items():
             self.extras[f"mimic_other/{name}"] = value
 
+        contact_forces = current_state.rigid_body_contact_forces.clone()
+        contact_forces[:, self.skin_body_indices, :] = 0.0
         # Update previous contact force magnitudes for next timestep
         self.prev_contact_force_magnitudes = torch.norm(
-            current_state.rigid_body_contact_forces, dim=-1
+            contact_forces, dim=-1
         ).clone()
 
 

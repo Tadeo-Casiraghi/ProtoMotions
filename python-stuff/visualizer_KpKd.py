@@ -9,7 +9,7 @@ OUTPUT_DIR = "python-stuff/plots"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 DT = 1.0 / 90.0
 
-upto = 300
+upto = 600
 # ---------------------
 
 

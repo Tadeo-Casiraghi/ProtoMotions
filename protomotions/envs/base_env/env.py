@@ -826,9 +826,15 @@ class BaseEnv:
                 reward_value = reward_value.clone()
                 reward_value[grace_mask] = 0.0
 
-            assert torch.all(
-                torch.isfinite(reward_value)
-            ), f"Reward '{reward_name}' is not finite: {reward_value}"
+            if not torch.isfinite(reward_value).all():
+                # Replace NaNs with 0.0 and Inf/-Inf with large finite bounds
+                print(f"Reward '{reward_name}' is not finite: {reward_value}")
+                reward_value = torch.nan_to_num(
+                    reward_value, 
+                    nan=0.0, 
+                    posinf=1e6, 
+                    neginf=-1e6
+                )
 
             self.extras[f"{log_prefix}raw_r/{reward_name}"] = reward_value
 

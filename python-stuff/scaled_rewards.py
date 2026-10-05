@@ -13,7 +13,7 @@ linestyles = ["-", "--"]
 style_cycle = list(product(colors, linestyles))
 
 # Path to the directory containing the TensorBoard event file
-test = "test2"
+test = "test3"
 log_dir = f"results/{test}/lightning_logs/version_0"
 
 

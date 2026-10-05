@@ -82,6 +82,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         contact_mismatch_sum,
         impact_force_penalty,
         skin_pressure_penalty,
+        prosthetic_directional_force_reward,
     )
 
     body_names = robot_cfg.kinematic_info.body_names
@@ -133,7 +134,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
 
     mimic_early_termination = [
         MimicEarlyTerminationEntry(
-            mimic_early_termination_key="max_joint_err",
+            mimic_early_termination_key="max_joint_err_filtered",
             mimic_early_termination_thresh=0.5,
             less_than=False,
         )
@@ -165,30 +166,30 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             variables={
                 "x": "current_state.rigid_body_pos",
                 "ref_x": "ref_state.rigid_body_pos",
-                "coefficient": "-100.0",
+                "coefficient": "-200.0",
             },
             indices_subset=["end_effector_lower_bodies"],
-            weight=0.1,
+            weight=0.4,
         ),
-        # "gt_ef_prosthetic_rew": RewardComponentConfig(
-        #     function=mean_squared_error_exp,
-        #     variables={
-        #         "x": "current_state.rigid_body_pos",
-        #         "ref_x": "ref_state.rigid_body_pos",
-        #         "coefficient": "-1000.0",
-        #     },
-        #     indices_subset=["R_foot"],
-        #     weight=0.4,
-        # ),
+        "gt_ef_prosthetic_rew": RewardComponentConfig(
+            function=mean_squared_error_exp,
+            variables={
+                "x": "current_state.rigid_body_pos",
+                "ref_x": "ref_state.rigid_body_pos",
+                "coefficient": "-200.0",
+            },
+            indices_subset=["R_foot"],
+            weight=0.4,
+        ),
         "gt_ef_upper_rew": RewardComponentConfig(
             function=mean_squared_error_exp,
             variables={
                 "x": "current_state.rigid_body_pos",
                 "ref_x": "ref_state.rigid_body_pos",
-                "coefficient": "-100.0",
+                "coefficient": "-200.0",
             },
             indices_subset=["end_effector_upper_bodies"],
-            weight=0.05,
+            weight=0.2,
         ),
         # "skin_rew": RewardComponentConfig(
         #     function=skin_pressure_penalty,
@@ -197,7 +198,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         #         "body_quats": "current_state.rigid_body_rot",
         #     },
         #     indices_subset=["skin_bodies"],
-        #     weight=-3e-6,  # Negative = Penalty
+        #     weight=-6e-5,  # Negative = Penalty
         #     min_value=-0.5,
         #     # weight=-4e-4,  # Start with a small penalty and increase if needed
         #     # min_value=-1.0,  # Cap the maximum penalty to prevent destabilization
@@ -217,20 +218,20 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             variables={
                 "q": "current_state.rigid_body_rot",
                 "ref_q": "ref_state.rigid_body_rot",
-                "coefficient": "-5.0",
+                "coefficient": "-10.0",
             },
             indices_subset=["end_effector_lower_bodies"],
-            weight=0.1,
+            weight=0.3,
         ),
         "gr_ef_upper_rew": RewardComponentConfig(
             function=rotation_error_exp,
             variables={
                 "q": "current_state.rigid_body_rot",
                 "ref_q": "ref_state.rigid_body_rot",
-                "coefficient": "-5.0",
+                "coefficient": "-10.0",
             },
             indices_subset=["end_effector_upper_bodies"],
-            weight=0.05,
+            weight=0.15,
         ),
         "gv_rew": RewardComponentConfig(
             function=mean_squared_error_exp,
@@ -247,20 +248,20 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             variables={
                 "x": "current_state.rigid_body_vel",
                 "ref_x": "ref_state.rigid_body_vel",
-                "coefficient": "-0.5",
+                "coefficient": "-1.0",
             },
             indices_subset=["end_effector_lower_bodies"],
-            weight=0.02,
+            weight=0.1,
         ),
         "gv_ef_upper_rew": RewardComponentConfig(
             function=mean_squared_error_exp,
             variables={
                 "x": "current_state.rigid_body_vel",
                 "ref_x": "ref_state.rigid_body_vel",
-                "coefficient": "-0.5",
+                "coefficient": "-1.0",
             },
             indices_subset=["end_effector_upper_bodies"],
-            weight=0.01,
+            weight=0.05,
         ),
         "gav_rew": RewardComponentConfig(
             function=mean_squared_error_exp,
@@ -277,30 +278,30 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             variables={
                 "x": "current_state.rigid_body_ang_vel",
                 "ref_x": "ref_state.rigid_body_ang_vel",
-                "coefficient": "-0.1",
+                "coefficient": "-0.2",
             },
             indices_subset=["end_effector_lower_bodies"],
-            weight=0.02,
+            weight=0.1,
         ),
         "gav_ef_upper_rew": RewardComponentConfig(
             function=mean_squared_error_exp,
             variables={
                 "x": "current_state.rigid_body_ang_vel",
                 "ref_x": "ref_state.rigid_body_ang_vel",
-                "coefficient": "-0.1",
+                "coefficient": "-0.2",
             },
             indices_subset=["end_effector_upper_bodies"],
-            weight=0.01,
+            weight=0.05,
         ),
-        "rh_rew": RewardComponentConfig(
-            function=mean_squared_error_exp,
-            variables={
-                "x": "current_state.rigid_body_pos[:, 0, 2]",  # Root height (z-coord of body 0)
-                "ref_x": "ref_state.rigid_body_pos[:, 0, 2]",
-                "coefficient": "-100.0",
-            },
-            weight=0.15,
-        ),
+        # "rh_rew": RewardComponentConfig(
+        #     function=mean_squared_error_exp,
+        #     variables={
+        #         "x": "current_state.rigid_body_pos[:, 0, 2]",  # Root height (z-coord of body 0)
+        #         "ref_x": "ref_state.rigid_body_pos[:, 0, 2]",
+        #         "coefficient": "-100.0",
+        #     },
+        #     weight=0.15,
+        # ),
         "pow_rew": RewardComponentConfig(
             function=power_consumption_sum,
             variables={
@@ -310,7 +311,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "indices": "humanoid_joints",  # Only penalize power for humanoid joints, not prosthetic
             },
             weight=-4.0e-4, # TADEO -7.5e-5,
-            # min_value=-1.75,
+            min_value=-5.0,
             zero_during_grace_period=True,
         ),
         "pow_rew_lower": RewardComponentConfig(
@@ -322,8 +323,8 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "use_torque_squared": "False",
                 "indices": "lower_body_joints",  # Only penalize power for humanoid joints, not prosthetic
             },
-            weight=-8.0e-3, # TADEO -7.5e-5,
-            # min_value=-1.75,
+            weight=-3.0e-1, # TADEO -7.5e-5,
+            min_value=-5.0,
             zero_during_grace_period=True,
         ),
         "contact_match_rew": RewardComponentConfig(
@@ -344,7 +345,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             },
             indices_subset=["all_left_foot_bodies", "all_right_foot_bodies_contact"],
             weight=-1e-4,
-            min_value=-0.5,
+            # min_value=-0.5,
             zero_during_grace_period=True,
         ),
     }
@@ -375,7 +376,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         "torque_smoothness_prosthetic_ankle": RewardComponentConfig(
             function=squared_norm,
             variables={"x": "prosthetic_current_torque - prosthetic_previous_torque"},
-            weight=-1e-4,  # Start small; torque magnitudes are much larger than actions/gains
+            weight=-1e-5,  # Start small; torque magnitudes are much larger than actions/gains
         ),
         # "torque_bounds": RewardComponentConfig(
         #     function=norm,
@@ -405,7 +406,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "prosthetic_current_dof_pos",
                 "coefficient": "-200.0",
             },
-            weight=1e-1,
+            weight=3e-1,
         ),
         # "skin_rew": RewardComponentConfig(
         #     function=skin_pressure_penalty,
@@ -414,7 +415,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         #         "body_quats": "current_state.rigid_body_rot",
         #     },
         #     indices_subset=["skin_bodies"],
-        #     weight=-4e-5, 
+        #     weight=-6e-5, 
         #     # min_value=-1.0, #TODO tadeo revisar
         # ),
         "theta_reference": RewardComponentConfig(
@@ -424,8 +425,17 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "ref_state.dof_pos[:, ankle_joint]",
                 "coefficient": "-250.0",
             },
-            weight=1e-1,
+            weight=0.3e-1,
         ),
+        # "useful_work": RewardComponentConfig(
+        #     function=prosthetic_directional_force_reward,
+        #     variables={
+        #         "contact_forces": "current_contact_force_magnitudes",
+        #         "ref_root_vel": "ref_state.rigid_body_vel[:, 0, :]",
+        #     },
+        #     indices_subset=["all_right_foot_bodies_contact"],
+        #     weight=5.0e-2
+        # ),
         "gt_rew_ankle": RewardComponentConfig(
             function=mean_squared_error_exp,
             variables={
@@ -434,7 +444,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "coefficient": "-100.0",
             },
             indices_subset=["output_ankle"],
-            weight=1.8e-2,
+            weight=1.8e-3,
         ),
         "gr_rew_ankle": RewardComponentConfig(
             function=rotation_error_exp,
@@ -444,7 +454,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "coefficient": "-10.0",
             },
             indices_subset=["output_ankle"],
-            weight=0.6e-1,
+            weight=0.6e-2,
         ),
         "gv_rew_ankle": RewardComponentConfig(
             function=mean_squared_error_exp,
@@ -454,7 +464,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "coefficient": "-0.5",
             },
             indices_subset=["output_ankle"],
-            weight=0.5e-2,
+            weight=0.5e-3,
         ),
         "gav_rew_ankle": RewardComponentConfig(
             function=mean_squared_error_exp,
@@ -464,7 +474,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "coefficient": "-0.1",
             },
             indices_subset=["output_ankle"],
-            weight=0.2e-1,
+            weight=0.2e-2,
         ),
         # "gt_rew": RewardComponentConfig(
         #     function=mean_squared_error_exp,
@@ -515,8 +525,8 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "use_torque_squared": "False",
                 "indices": "lower_body_joints"
             },
-            weight=-3e-2,  # Maybe softer power penalty for secondary reward?
-            # min_value=-0.75,
+            weight=-6e-2,  # Maybe softer power penalty for secondary reward?
+            min_value=-5.0,
             zero_during_grace_period=True,
             # TADEO ACA HAY QUE REVISAR ESTO indices_subset=["all_physical_dofs"]
         ),
@@ -554,15 +564,15 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             min_value=-0.5,
             zero_during_grace_period=True,
         ),
-        "rh_rew_prosthetic": RewardComponentConfig(
-            function=mean_squared_error_exp,
-            variables={
-                "x": "current_state.rigid_body_pos[:, 0, 2]",  # Root height (z-coord of body 0)
-                "ref_x": "ref_state.rigid_body_pos[:, 0, 2]",
-                "coefficient": "-200.0",
-            },
-            weight=4e-2,
-        ),
+        # "rh_rew_prosthetic": RewardComponentConfig(
+        #     function=mean_squared_error_exp,
+        #     variables={
+        #         "x": "current_state.rigid_body_pos[:, 0, 2]",  # Root height (z-coord of body 0)
+        #         "ref_x": "ref_state.rigid_body_pos[:, 0, 2]",
+        #         "coefficient": "-200.0",
+        #     },
+        #     weight=4e-2,
+        # ),
     }
 
 
@@ -798,7 +808,7 @@ def prosthetic_agent_config(
         gradient_clip_val=50.0,
         clip_critic_loss=True,
 
-        use_blind_body_indices=False,
+        use_blind_body_indices=True,
 
         advantage_normalization=AdvantageNormalizationConfig(
             enabled=True, shift_mean=True

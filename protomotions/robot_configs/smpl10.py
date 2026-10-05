@@ -125,10 +125,16 @@ class Smpl10RobotConfig(RobotConfig):
             control_type=ControlType.BUILT_IN_PD_HYBRID,
             torque_joints = ["Motor"],
             override_control_info={
-                ".*_(Hip|Knee|Ankle)_.*": ControlInfo(
+                ".*_(Hip|Knee)_.*": ControlInfo(
                     stiffness=800,
                     damping=80,
-                    effort_limit=500,
+                    effort_limit=300,
+                    velocity_limit=100,
+                ),
+                ".*_(Ankle)_.*": ControlInfo(
+                    stiffness=800,
+                    damping=80,
+                    effort_limit=230,
                     velocity_limit=100,
                 ),
                 "R_Ankle_y": ControlInfo(
@@ -142,7 +148,7 @@ class Smpl10RobotConfig(RobotConfig):
                 "L_Toe_.*": ControlInfo(
                     stiffness=500,
                     damping=50,
-                    effort_limit=500,
+                    effort_limit=20,
                     velocity_limit=100,
                 ),
                 "(Torso|Spine|Chest)_.*": ControlInfo(
@@ -160,7 +166,7 @@ class Smpl10RobotConfig(RobotConfig):
                 ".*_(Wrist|Hand)_.*": ControlInfo(
                     stiffness=300,
                     damping=30,
-                    effort_limit=500,
+                    effort_limit=50,
                     velocity_limit=100,
                 ),
 
