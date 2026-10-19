@@ -134,7 +134,7 @@ class MimicEvaluator(BaseEvaluator):
     def _update_motion_sampling_weights(
         self,
         metrics: Dict[str, MotionMetrics],
-        success_metric_key: str = "gt_err",
+        success_metric_key: str = "max_joint_err",
         failure_threshold: float = 0.5,
     ) -> Dict[str, float]:
         """

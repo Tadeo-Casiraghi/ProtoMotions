@@ -88,38 +88,7 @@ class CoLearningMimicEvaluator(MimicEvaluator):
             # 1. Get Mean Raw Actions
             raw_action_p = p_outs.get("mean_action", p_outs.get("action"))
             
-            # 2. Re-implement torque calculation (Deterministic)
-            
-            # # Extract raw params
-            # raw_theta = raw_action_p[:, 0]
-            # raw_kp    = raw_action_p[:, 1]
-            # raw_kd    = raw_action_p[:, 2]
 
-            # kp_scale = 1000.0
-            # kp_offset = 1000.0 
-            
-            # # Example: Map [-1, 1] -> [0, 10] for Kd
-            # kd_scale = 5
-            # kd_offset = 5
-            
-            # # Example: Map [-1, 1] -> [-pi, pi] for Angle
-            # angle_scale = 
-            # angle_offset = 0.0
-
-            # desired_angle = raw_theta * angle_scale + angle_offset
-            # kp_phys       = raw_kp * kp_scale + kp_offset
-            # kd_phys       = raw_kd * kd_scale + kd_offset
-
-            # # Get State
-            # current_angle = obs_td["prosthetic_obs"][:, 0]
-            # current_vel   = obs_td["prosthetic_obs"][:, 1]
-            
-            # # JIT Torque Calc
-            # # We need to import the JIT function or access it from the agent module
-            # # Assuming compute_torques_jit is available here
-            # torque = compute_torques(
-            #     desired_angle, kp_phys, kd_phys, current_angle, current_vel
-            # )
             
             # Construct Final Prosthetic Action
             action_p = raw_action_p

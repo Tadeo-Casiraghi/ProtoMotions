@@ -112,3 +112,4 @@ class EnvConfig(ConfigBuilder):
     passive_dof_defaults: Optional[Dict[int, float]] = None
     ankle_dof_index: Optional[int] = None
     motor_dof_index: Optional[int] = None
+    humanoid_action_indices: Optional[int] = None

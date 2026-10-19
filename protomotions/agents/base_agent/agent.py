@@ -190,6 +190,12 @@ class BaseAgent:
 
         self.just_loaded_checkpoint_should_evaluate = False
 
+        if self.config.action_indices != None and len(self.config.action_indices) > 2:
+            temp_list = self.config.action_indices.copy()
+            temp_list.append(self.config.prosthetic_magic_index)
+            self.env.config.humanoid_action_indices = temp_list
+            print("Set humanoid action indices for env")
+
     @property
     def should_stop(self):
         return self.fabric.broadcast(self._should_stop)

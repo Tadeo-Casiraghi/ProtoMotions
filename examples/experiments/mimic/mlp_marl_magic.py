@@ -93,6 +93,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         "suspension_y",
         "suspension_z",
         "R_Ankle_y",
+        "R_Toe_y",
     ]
 
     non_actuated_joints = ["Motor"]
@@ -133,7 +134,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
 
     mimic_early_termination = [
         MimicEarlyTerminationEntry(
-            mimic_early_termination_key="max_joint_err",
+            mimic_early_termination_key="max_joint_err_filtered",
             mimic_early_termination_thresh=0.5,
             less_than=False,
         )
@@ -292,24 +293,24 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             indices_subset=["end_effector_upper_bodies"],
             weight=0.05,
         ),
-        "rh_rew": RewardComponentConfig(
-            function=mean_squared_error_exp,
-            variables={
-                "x": "current_state.rigid_body_pos[:, 0, 2]",  # Root height (z-coord of body 0)
-                "ref_x": "ref_state.rigid_body_pos[:, 0, 2]",
-                "coefficient": "-500.0",
-            },
-            weight=0.3,
-        ),
+        # "rh_rew": RewardComponentConfig(
+        #     function=mean_squared_error_exp,
+        #     variables={
+        #         "x": "current_state.rigid_body_pos[:, 0, 2]",  # Root height (z-coord of body 0)
+        #         "ref_x": "ref_state.rigid_body_pos[:, 0, 2]",
+        #         "coefficient": "-500.0",
+        #     },
+        #     weight=0.3,
+        # ),
         "pow_rew": RewardComponentConfig(
             function=power_consumption_sum,
             variables={
                 "dof_forces": "current_state.dof_forces",
                 "dof_vel": "current_state.dof_vel",
                 "use_torque_squared": "False",
-                "indices": "humanoid_and_prosthetic_joints",  # Only penalize power for humanoid joints, not prosthetic
+                "indices": "humanoid_joints",  # Only penalize power for humanoid joints, not prosthetic
             },
-            weight=-4.0e-4, # TADEO -7.5e-5,
+            weight=-4.0e-5, # TADEO -7.5e-5,
             # min_value=-1.75,
             zero_during_grace_period=True,
         ),
@@ -322,7 +323,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "use_torque_squared": "False",
                 "indices": "lower_body_joints",  # Only penalize power for humanoid joints, not prosthetic
             },
-            weight=-8.0e-2, # TADEO -7.5e-5,
+            weight=-2.0e-2, # TADEO -7.5e-5,
             # min_value=-1.75,
             zero_during_grace_period=True,
         ),
@@ -343,7 +344,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "previous_forces": "prev_contact_force_magnitudes",
             },
             indices_subset=["all_left_foot_bodies", "all_right_foot_bodies_contact"],
-            weight=-3e-4,
+            weight=-5e-4,
             min_value=-0.5,
             zero_during_grace_period=True,
         ),
@@ -354,7 +355,12 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "ref_state.dof_pos[:, ankle_joint]",
                 "coefficient": "-250.0",
             },
-            weight=1e-2,
+            weight=1e-1,
+        ),
+        "action_smoothness_prosthetic_angle": RewardComponentConfig(
+            function=squared_norm,
+            variables={"x": "prosthetic_current_actions - prosthetic_previous_actions"},
+            weight=-1e1,  # Maybe stiffer penalty for prosthetic?
         ),
     }
 
@@ -431,10 +437,16 @@ def humanoid_agent_config(
             "prosthetic" in n_low 
             or "skin" in n_low 
             or "socket" in n_low 
-            or name in ["R_Ankle", "R_Toe"] # Ensure these match your URDF exact casing
+            or "osl" in n_low
+            or "R_Ankle" in n_low
+            or name in ["R_Toe"] # Ensure these match your URDF exact casing
         ):
             body_indices_to_remove.append(i)
-        if (name in ["R_Ankle", "R_Ankle_foot", "R_Toe"] or "socket" in n_low or "prosthetic" in n_low):
+        if (name in ["R_Ankle", "R_Ankle_foot", "R_Ankle_toes", "R_Toe"]
+            or "socket" in n_low
+            or "prosthetic" in n_low
+            or "osl" in n_low
+        ):
             contact_indices_to_remove.append(i)
     
     dofs = robot_config.kinematic_info.dof_names
@@ -447,7 +459,7 @@ def humanoid_agent_config(
             prosthetic_magic_index = i
         if (
             "suspension" in n_low 
-            or dof_name in ["R_Ankle_y", "Motor"] # Ensure these match your URDF exact casing
+            or dof_name in ["R_Ankle_y", "Motor", "R_Toe_y"] # Ensure these match your URDF exact casing
         ):
             print(dof_name, " Skipped")
             continue  # Skip this DOF
@@ -513,6 +525,7 @@ def humanoid_agent_config(
                 "gt_rew",
                 "gr_rew",
                 "pow_rew",
+                "max_joint_err",
                 # "contact_force_change_rew",
             ],
         ),
@@ -521,14 +534,14 @@ def humanoid_agent_config(
         ),
         action_indices=action_indices,
         prosthetic_magic_index=prosthetic_magic_index,
-        # Fix Kp value at 500. The corresponding action is 1.0 since the action space
+        # Fix Kp value at 250. The corresponding action is 0.0 since the action space
         # is normalized to [-1, 1]. This means the effective Kp applied to the prosthetic
-        # control signal is 250 * 1.0 + 250 = 500.
-        prosthetic_magic_kp=0.99,
-        # Fix Kd value at 5.0. The corresponding action is 1.0 since the action space
+        # control signal is 250 * 0.0 + 250 = 250.
+        prosthetic_magic_kp=0.0,
+        # Fix Kd value at 2.5. The corresponding action is 0.0 since the action space
         # is normalized to [-1, 1]. This means the effective Kd applied to the prosthetic
-        # control signal is 2.5 * 1.0 + 2.5 = 5.0.
-        prosthetic_magic_kd=0.99,  # Example derivative gain for the prosthetic control signal
+        # control signal is 2.5 * 0.0 + 2.5 = 2.5.
+        prosthetic_magic_kd=0.0,  # Example derivative gain for the prosthetic control signal
     )
 
     print(f"[{agent_type.upper()}] Config: Controlling {num_active_actions} DOFs")

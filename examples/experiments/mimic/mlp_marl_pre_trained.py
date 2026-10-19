@@ -135,7 +135,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
     mimic_early_termination = [
         MimicEarlyTerminationEntry(
             mimic_early_termination_key="max_joint_err_filtered",
-            mimic_early_termination_thresh=0.5,
+            mimic_early_termination_thresh=1.0,
             less_than=False,
         )
     ]
@@ -228,10 +228,10 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             variables={
                 "q": "current_state.rigid_body_rot",
                 "ref_q": "ref_state.rigid_body_rot",
-                "coefficient": "-5.0",
+                "coefficient": "-10.0",
             },
             indices_subset=["end_effector_upper_bodies"],
-            weight=0.15,
+            weight=0.6,
         ),
         "gv_rew": RewardComponentConfig(
             function=mean_squared_error_exp,
@@ -302,31 +302,31 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             },
             weight=0.3,
         ),
-        "pow_rew": RewardComponentConfig(
-            function=power_consumption_sum,
-            variables={
-                "dof_forces": "current_state.dof_forces",
-                "dof_vel": "current_state.dof_vel",
-                "use_torque_squared": "False",
-                "indices": "humanoid_and_prosthetic_joints",  # Only penalize power for humanoid joints, not prosthetic
-            },
-            weight=-4.0e-4, # TADEO -7.5e-5,
-            # min_value=-1.75,
-            zero_during_grace_period=True,
-        ),
-        "pow_rew_lower": RewardComponentConfig(
-            function=power_consumption_exp,
-            variables={
-                "dof_forces": "current_state.dof_forces",
-                "dof_vel": "current_state.dof_vel",
-                "coefficient": "0.001",
-                "use_torque_squared": "False",
-                "indices": "lower_body_joints",  # Only penalize power for humanoid joints, not prosthetic
-            },
-            weight=-8.0e-2, # TADEO -7.5e-5,
-            # min_value=-1.75,
-            zero_during_grace_period=True,
-        ),
+        # "pow_rew": RewardComponentConfig(
+        #     function=power_consumption_sum,
+        #     variables={
+        #         "dof_forces": "current_state.dof_forces",
+        #         "dof_vel": "current_state.dof_vel",
+        #         "use_torque_squared": "False",
+        #         "indices": "humanoid_and_prosthetic_joints",  # Only penalize power for humanoid joints, not prosthetic
+        #     },
+        #     weight=-4.0e-4, # TADEO -7.5e-5,
+        #     # min_value=-1.75,
+        #     zero_during_grace_period=True,
+        # ),
+        # "pow_rew_lower": RewardComponentConfig(
+        #     function=power_consumption_exp,
+        #     variables={
+        #         "dof_forces": "current_state.dof_forces",
+        #         "dof_vel": "current_state.dof_vel",
+        #         "coefficient": "0.001",
+        #         "use_torque_squared": "False",
+        #         "indices": "lower_body_joints",  # Only penalize power for humanoid joints, not prosthetic
+        #     },
+        #     weight=-8.0e-2, # TADEO -7.5e-5,
+        #     # min_value=-1.75,
+        #     zero_during_grace_period=True,
+        # ),
         "contact_match_rew": RewardComponentConfig(
             function=contact_mismatch_sum,
             variables={
@@ -361,22 +361,22 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         "action_smoothness_prosthetic_angle": RewardComponentConfig(
             function=squared_norm,
             variables={"x": "prosthetic_current_actions - prosthetic_previous_actions"},
-            weight=1e0,  # Maybe stiffer penalty for prosthetic?
+            weight=-1e1,  # Maybe stiffer penalty for prosthetic?
         ),
         "action_smoothness_prosthetic_kp": RewardComponentConfig(
             function=squared_norm,
             variables={"x": "prosthetic_current_gains[:,0:1] - prosthetic_previous_gains[:,0:1]"},
-            weight=3e-1,  # Maybe stiffer penalty for prosthetic?
+            weight=-3e-0,  # Maybe stiffer penalty for prosthetic?
         ),
         "action_smoothness_prosthetic_kd": RewardComponentConfig(
             function=squared_norm,
             variables={"x": "prosthetic_current_gains[:,1:2] - prosthetic_previous_gains[:,1:2]"},
-            weight=2e-1,  
+            weight=-2e-0,  
         ), 
         "torque_smoothness_prosthetic_ankle": RewardComponentConfig(
             function=squared_norm,
             variables={"x": "prosthetic_current_torque - prosthetic_previous_torque"},
-            weight=-1e-5,  # Start small; torque magnitudes are much larger than actions/gains
+            weight=-2e-4,  # Start small; torque magnitudes are much larger than actions/gains
         ),
         # "torque_bounds": RewardComponentConfig(
         #     function=norm,
@@ -406,7 +406,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "prosthetic_current_dof_pos",
                 "coefficient": "-200.0",
             },
-            weight=3e-1,
+            weight=5e-1,
         ),
         # "skin_rew": RewardComponentConfig(
         #     function=skin_pressure_penalty,
@@ -425,7 +425,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "ref_state.dof_pos[:, ankle_joint]",
                 "coefficient": "-250.0",
             },
-            weight=0.3e-1,
+            weight=0.8e-1,
         ),
         # "useful_work": RewardComponentConfig(
         #     function=prosthetic_directional_force_reward,
@@ -712,8 +712,8 @@ def humanoid_agent_config(
             out_keys=["action", "mean_action", "neglogp", "value"],
             actor=actor_config,
             critic=critic_config,
-            actor_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=2e-8),  # lr=2e-5),
-            critic_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=1e-7), # lr=1e-4),
+            actor_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=1e-6),  # lr=2e-5),
+            critic_optimizer=OptimizerConfig(_target_="torch.optim.Adam", lr=0.5e-5), # lr=1e-4),
         ),
         batch_size=args.batch_size,
         training_max_steps=args.training_max_steps,
@@ -729,11 +729,13 @@ def humanoid_agent_config(
             eval_metric_keys=[
                 "gt_err",
                 "gr_err",
+                "max_joint_err",
                 "gr_err_degrees",
                 "lr_err_degrees",
                 "gt_rew",
                 "gr_rew",
-                "pow_rew",
+                "max_joint_err",
+                # "pow_rew",
                 # "contact_force_change_rew",
             ],
         ),
@@ -853,8 +855,8 @@ def apply_inference_overrides(
     """Apply evaluation-specific overrides."""
     # For mimic: disable early termination during evaluation
     if env_cfg is not None:
-        if hasattr(env_cfg, "mimic_early_termination"):
-            env_cfg.mimic_early_termination = None
+        # if hasattr(env_cfg, "mimic_early_termination"):
+        #     env_cfg.mimic_early_termination = None
         if hasattr(env_cfg, "max_episode_length"):
             env_cfg.max_episode_length = 1000000
         if hasattr(env_cfg, "motion_manager"):

@@ -45,6 +45,10 @@ def robot_config(robot_name: str, **updates) -> RobotConfig:
         from protomotions.robot_configs.smpl10 import Smpl10RobotConfig
 
         config = Smpl10RobotConfig()
+    elif robot_name == "smpl10bis":
+        from protomotions.robot_configs.smpl10bis import Smpl10bisRobotConfig
+
+        config = Smpl10bisRobotConfig()
     elif robot_name == "smplx":
         from protomotions.robot_configs.smplx import SMPLXRobotConfig
 

@@ -271,14 +271,6 @@ motions:
       end: 21.275
       start: 0.0
   weight: 1.0
-- file: ACCAD/Female1Running_c3d/C15____run_turn_right___45__poses.motion
-  fps: 120.0
-  idx: 6612
-  sub_motions:
-  - timings:
-      end: 2.1166666666666667
-      start: 0.0
-  weight: 1.0
 - file: ACCAD/Female1Running_c3d/C25____side_step_right_poses.motion
   fps: 120.0
   idx: 6620

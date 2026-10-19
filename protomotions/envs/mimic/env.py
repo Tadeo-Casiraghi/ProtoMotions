@@ -170,16 +170,18 @@ class Mimic(BaseEnv):
         # Initialize previous contact force magnitudes for impact penalty reward
         # Shape: [num_envs, num_bodies] - stores magnitude of contact forces from previous step
         num_bodies = robot_config.kinematic_info.num_bodies
-        self.prev_contact_force_magnitudes = torch.zeros(
-            self.num_envs, num_bodies, dtype=torch.float, device=self.device
-        )
+        
 
         # Find indices for any body that contains "skin_box" in its name
         self.skin_body_indices = [
             i for i, name in enumerate(sim_body_names) 
-            if "skin_box" in name
+            if "skin_box" in name or "socket_box" in name
         ]
 
+        self.prev_contact_force_magnitudes = torch.zeros(
+            self.num_envs, num_bodies - len(self.skin_body_indices), dtype=torch.float, device=self.device
+        )
+        
         # Convert to a torch tensor for faster indexing later
         self.skin_body_indices = torch.tensor(
             self.skin_body_indices, dtype=torch.long, device=self.device
@@ -559,7 +561,15 @@ class Mimic(BaseEnv):
         lr = dof_to_local(current_state.dof_pos, hinge_axes_map, True)
 
         contact_forces = current_state.rigid_body_contact_forces.clone()
-        contact_forces[:, self.skin_body_indices, :] = 0.0
+
+        # Create a mask that excludes skin body indices
+        mask = torch.ones(
+            contact_forces.shape[1], dtype=torch.bool, device=contact_forces.device
+        )
+        mask[self.skin_body_indices] = False
+
+        # Remove the skin body indices
+        contact_forces = contact_forces[:, mask, :]
 
         reward_context.update(
             {
@@ -572,6 +582,7 @@ class Mimic(BaseEnv):
                 "prev_contact_force_magnitudes": self.prev_contact_force_magnitudes,
             }
         )
+
 
         return reward_context
 
@@ -750,7 +761,16 @@ class Mimic(BaseEnv):
             self.extras[f"mimic_other/{name}"] = value
 
         contact_forces = current_state.rigid_body_contact_forces.clone()
-        contact_forces[:, self.skin_body_indices, :] = 0.0
+
+        # Create a mask that excludes skin body indices
+        mask = torch.ones(
+            contact_forces.shape[1], dtype=torch.bool, device=contact_forces.device
+        )
+        mask[self.skin_body_indices] = False
+
+        # Remove the skin body indices
+        contact_forces = contact_forces[:, mask, :]
+
         # Update previous contact force magnitudes for next timestep
         self.prev_contact_force_magnitudes = torch.norm(
             contact_forces, dim=-1

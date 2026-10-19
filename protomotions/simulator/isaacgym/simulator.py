@@ -739,11 +739,6 @@ class IsaacGymSimulator(Simulator):
             damping = self.robot_config.control.control_info[dof_name].damping
             armature = self.robot_config.control.control_info[dof_name].armature
             friction = self.robot_config.control.control_info[dof_name].friction
-            if not self.control_type == ControlType.BUILT_IN_PD:
-                # Manual PD controller handles stiffness-damping.
-                # This disables additional stiffness-damping that is added by the built-in PD controller.
-                stiffness = 0.0
-                damping = 0.0
 
             dof_props["stiffness"][i] = stiffness
             dof_props["damping"][i] = damping

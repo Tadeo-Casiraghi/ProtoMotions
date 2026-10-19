@@ -907,9 +907,12 @@ class BaseEnv:
             return {
                 "current_state": current_state,
                 
-                # 1. Humanoid Actions: Isolate down to the physical DOFs (Size 69) set common_torque_joints to 0 so they don't interfere with humanoid reward components that expect 0 for those joints. We will use the full actions with torque values for prosthetic reward components.
-                "current_actions": raw_current_actions_prime[:, :num_dofs],
-                "previous_actions": raw_previous_actions_prime[:, :num_dofs],
+                # 1. Humanoid Actions: Isolate down to the physical DOFs (Size 69)
+                # set common_torque_joints to 0 so they don't interfere with humanoid reward
+                # components that expect 0 for those joints.
+                # We will use the full actions with torque values for prosthetic reward components.
+                "current_actions": raw_current_actions_prime[:, self.config.humanoid_action_indices],
+                "previous_actions": raw_previous_actions_prime[:, self.config.humanoid_action_indices],
                 
                 # 2. Prosthetic Actions: Grab only the column corresponding to the prosthetic physical joint
                 "prosthetic_current_actions": raw_current_actions[:, self.simulator.common_torque_joints],
@@ -927,7 +930,7 @@ class BaseEnv:
                     else raw_current_actions[:, num_dofs:].clone()
                 ),
 
-                "prosthetic_current_kp": raw_current_actions[:, num_dofs:num_dofs+1],
+                "prosthetic_current_kp": raw_current_actions[:, -2:-1],
                 
                 "humanoid_joints": self.simulator.humanoid_joints,
                 "lower_body_joints": self.simulator.lower_body_joints,
