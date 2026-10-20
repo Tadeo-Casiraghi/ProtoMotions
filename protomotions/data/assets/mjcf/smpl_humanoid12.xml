@@ -51,9 +51,7 @@
         <joint name="L_Hip_z" type="hinge" pos="0 0 0" axis="0 0 1" stiffness="800" damping="80" armature="0.02" range="-115.0000 115.0000"/>
         <geom type="capsule" contype="1" conaffinity="1" density="2040.816327" fromto="-0.0009 0.0069 -0.0750 -0.0036 0.0274 -0.3002" size="0.0615"/>
         <body name="L_Knee" pos="-0.0045 0.0343 -0.3752">
-          <joint name="L_Knee_x" type="hinge" pos="0 0 0" axis="1 0 0" stiffness="800" damping="80" armature="0.02" range="-0.01 0.01"/>
           <joint name="L_Knee_y" type="hinge" pos="0 0 0" axis="0 1 0" stiffness="800" damping="80" armature="0.02" range="0.0 130.0000"/>
-          <joint name="L_Knee_z" type="hinge" pos="0 0 0" axis="0 0 1" stiffness="800" damping="80" armature="0.02" range="-0.01 0.01"/>
           <geom type="capsule" contype="1" conaffinity="1" density="1234.567901" fromto="-0.0087 -0.0027 -0.0796 -0.0350 -0.0109 -0.3184" size="0.0541"/>
           <body name="L_Ankle" pos="-0.0437 -0.0136 -0.398">
             <joint name="L_Ankle_x" type="hinge" pos="0 0 0" axis="1 0 0" stiffness="800" damping="80" armature="0.02" range="-60.0000 60.0000"/>
@@ -61,9 +59,8 @@
             <joint name="L_Ankle_z" type="hinge" pos="0 0 0" axis="0 0 1" stiffness="800" damping="80" armature="0.02" range="-60.0000 60.0000"/>
             <geom type="box" pos="0.0242 0.0233 -0.0239" size="0.085 0.0483 0.0464" quat="1.0000 0.0000 0.0000 0.0000" density="1000"/>
             <body name="L_Toe" pos="0.1193 0.0264 -0.0558">
-              <joint name="L_Toe_x" type="hinge" pos="0 0 0" axis="1 0 0" stiffness="500" damping="50" armature="0.02" range="-1.0000 1.0000"/>
-              <joint name="L_Toe_y" type="hinge" pos="0 0 0" axis="0 1 0" stiffness="500" damping="50" armature="0.02" range="-90.0000 90.0000"/>
-              <joint name="L_Toe_z" type="hinge" pos="0 0 0" axis="0 0 1" stiffness="500" damping="50" armature="0.02" range="-1.0000 1.0000"/>
+              <joint name="L_Toe_x" type="hinge" pos="0 0 0" axis="1 0 0" stiffness="500" damping="50" armature="0.02" range="-180.0000 180.0000"/>
+              <joint name="L_Toe_y" type="hinge" pos="0 0 0" axis="0 1 0" stiffness="500" damping="50" armature="0.02" range="-180.0000 180.0000"/>
               <geom type="box" pos="0.0248 -0.0030 0.0055" size="0.0496 0.0478 0.02" quat="1.0000 0.0000 0.0000 0.0000" density="1000"/>
             </body>
           </body>
@@ -75,34 +72,32 @@
         <joint name="R_Hip_z" type="hinge" pos="0 0 0" axis="0 0 1" stiffness="800" damping="80" armature="0.02" range="-115.0000 115.0000"/>
         <geom type="capsule" contype="1" conaffinity="1" density="2040.816327" fromto="-0.0018 -0.0077 -0.0765 -0.0071 -0.0306 -0.3061" size="0.0606"/>
         <body name="R_Knee" pos="-0.0089 -0.0383 -0.3826">
-          <joint name="R_Knee_x" type="hinge" pos="0 0 0" axis="1 0 0" stiffness="800" damping="80" armature="0.02" range="-0.01 0.01"/>
           <joint name="R_Knee_y" type="hinge" pos="0 0 0" axis="0 1 0" stiffness="800" damping="80" armature="0.02" range="0.0 130.0000"/>
-          <joint name="R_Knee_z" type="hinge" pos="0 0 0" axis="0 0 1" stiffness="800" damping="80" armature="0.02" range="-0.01 0.01"/>
-          <geom type="capsule" contype="1" conaffinity="1" density="11336" fromto="-0.00386	0.00148	-0.03588	-0.01643	0.00615	-0.15461" size="0.01"/>
+          <geom type="capsule" contype="1" conaffinity="1" density="4571.2" fromto="-0.00386	0.00148	-0.03588	-0.01643	0.00615	-0.15461" size="0.01"/>
           
           <body name="skin_box_posterior_top" pos="-0.05002507982897726 0.0014752877792309754 -0.03584827438683026" quat="0.5259542185366413 -0.47262264017238004 0.4929276001932958 -0.5069737478091723">
-              <geom class="posterior" type="box" size="0.005000 0.005000 0.008767" density="67442" rgba="1 0 0 1"/> 
+              <geom class="posterior" type="box" size="0.005000 0.005000 0.008767" density="108782.7" rgba="1 0 0 1"/> 
           </body>
           <body name="skin_box_medial_top" pos="-0.004368783333674456 0.03754833852358707 -0.03926257407023701" quat="0.13421336967846742 -0.041270130758904594 -0.6466634749023202 0.7497398868500662">
-              <geom class="medial" type="box" size="0.005000 0.005000 0.008767" density="67442" rgba="0 1 0 1"/> 
+              <geom class="medial" type="box" size="0.005000 0.005000 0.008767" density="108782.7" rgba="0 1 0 1"/> 
           </body>
           <body name="skin_box_anterior_top" pos="0.04128751316162835 0.0018548753303769148 -0.04549948978298737" quat="0.5727511163956187 -0.41467596827833214 -0.4368648205143749 0.5560118061668682">
-              <geom class="anterior" type="box" size="0.005000 0.005000 0.008767" density="67442" rgba="0 0 1 1"/> 
+              <geom class="anterior" type="box" size="0.005000 0.005000 0.008767" density="108782.7" rgba="0 0 1 1"/> 
           </body>
           <body name="skin_box_lateral_top" pos="-0.004368783333674448 -0.03421817541397918 -0.04208519009958062" quat="0.7745746530175288 -0.6166989983853296 -0.046512854319300176 0.13248776047762917">
-              <geom class="lateral" type="box" size="0.005000 0.005000 0.008767" density="67442" rgba="1 1 0 1"/> 
+              <geom class="lateral" type="box" size="0.005000 0.005000 0.008767" density="108782.7" rgba="1 1 0 1"/> 
           </body>
           <body name="skin_box_posterior_bottom" pos="-0.0481193801870875 0.004621445631928363 -0.11584101127988082" quat="0.5259542185366413 -0.47262264017238004 0.4929276001932958 -0.5069737478091723">
-              <geom class="posterior" type="box" size="0.005000 0.005000 0.005277" density="112045" rgba="1 0 0 1"/> 
+              <geom class="posterior" type="box" size="0.005000 0.005000 0.005277" density="180727.3" rgba="1 0 0 1"/> 
           </body>
           <body name="skin_box_medial_bottom" pos="-0.012721852933263729 0.030343820171131665 -0.11857643855541734" quat="0.13421336967846742 -0.041270130758904594 -0.6466634749023202 0.7497398868500662">
-              <geom class="medial" type="box" size="0.005000 0.005000 0.005277" density="112045" rgba="0 1 0 1"/> 
+              <geom class="medial" type="box" size="0.005000 0.005000 0.005277" density="180727.3" rgba="0 1 0 1"/> 
           </body>
           <body name="skin_box_anterior_bottom" pos="0.022675674320560047 0.004915741527967215 -0.12332364097703863" quat="0.5727511163956187 -0.41467596827833214 -0.4368648205143749 0.5560118061668682">
-              <geom class="anterior" type="box" size="0.005000 0.005000 0.005277" density="112045" rgba="0 0 1 1"/> 
+              <geom class="anterior" type="box" size="0.005000 0.005000 0.005277" density="180727.3" rgba="0 0 1 1"/> 
           </body>
           <body name="skin_box_lateral_bottom" pos="-0.012721852933263722 -0.020806633011236086 -0.1205882137015021" quat="0.7745746530175288 -0.6166989983853296 -0.046512854319300176 0.13248776047762917">
-              <geom class="lateral" type="box" size="0.005000 0.005000 0.005277" density="112045" rgba="1 1 0 1"/> 
+              <geom class="lateral" type="box" size="0.005000 0.005000 0.005277" density="180727.3" rgba="1 1 0 1"/> 
           </body>
           <body name="prosthetic_assembly1" pos="-0.01272122  0.00476836 -0.11957632" quat="0.53483409 -0.46255    -0.48321172  0.51624261"> <!--quat="0.692209  0.719785 0.037474 -0.036767">-->
             <inertial pos="0 0 0" mass="0.001" diaginertia="0.00001 0.00001 0.00001"/>
@@ -270,13 +265,13 @@
     <motor name="L_Ankle_z" joint="L_Ankle_z" gear="500" forcerange="-1000 1000"/>
     <motor name="L_Toe_x" joint="L_Toe_x" gear="500" forcerange="-1000 1000"/>
     <motor name="L_Toe_y" joint="L_Toe_y" gear="500" forcerange="-1000 1000"/>
-    <motor name="L_Toe_z" joint="L_Toe_z" gear="500" forcerange="-1000 1000"/>
     <motor name="R_Hip_x" joint="R_Hip_x" gear="500" forcerange="-1000 1000"/>
     <motor name="R_Hip_y" joint="R_Hip_y" gear="500" forcerange="-1000 1000"/>
     <motor name="R_Hip_z" joint="R_Hip_z" gear="500" forcerange="-1000 1000"/>
-    <motor name="R_Knee_x" joint="R_Knee_x" gear="500" forcerange="-1000 1000"/>
     <motor name="R_Knee_y" joint="R_Knee_y" gear="500" forcerange="-1000 1000"/>
-    <motor name="R_Knee_z" joint="R_Knee_z" gear="500" forcerange="-1000 1000"/>
+    <!--
+    <motor name="R_Ankle_y" joint="R_Ankle_y" gear="500" forcerange="-1000 1000"/>
+    -->
     <motor name="Torso_x" joint="Torso_x" gear="500" forcerange="-1000 1000"/>
     <motor name="Torso_y" joint="Torso_y" gear="500" forcerange="-1000 1000"/>
     <motor name="Torso_z" joint="Torso_z" gear="500" forcerange="-1000 1000"/>

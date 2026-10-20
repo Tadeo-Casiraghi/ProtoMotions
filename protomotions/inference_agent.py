@@ -110,6 +110,12 @@ def create_parser():
         "--scenes-file", type=str, default=None, help="Path to scenes file (optional)"
     )
     parser.add_argument(
+        "--show-body-markers",
+        action="store_true",
+        default=False,
+        help="Draw blue markers at the simulated body origins to compare with the red reference markers",
+    )
+    parser.add_argument(
         "--overrides",
         nargs="*",
         default=[],
@@ -247,6 +253,10 @@ def main():
     if args.headless is not None:
         log.info(f"CLI override: headless = {args.headless}")
         simulator_config.headless = args.headless
+
+    if args.show_body_markers:
+        log.info("CLI override: show_sim_body_markers = True")
+        env_config.show_sim_body_markers = True
 
     # Parse and apply general CLI overrides
     from protomotions.utils.config_utils import (

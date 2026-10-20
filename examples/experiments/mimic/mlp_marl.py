@@ -652,10 +652,12 @@ def humanoid_agent_config(
             "prosthetic" in n_low 
             or "skin" in n_low 
             or "socket" in n_low 
-            or name in ["R_Ankle", "R_Toe"] # Ensure these match your URDF exact casing
+            or "osl" in n_low
+            or "r_ankle" in n_low  # R_Ankle, R_Ankle_Motor, R_Ankle_foot, R_Ankle_toes
+            or name in ["R_Toe"] # Ensure these match your URDF exact casing
         ):
             body_indices_to_remove.append(i)
-        if (name in ["R_Ankle", "R_Toe"] or "socket" in n_low or "prosthetic" in n_low):
+        if (name in ["R_Ankle", "R_Ankle_foot", "R_Ankle_toes", "R_Toe"] or "socket" in n_low or "prosthetic" in n_low or "osl" in n_low):
             contact_indices_to_remove.append(i)
     
     dofs = robot_config.kinematic_info.dof_names
@@ -678,12 +680,12 @@ def humanoid_agent_config(
     actor_config = PPOActorConfig(
         num_out=num_active_actions,
         actor_logstd=-2.9,
-        in_keys=["blind_body_obs", "mimic_target_poses", "agent_action_history"],
+        in_keys=["blind_body_obs", "blind_mimic_target_poses", "agent_action_history"],
         mu_key="actor_trunk_out",
         mu_model=MLPWithConcatConfig(
             in_keys=[
                 "blind_body_obs",
-                "mimic_target_poses",
+                "blind_mimic_target_poses",
                 "agent_action_history",
             ],
             normalize_obs=True,
@@ -705,7 +707,7 @@ def humanoid_agent_config(
     )
     agent_config: PPOAgentConfig = PPOAgentConfig(
         model=PPOModelConfig(
-            in_keys=["historical_prosthetic_obs", "historical_prosthetic_previous_actions", "max_coords_obs", "mimic_target_poses", "agent_action_history", "blind_body_obs"],
+            in_keys=["historical_prosthetic_obs", "historical_prosthetic_previous_actions", "max_coords_obs", "mimic_target_poses", "agent_action_history", "blind_body_obs", "blind_mimic_target_poses"],
             out_keys=["action", "mean_action", "neglogp", "value"],
             actor=actor_config,
             critic=critic_config,

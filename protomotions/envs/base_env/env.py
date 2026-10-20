@@ -285,6 +285,74 @@ class BaseEnv:
             print(f"Active Indices Count: {len(active_indices)}")
             print("-------------------------------\n")
 
+        self._init_knee_moment_window()
+
+    def _init_knee_moment_window(self):
+        """Allocate the rolling window of |knee moment| used for left/right symmetry rewards."""
+        self.knee_moment_window = None
+        if self.config.knee_dof_indices is None:
+            return
+
+        self._knee_dof_indices = torch.tensor(
+            self.config.knee_dof_indices, device=self.device, dtype=torch.long
+        )
+        window_len = max(1, int(round(self.config.knee_moment_window_s / self.dt)))
+        num_knees = len(self.config.knee_dof_indices)
+
+        self.knee_moment_window = torch.zeros(
+            self.num_envs, window_len, num_knees, device=self.device, dtype=torch.float
+        )
+        self._knee_moment_sum = torch.zeros(
+            self.num_envs, num_knees, device=self.device, dtype=torch.float
+        )
+        self._knee_moment_count = torch.zeros(
+            self.num_envs, device=self.device, dtype=torch.long
+        )
+        # All envs step together, so a single write pointer is shared
+        self._knee_moment_ptr = 0
+        print(f"Knee moment window: {window_len} steps ({self.config.knee_moment_window_s}s at dt={self.dt:.4f})")
+
+    def _update_knee_moment_window(self):
+        """Push the current |knee moment| into the rolling window."""
+        if self.knee_moment_window is None:
+            return
+
+        dof_forces = self.simulator.get_dof_forces().dof_forces
+        moments = dof_forces[:, self._knee_dof_indices].abs()
+
+        window_len = self.knee_moment_window.shape[1]
+        ptr = self._knee_moment_ptr
+        self._knee_moment_sum += moments - self.knee_moment_window[:, ptr]
+        self.knee_moment_window[:, ptr] = moments
+        self._knee_moment_count = torch.clamp(self._knee_moment_count + 1, max=window_len)
+
+        self._knee_moment_ptr = (ptr + 1) % window_len
+        if self._knee_moment_ptr == 0:
+            # Recompute once per wrap so float error in the running sum can't accumulate
+            self._knee_moment_sum = self.knee_moment_window.sum(dim=1)
+
+    def _reset_knee_moment_window(self, env_ids):
+        if self.knee_moment_window is None or not self.config.knee_moment_window_reset:
+            return
+        self.knee_moment_window[env_ids] = 0.0
+        self._knee_moment_sum[env_ids] = 0.0
+        self._knee_moment_count[env_ids] = 0
+
+    def _knee_moment_context(self):
+        """Reward context entries for the knee moment window (empty if disabled)."""
+        if self.knee_moment_window is None:
+            return {}
+        count = self._knee_moment_count.clamp(min=1).unsqueeze(-1).float()
+        knee_moment_avg = self._knee_moment_sum / count
+        return {
+            # [num_envs, 2]: mean |moment| over the filled part of the window, columns = knee_dof_indices order
+            "knee_moment_avg": knee_moment_avg,
+            "knee_moment_avg_left": knee_moment_avg[:, 0],
+            "knee_moment_avg_right": knee_moment_avg[:, 1],
+            # [num_envs] in [0, 1]: fraction of the window that holds real samples
+            "knee_moment_window_fill": self._knee_moment_count.float() / self.knee_moment_window.shape[1],
+        }
+
     def initialize_simulator(self):
         """Initialize simulator with task-specific visualization markers.
 
@@ -948,6 +1016,7 @@ class BaseEnv:
                 )
                 * self.robot_config.control.softer_pos_limit,
                 "dt": self.dt,
+                **self._knee_moment_context(),
             }
         else:
             return {
@@ -963,6 +1032,7 @@ class BaseEnv:
                 )
                 * self.robot_config.control.soft_pos_limit,
                 "dt": self.dt,
+                **self._knee_moment_context(),
             }
 
     def get_has_reset_grace(self):
@@ -981,6 +1051,8 @@ class BaseEnv:
 
         Subclasses should override this to add task-specific rewards, calling super().compute_reward() first.
         """
+
+        self._update_knee_moment_window()
 
         # Build context for variable evaluation
         context = self._get_reward_context()
@@ -1172,6 +1244,8 @@ class BaseEnv:
         self.self_obs_cb.reset_hist_buf(env_ids, default_mask, motion_ids, motion_times)
         if self.prosthetic_obs_cb is not None:
             self.prosthetic_obs_cb.reset_hist(env_ids)
+
+        self._reset_knee_moment_window(env_ids)
 
         self.progress_buf[env_ids] = 0
         self.reset_buf[env_ids] = False

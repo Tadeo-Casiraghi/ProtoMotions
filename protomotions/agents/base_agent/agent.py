@@ -877,7 +877,69 @@ class BaseAgent:
             # # Finally, we print the shape of the new agent_action_history
             # print("agent_action_history shape:", obs["agent_action_history"].shape)
 
+        if "mimic_target_poses" in obs and self.config.body_indices_to_remove:
+            obs["blind_mimic_target_poses"] = obs["mimic_target_poses"][
+                :, self._blind_target_pose_columns(obs["mimic_target_poses"].shape[-1])
+            ]
+
         return obs
+
+    def _blind_target_pose_columns(self, num_features: int) -> torch.Tensor:
+        """Columns of mimic_target_poses the humanoid actor may see.
+
+        Per future step the MAX_COORDS layout is:
+            [target-root pos (B*3), target-current pos (B*3), target rot (B*6), target-current rot (B*6),
+             (target-current vel (B*3), target-current ang vel (B*3)), (time 1), (contacts C)]
+        The "target - current" terms encode the current state of every body, so they are dropped for
+        removed (prosthetic) bodies. The reference-only terms are kept for removed bodies that have a
+        real SMPL reference (R_Ankle); placeholder bodies (no reference) are dropped entirely.
+        """
+        cached = getattr(self, "_blind_target_pose_cols", None)
+        if cached is not None and cached[0] == num_features:
+            return cached[1]
+
+        from protomotions.components.motion_lib import SMPL_BODY_NAMES
+        from protomotions.envs.obs.config import FuturePoseType
+
+        target_cfg = self.env.config.mimic_obs.mimic_target_pose
+        if target_cfg.type != FuturePoseType.MAX_COORDS:
+            raise NotImplementedError(
+                f"blind_mimic_target_poses only supports MAX_COORDS target poses, got {target_cfg.type}"
+            )
+
+        body_names = self.env.robot_config.kinematic_info.body_names
+        num_bodies = len(body_names)
+        removed = set(self.config.body_indices_to_remove)
+        visible = torch.tensor([i not in removed for i in range(num_bodies)])
+        has_reference = torch.tensor([name in SMPL_BODY_NAMES for name in body_names])
+        reference_only = visible | has_reference
+
+        def body_mask(mask, dim):
+            return mask.repeat_interleave(dim)
+
+        step_masks = [
+            body_mask(reference_only, 3),  # target - root pos
+            body_mask(visible, 3),  # target - current pos
+            body_mask(reference_only, 6),  # target rot (heading frame)
+            body_mask(visible, 6),  # target - current rot
+        ]
+        if target_cfg.with_velocities:
+            step_masks += [body_mask(visible, 3), body_mask(visible, 3)]
+        if target_cfg.with_time:
+            step_masks.append(torch.ones(1, dtype=torch.bool))
+        if target_cfg.with_contacts:
+            num_contacts = len(self.env.contact_body_ids)
+            step_masks.append(torch.ones(num_contacts, dtype=torch.bool))
+        step_mask = torch.cat(step_masks)
+
+        num_future_steps = target_cfg.num_future_steps
+        assert step_mask.numel() * num_future_steps == num_features, (
+            f"mimic_target_poses has {num_features} features, expected "
+            f"{step_mask.numel()} x {num_future_steps} future steps"
+        )
+        columns = step_mask.repeat(num_future_steps).nonzero(as_tuple=True)[0].to(self.device)
+        self._blind_target_pose_cols = (num_features, columns)
+        return columns
 
     def obs_dict_to_tensordict(self, obs_dict: Dict) -> TensorDict:
         """Convert observation dict to TensorDict.

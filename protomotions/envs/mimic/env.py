@@ -179,7 +179,7 @@ class Mimic(BaseEnv):
         ]
 
         self.prev_contact_force_magnitudes = torch.zeros(
-            self.num_envs, num_bodies - len(self.skin_body_indices), dtype=torch.float, device=self.device
+            self.num_envs, num_bodies, dtype=torch.float, device=self.device
         )
         
         # Convert to a torch tensor for faster indexing later
@@ -270,6 +270,19 @@ class Mimic(BaseEnv):
                 type="sphere", color=(1.0, 1.0, 0.0), markers=body_markers
             )
             visualization_markers["body_markers_yellow"] = body_markers_yellow_cfg
+
+        if getattr(self.config, "show_sim_body_markers", False):
+            # Small markers at every simulated body origin, so they stay visible inside the red reference markers.
+            # Masked mimic already uses blue for far-away targets, so use cyan there.
+            sim_color = (0.0, 1.0, 1.0) if self.config.masked_mimic_obs.enabled else (0.0, 0.0, 1.0)
+            visualization_markers["body_markers_sim"] = VisualizationMarkerConfig(
+                type="sphere",
+                color=sim_color,
+                markers=[
+                    MarkerConfig(size="regular")
+                    for _ in self.robot_config.kinematic_info.body_names
+                ],
+            )
 
         return visualization_markers
 
@@ -411,6 +424,16 @@ class Mimic(BaseEnv):
                 translation=target_pos,
                 orientation=torch.zeros(
                     self.num_envs, target_pos.shape[1], 4, device=self.device
+                ),
+            )
+
+        if getattr(self.config, "show_sim_body_markers", False):
+            # rigid_body_pos is the body frame origin, the same point the reference positions describe
+            sim_body_pos = self.simulator.get_robot_state().rigid_body_pos
+            markers_state["body_markers_sim"] = MarkerState(
+                translation=sim_body_pos.view(self.num_envs, -1, 3),
+                orientation=torch.zeros(
+                    self.num_envs, sim_body_pos.shape[1], 4, device=self.device
                 ),
             )
 
@@ -562,14 +585,9 @@ class Mimic(BaseEnv):
 
         contact_forces = current_state.rigid_body_contact_forces.clone()
 
-        # Create a mask that excludes skin body indices
-        mask = torch.ones(
-            contact_forces.shape[1], dtype=torch.bool, device=contact_forces.device
-        )
-        mask[self.skin_body_indices] = False
-
-        # Remove the skin body indices
-        contact_forces = contact_forces[:, mask, :]
+        # Zero out skin/socket bodies instead of removing them, so body indices
+        # (e.g. reward indices_subset) still line up with robot body order
+        contact_forces[:, self.skin_body_indices, :] = 0.0
 
         reward_context.update(
             {
@@ -632,7 +650,7 @@ class Mimic(BaseEnv):
         ref_right_foot_indices = self._resolve_body_indices(["all_right_foot_bodies"])
         right_foot_indices = self._resolve_body_indices(["all_right_foot_bodies_contact"])
 
-        r_ankle_dof_idx = self.robot_config.kinematic_info.dof_names.index("R_Ankle_y")
+        r_ankle_body_idx = self.robot_config.kinematic_info.body_names.index("R_Ankle")
 
         # Use simulator's canonical method to compute binary contacts
         sim_contacts = current_state.rigid_body_contacts
@@ -655,7 +673,7 @@ class Mimic(BaseEnv):
         masked_per_joint_err[valid_body_mask == 0] = -1.0
         max_joint_err = masked_per_joint_err.max(-1)[0]
 
-        masked_per_joint_err[:, r_ankle_dof_idx] = -1.0
+        masked_per_joint_err[:, r_ankle_body_idx] = -1.0
         max_joint_err_filtered = masked_per_joint_err.max(-1)[0]
 
         # 2. Rotation Error
@@ -762,14 +780,9 @@ class Mimic(BaseEnv):
 
         contact_forces = current_state.rigid_body_contact_forces.clone()
 
-        # Create a mask that excludes skin body indices
-        mask = torch.ones(
-            contact_forces.shape[1], dtype=torch.bool, device=contact_forces.device
-        )
-        mask[self.skin_body_indices] = False
-
-        # Remove the skin body indices
-        contact_forces = contact_forces[:, mask, :]
+        # Zero out skin/socket bodies instead of removing them, so body indices
+        # (e.g. reward indices_subset) still line up with robot body order
+        contact_forces[:, self.skin_body_indices, :] = 0.0
 
         # Update previous contact force magnitudes for next timestep
         self.prev_contact_force_magnitudes = torch.norm(

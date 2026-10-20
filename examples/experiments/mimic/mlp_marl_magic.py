@@ -105,6 +105,12 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         elif name == "Motor":
             print(f"Found motor DOF at index {i}")
             motor_dof_index = i
+        elif name == "L_Knee_y":
+            print(f"Found left knee flexion DOF at index {i}")
+            left_knee_dof_index = i
+        elif name == "R_Knee_y":
+            print(f"Found right knee flexion DOF at index {i}")
+            right_knee_dof_index = i
     
     for i, name in enumerate(body_names):
         if name == "prosthetic_assembly2":
@@ -117,6 +123,8 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
     required_indices = {
         "R_Ankle_y": locals().get("ankle_dof_index"),
         "Motor": locals().get("motor_dof_index"),
+        "L_Knee_y": locals().get("left_knee_dof_index"),
+        "R_Knee_y": locals().get("right_knee_dof_index"),
         "prosthetic_assembly2": locals().get("shank_body_index"),
         "R_Ankle": locals().get("foot_body_index"),
     }
@@ -362,6 +370,15 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             variables={"x": "prosthetic_current_actions - prosthetic_previous_actions"},
             weight=-1e1,  # Maybe stiffer penalty for prosthetic?
         ),
+        "knee_moment_rew": RewardComponentConfig(
+            function=mean_squared_error_exp,
+            variables={
+                "x": "knee_moment_avg_right",
+                "ref_x": "knee_moment_avg_left",
+                "coefficient": "-0.1",
+            },
+            weight=0.2,
+        ),
     }
 
 
@@ -380,6 +397,9 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         ),
         ankle_dof_index=ankle_dof_index,
         motor_dof_index=motor_dof_index,
+        knee_dof_indices=[left_knee_dof_index, right_knee_dof_index],
+        knee_moment_window_s=3.0,
+        knee_moment_window_reset=True,
         prosthetic_obs=ProstheticObsConfig(
             enabled = True,
             num_historical_steps = 10,
@@ -438,7 +458,7 @@ def humanoid_agent_config(
             or "skin" in n_low 
             or "socket" in n_low 
             or "osl" in n_low
-            or "R_Ankle" in n_low
+            or "r_ankle" in n_low  # R_Ankle, R_Ankle_Motor, R_Ankle_foot, R_Ankle_toes
             or name in ["R_Toe"] # Ensure these match your URDF exact casing
         ):
             body_indices_to_remove.append(i)
@@ -472,12 +492,12 @@ def humanoid_agent_config(
     actor_config = PPOActorConfig(
         num_out=num_active_actions+1,
         actor_logstd=-2.9,
-        in_keys=["blind_body_obs", "mimic_target_poses", "agent_action_history"],
+        in_keys=["blind_body_obs", "blind_mimic_target_poses", "agent_action_history"],
         mu_key="actor_trunk_out",
         mu_model=MLPWithConcatConfig(
             in_keys=[
                 "blind_body_obs",
-                "mimic_target_poses",
+                "blind_mimic_target_poses",
                 "agent_action_history",
             ],
             normalize_obs=True,
@@ -499,7 +519,7 @@ def humanoid_agent_config(
     )
     agent_config: PPOAgentConfig = PPOAgentConfig(
         model=PPOModelConfig(
-            in_keys=["historical_prosthetic_obs", "historical_prosthetic_previous_actions", "max_coords_obs", "mimic_target_poses", "agent_action_history", "blind_body_obs"],
+            in_keys=["historical_prosthetic_obs", "historical_prosthetic_previous_actions", "max_coords_obs", "mimic_target_poses", "agent_action_history", "blind_body_obs", "blind_mimic_target_poses"],
             out_keys=["action", "mean_action", "neglogp", "value"],
             actor=actor_config,
             critic=critic_config,

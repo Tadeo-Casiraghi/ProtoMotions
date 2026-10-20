@@ -7,7 +7,7 @@ from rich.progress import track
 import numpy as np
 
 from pathlib import Path
-from protomotions.agents.utils.data import ExperienceBuffer
+from protomotions.agents.utils.data import ExperienceBuffer, HistoryStore
 from protomotions.agents.utils.metering import TimeReport
 from protomotions.agents.utils.training import aggregate_scalar_metrics
 
@@ -117,9 +117,10 @@ class CoLearningMimicEvaluator(MimicEvaluator):
             self.update_metrics_from_env_extras(
                 metrics, extras, active_env_ids, active_motion_ids, prefix=True,
             )
-
-            if torch.any((dones | terminated)[active_env_ids]):
-                break
+            # No early break: stopping when ANY env is done would cut every other motion in the
+            # batch short (they'd be judged only on the frames seen so far). Like MimicEvaluator,
+            # keep stepping without resets; each motion stops recording at its own length, and a
+            # fallen robot keeps accumulating error so the failure is caught.
 
     def simple_test_policy(self, collect_metrics: bool = False) -> None:
         """
@@ -769,17 +770,63 @@ class CoLearningOrchestrator:
         print("obs_td keys:", list(obs_td.keys()))
 
 
+        # Observations are stored ONCE in a shared buffer, and only the keys some model reads.
+        # Each agent's experience buffer references the shared tensors (no copies).
+        agent_obs_keys = {}
+        for name, agent in self.agents.items():
+            missing = [k for k in agent.model.in_keys if k not in obs_td.keys()]
+            assert not missing, f"[{name}] model in_keys {missing} not found in observations {list(obs_td.keys())}"
+            agent_obs_keys[name] = list(agent.model.in_keys)
+        self.stored_obs_keys = [
+            k for k in obs_td.keys() if any(k in keys for keys in agent_obs_keys.values())
+        ]
+        print("Stored obs keys:", self.stored_obs_keys)
+        print("Obs keys not stored (no model reads them):", [k for k in obs_td.keys() if k not in self.stored_obs_keys])
+
+        first_agent = next(iter(self.agents.values()))
+        self.shared_obs_buffer = ExperienceBuffer(
+            first_agent.num_envs, first_agent.num_steps, device=first_agent.device
+        )
+        # History obs share H-1 frames between consecutive steps: store them deduplicated
+        self.history_stores = {}
+        self.history_compression = {}
+        for key, hist_len in self._history_obs_lengths().items():
+            if key not in self.stored_obs_keys or hist_len <= 1:
+                continue
+            env_tensor = obs_td[key]
+            assert env_tensor.ndim == 2 and env_tensor.shape[1] % hist_len == 0, (
+                f"History obs '{key}' has shape {tuple(env_tensor.shape)}, not divisible by {hist_len} steps"
+            )
+            self.history_stores[key] = HistoryStore(
+                first_agent.num_steps, first_agent.num_envs, hist_len,
+                env_tensor.shape[1] // hist_len, env_tensor.dtype, first_agent.device,
+            )
+        print("Deduplicated history obs keys:", {k: v.hist_len for k, v in self.history_stores.items()})
+
+        for key in self.stored_obs_keys:
+            if key in self.history_stores:
+                continue
+            env_tensor = obs_td[key]
+            self.shared_obs_buffer.register_key(
+                key, shape=env_tensor.shape[1:], dtype=env_tensor.dtype
+            )
+
         for name, agent in self.agents.items():
             # B. Initialize Buffer
+            assert (agent.num_envs, agent.num_steps) == (first_agent.num_envs, first_agent.num_steps), \
+                "All agents must share num_envs and num_steps to share the observation buffer"
             agent.experience_buffer = ExperienceBuffer(
                 agent.num_envs, agent.num_steps, device=agent.device
             )
 
-            # C. Register Keys (Environment)
-            for key, env_tensor in obs_td.items():
-                agent.experience_buffer.register_key(
-                    key, shape=env_tensor.shape[1:], dtype=env_tensor.dtype
-                )
+            # C. Reference the shared observation tensors this agent's model reads
+            for key in agent_obs_keys[name]:
+                if key in self.history_stores:
+                    agent.experience_buffer.register_virtual_key(key, self.history_stores[key])
+                else:
+                    agent.experience_buffer.register_shared_key(
+                        key, getattr(self.shared_obs_buffer, key)
+                    )
 
             # D. Register Keys (Model Output)
             with torch.no_grad():
@@ -804,6 +851,21 @@ class CoLearningOrchestrator:
             if agent.fit_start_time is None:
                 agent.fit_start_time = time.time()
             self.fabric.call("on_fit_start", agent)
+
+    def _history_obs_lengths(self):
+        """History length of each history obs key (newest frame first, flattened [N, H * D])."""
+        lengths = {}
+        humanoid_obs = getattr(self.env.config, "humanoid_obs", None)
+        if humanoid_obs is not None and humanoid_obs.action_history.enabled:
+            lengths["agent_action_history"] = humanoid_obs.action_history.num_historical_steps
+        prosthetic_obs = getattr(self.env.config, "prosthetic_obs", None)
+        if prosthetic_obs is not None and prosthetic_obs.enabled:
+            lengths["historical_prosthetic_obs"] = prosthetic_obs.num_historical_steps
+            if prosthetic_obs.action_history.enabled:
+                lengths["historical_prosthetic_previous_actions"] = (
+                    prosthetic_obs.action_history.num_historical_steps
+                )
+        return lengths
 
     def fit(self):
         self._setup_agent_buffers()
@@ -842,11 +904,12 @@ class CoLearningOrchestrator:
                     obs_td = self.agents['humanoid'].obs_dict_to_tensordict(obs)
                     
 
-                    # --- B. Query Agents (Parallel) ---
-                    for name, agent in self.agents.items():
-                        # 2. Store to Buffer
-                        for key, env_tensor in obs_td.items():
-                            agent.experience_buffer.update_data(key, step, env_tensor)
+                    # --- B. Store observations once (agents' buffers reference the shared tensors) ---
+                    for key in self.stored_obs_keys:
+                        if key in self.history_stores:
+                            self.history_stores[key].update(step, obs_td[key])
+                        else:
+                            self.shared_obs_buffer.update_data(key, step, obs_td[key])
 
                     # 3. Get Action (Small dimension, e.g., 10)
                     action_h = self.agents['humanoid'].collect_rollout_step(obs_td, step)
@@ -934,6 +997,12 @@ class CoLearningOrchestrator:
                     
                         agent.step_count += agent.get_step_count_increment()
 
+                # Every stored obs key must have been written at every step
+                self.shared_obs_buffer.check_and_reset_store_counts()
+                for key, store in self.history_stores.items():
+                    store.check_rollout_complete()
+                    self.history_compression[key] = store.compression_ratio()
+
                 # End of Rollout: Calculate Returns
                 for agent in self.agents.values():
                     total_rewards = agent.get_combined_experience_buffer_rewards()
@@ -942,7 +1011,10 @@ class CoLearningOrchestrator:
             # ===============================================================
             # 2. Optimization Phase (Sequential or Parallel)
             # ===============================================================
-            aggregated_log_dict = {}
+            aggregated_log_dict = {
+                f"history_storage/{key}_frame_ratio": ratio
+                for key, ratio in self.history_compression.items()
+            }
             
             for name, agent in self.agents.items():
                 if agent._skip_next_policy_update:
@@ -973,6 +1045,11 @@ class CoLearningOrchestrator:
                     eval_log_dict, evaluated_score = self.evaluator.evaluate() 
                     
                     self.fabric.call("on_eval_end", self)
+
+                    # Evaluation leaves cached observations (and prosthetic history, contact/knee
+                    # buffers) from the eval episodes, which the restored sim state doesn't match.
+                    # Reset every env so the next rollout starts from consistent observations.
+                    done_indices = torch.arange(self.env.num_envs, device=self.device, dtype=torch.long)
 
                     # Save the "Best" model if this score is a new record
                     if evaluated_score is not None:

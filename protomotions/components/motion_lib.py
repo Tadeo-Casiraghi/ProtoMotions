@@ -66,6 +66,19 @@ _motion_field_mapping = {
 }
 
 
+# Body order of the SMPL reference motion data. Sim bodies not in this list (prosthetic parts)
+# have no reference and get placeholder data in expand_data_to_match_robot.
+SMPL_BODY_NAMES = [
+    "Pelvis",
+    "L_Hip", "L_Knee", "L_Ankle", "L_Toe",
+    "R_Hip", "R_Knee", "R_Ankle", "R_Toe",
+    "Torso", "Spine", "Chest", "Neck", "Head",
+    "L_Thorax", "L_Shoulder", "L_Elbow", "L_Wrist", "L_Hand",
+    "R_Thorax", "R_Shoulder", "R_Elbow", "R_Wrist", "R_Hand",
+]
+
+
+
 @dataclass
 class MotionLibConfig(ConfigBuilder):
     """Configuration for motion library."""
@@ -722,14 +735,7 @@ class MotionLib:
 
         # --- 1. Define Standard SMPL Reference Names ---
         # Derived from the standard SMPL hierarchy found in your XML
-        ref_body_names = [
-            "Pelvis", 
-            "L_Hip", "L_Knee", "L_Ankle", "L_Toe", 
-            "R_Hip", "R_Knee", "R_Ankle", "R_Toe", 
-            "Torso", "Spine", "Chest", "Neck", "Head", 
-            "L_Thorax", "L_Shoulder", "L_Elbow", "L_Wrist", "L_Hand", 
-            "R_Thorax", "R_Shoulder", "R_Elbow", "R_Wrist", "R_Hand"
-        ]
+        ref_body_names = SMPL_BODY_NAMES
         
         # Create a map: Name -> Index (0-23)
         ref_body_map = {name: i for i, name in enumerate(ref_body_names)}
@@ -818,7 +824,23 @@ class MotionLib:
         self.grs[:, padded_mask, 3] = 1.0 
 
         # Remap Contacts
-        self.contacts = remap_tensor(self.contacts, body_indices, dim=1, default_val=0.0)
+        # Prosthetic foot bodies have no SMPL counterpart by name, so they would always get a
+        # reference contact of 0. Take their contact labels from the SMPL foot bodies instead.
+        clean_sim_body_names = [name.split("/")[-1] for name in sim_body_names]
+        has_prosthetic_toes = "R_Ankle_toes" in clean_sim_body_names
+        contact_sources = {
+            # Without a toe body the prosthetic foot spans heel to toe tip
+            "R_Ankle_foot": ["R_Ankle"] if has_prosthetic_toes else ["R_Ankle", "R_Toe"],
+            "R_Ankle_toes": ["R_Toe"],
+        }
+        ref_contacts = self.contacts
+        self.contacts = remap_tensor(ref_contacts, body_indices, dim=1, default_val=0.0)
+        for i, name in enumerate(clean_sim_body_names):
+            if name in contact_sources:
+                source_ids = [ref_body_map[src] for src in contact_sources[name]]
+                self.contacts[:, i] = (
+                    ref_contacts[:, source_ids].float().amax(dim=1).to(self.contacts.dtype)
+                )
 
         # Remap DoFs
         # print("REFERENCE DOFS:")

@@ -113,3 +113,8 @@ class EnvConfig(ConfigBuilder):
     ankle_dof_index: Optional[int] = None
     motor_dof_index: Optional[int] = None
     humanoid_action_indices: Optional[int] = None
+
+    # Rolling window of |knee moment| for left/right symmetry rewards (None disables it)
+    knee_dof_indices: Optional[List[int]] = None  # [left, right] knee flexion DOF indices (common/kinematic order)
+    knee_moment_window_s: float = 3.0  # Window length in seconds (window steps = window_s / env dt)
+    knee_moment_window_reset: bool = True  # Clear the window when an env resets (average uses only filled samples)

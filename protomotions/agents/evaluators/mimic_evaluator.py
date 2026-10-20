@@ -152,7 +152,8 @@ class MimicEvaluator(BaseEvaluator):
 
         # Determine success/failure
         gt_err_max = metrics[success_metric_key].max_reduce_each_motion()
-        tracking_failures = gt_err_max > failure_threshold
+        # NaN-safe: a non-finite error (e.g. simulation blew up) counts as a failure
+        tracking_failures = ~(gt_err_max <= failure_threshold)
         tracking_success_rate = 1.0 - tracking_failures.float().mean().item()
 
         failed_motions = torch.nonzero(tracking_failures).flatten().tolist()

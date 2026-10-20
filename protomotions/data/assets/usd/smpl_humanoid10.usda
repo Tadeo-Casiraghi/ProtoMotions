@@ -2042,7 +2042,7 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            float physics:density = 11336
+            float physics:density = 4571.2
             rel physics:filteredPairs = [
                 </smpl_humanoid10/bodies/L_Ankle>,
                 </smpl_humanoid10/bodies/L_Toe>,
@@ -2073,7 +2073,7 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            float physics:density = 67442
+            float physics:density = 23222.4
             rel physics:simulationOwner
             quatd xformOp:orient = (0.5259542465209961, -0.4726226329803467, 0.492927610874176, -0.5069737434387207)
             double3 xformOp:scale = (1, 1, 1)
@@ -2104,7 +2104,7 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            float physics:density = 67442
+            float physics:density = 23222.4
             rel physics:simulationOwner
             quatd xformOp:orient = (0.1342133730649948, -0.04127012938261032, -0.64666348695755, 0.7497398853302002)
             double3 xformOp:scale = (1, 1, 1)
@@ -2135,7 +2135,7 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            float physics:density = 67442
+            float physics:density = 23222.4
             rel physics:simulationOwner
             quatd xformOp:orient = (0.5727511048316956, -0.4146759808063507, -0.43686482310295105, 0.5560117959976196)
             double3 xformOp:scale = (1, 1, 1)
@@ -2166,7 +2166,7 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            float physics:density = 67442
+            float physics:density = 23222.4
             rel physics:simulationOwner
             quatd xformOp:orient = (0.7745747566223145, -0.6166990399360657, -0.04651285707950592, 0.13248777389526367)
             double3 xformOp:scale = (1, 1, 1)
@@ -2197,7 +2197,7 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            float physics:density = 67442
+            float physics:density = 39890.3
             rel physics:simulationOwner
             quatd xformOp:orient = (0.5259542465209961, -0.4726226329803467, 0.492927610874176, -0.5069737434387207)
             double3 xformOp:scale = (1, 1, 1)
@@ -2228,7 +2228,7 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            float physics:density = 67442
+            float physics:density = 39890.3
             rel physics:simulationOwner
             quatd xformOp:orient = (0.1342133730649948, -0.04127012938261032, -0.64666348695755, 0.7497398853302002)
             double3 xformOp:scale = (1, 1, 1)
@@ -2259,7 +2259,7 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            float physics:density = 67442
+            float physics:density = 39890.3
             rel physics:simulationOwner
             quatd xformOp:orient = (0.5727511048316956, -0.4146759808063507, -0.43686482310295105, 0.5560117959976196)
             double3 xformOp:scale = (1, 1, 1)
@@ -2290,7 +2290,7 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsMassAPI", "PhysicsFilteredPairsAPI", "IsaacLinkAPI"]
         )
         {
-            float physics:density = 67442
+            float physics:density = 39890.3
             rel physics:simulationOwner
             quatd xformOp:orient = (0.7745747566223145, -0.6166990399360657, -0.04651285707950592, 0.13248777389526367)
             double3 xformOp:scale = (1, 1, 1)

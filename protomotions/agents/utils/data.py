@@ -79,6 +79,7 @@ class ExperienceBuffer(nn.Module):
         self.num_envs = num_envs
         self.num_steps = num_steps
         self.store_dict = {}
+        self.virtual_keys = {}
         self._device = device
 
     def register_key(self, key: str, shape=(), dtype=torch.float):
@@ -88,6 +89,25 @@ class ExperienceBuffer(nn.Module):
         )
         self.register_buffer(key, buffer, persistent=False)
         self.store_dict[key] = 0
+
+    def register_shared_key(self, key: str, tensor: Tensor):
+        """Register a tensor owned by another buffer (same storage, no copy).
+
+        Used to share observation storage between agents. The owning buffer
+        writes the data and tracks its completeness, so it is not tracked here.
+        """
+        assert not hasattr(self, key), key
+        assert tensor.shape[:2] == (self.num_steps, self.num_envs), (
+            f"Shared key '{key}' has shape {tuple(tensor.shape)}, "
+            f"expected leading dims {(self.num_steps, self.num_envs)}"
+        )
+        self.register_buffer(key, tensor, persistent=False)
+
+    def register_virtual_key(self, key: str, store: "HistoryStore"):
+        """Register a key whose data is reconstructed lazily from a HistoryStore."""
+        assert not hasattr(self, key) and key not in self.virtual_keys, key
+        assert (store.num_steps, store.num_envs) == (self.num_steps, self.num_envs), key
+        self.virtual_keys[key] = store
 
     def update_data(self, key: str, index: int, data: Tensor):
         assert not data.requires_grad
@@ -103,11 +123,136 @@ class ExperienceBuffer(nn.Module):
         self.store_dict[key] = self.total_sum()
 
     def make_dict(self):
-        data = {k: swap_and_flatten01(v) for k, v in self.named_buffers()}
+        # Flatten (num_steps, num_envs) step-major. Unlike swap_and_flatten01 this is a view,
+        # so no copy of the buffers is made; sample order is irrelevant since minibatches are shuffled.
+        data = {
+            k: v.reshape(self.num_steps * self.num_envs, *v.shape[2:])
+            for k, v in self.named_buffers()
+        }
+        for k, store in self.virtual_keys.items():
+            data[k] = store.flat_view()
+        self.check_and_reset_store_counts()
+        return data
+
+    def check_and_reset_store_counts(self):
         for k, v in self.store_dict.items():
             assert v == self.total_sum(), f"Problem with '{k}', {v}, {self.total_sum()}"
             self.store_dict[k] = 0
-        return data
+
+
+class HistoryStore:
+    """Deduplicated rollout storage for a history observation.
+
+    A history obs at step t is [frame_t, frame_t-1, ..., frame_t-H+1] (flattened, newest first),
+    so consecutive steps share H-1 frames. Instead of storing H frames per (step, env), frames are
+    stored once in a pool and each (step, env) keeps H int32 pointers into it.
+
+    Exactness: every step the new history is compared to the previous one. Only if it is exactly
+    the previous history shifted by one frame is a single new frame stored; otherwise (e.g. after a
+    reset refilled the history) the whole history is stored as a snapshot, with consecutive
+    identical frames stored once. Reconstruction therefore always reproduces the observed history.
+    """
+
+    def __init__(self, num_steps: int, num_envs: int, hist_len: int, frame_dim: int, dtype, device):
+        self.num_steps = num_steps
+        self.num_envs = num_envs
+        self.hist_len = hist_len
+        self.frame_dim = frame_dim
+        self.device = device
+        self.ptr = torch.zeros(num_steps, num_envs, hist_len, dtype=torch.int32, device=device)
+        # Initial snapshot (N*H) + one frame per (step, env); grows if resets need more
+        capacity = num_envs * hist_len + 2 * num_steps * num_envs
+        self.pool = torch.zeros(capacity, frame_dim, dtype=dtype, device=device)
+        self.size = 0
+        self.next_step = 0
+        self._prev_hist = None
+        self._prev_ptr = None
+
+    def _append(self, rows: Tensor) -> int:
+        start = self.size
+        end = start + rows.shape[0]
+        if end > self.pool.shape[0]:
+            if end >= 2**31:
+                raise RuntimeError("HistoryStore pool exceeds int32 pointer range")
+            new_pool = torch.empty(
+                max(end, int(self.pool.shape[0] * 1.5)), self.frame_dim,
+                dtype=self.pool.dtype, device=self.device,
+            )
+            new_pool[:start] = self.pool[:start]
+            self.pool = new_pool
+        self.pool[start:end] = rows
+        self.size = end
+        return start
+
+    def _store_snapshot(self, hist: Tensor) -> Tensor:
+        """Store full histories [B, H, D] (consecutive duplicate frames once); returns pointers [B, H]."""
+        unique = torch.ones(hist.shape[:2], dtype=torch.bool, device=self.device)
+        unique[:, 1:] = (hist[:, 1:] != hist[:, :-1]).any(dim=-1)
+        start = self._append(hist[unique])
+        # Duplicates point at the most recent stored frame before them (slot 0 is always stored)
+        row_ids = torch.cumsum(unique.flatten(), 0).view(unique.shape) - 1
+        return start + row_ids
+
+    @torch.no_grad()
+    def update(self, step: int, flat_hist: Tensor):
+        assert step == self.next_step, f"HistoryStore expected step {self.next_step}, got {step}"
+        hist = flat_hist.reshape(self.num_envs, self.hist_len, self.frame_dim)
+
+        if step == 0:
+            # New rollout: earlier frames are not in this rollout's pool
+            self.size = 0
+            ptr = self._store_snapshot(hist)
+        else:
+            shifted = (hist[:, 1:] == self._prev_hist[:, :-1]).flatten(1).all(dim=1)
+            ptr = torch.empty(self.num_envs, self.hist_len, dtype=torch.long, device=self.device)
+
+            ok = shifted.nonzero(as_tuple=True)[0]
+            start = self._append(hist[ok, 0])
+            ptr[ok, 0] = torch.arange(start, start + ok.numel(), device=self.device)
+            ptr[ok, 1:] = self._prev_ptr[ok, :-1]
+
+            bad = (~shifted).nonzero(as_tuple=True)[0]
+            if bad.numel() > 0:
+                ptr[bad] = self._store_snapshot(hist[bad])
+
+        self.ptr[step] = ptr.to(torch.int32)
+        self._prev_ptr = ptr
+        self._prev_hist = hist.clone()
+        self.next_step = (step + 1) % self.num_steps
+
+    def check_rollout_complete(self):
+        assert self.next_step == 0, f"HistoryStore rollout incomplete (next step {self.next_step})"
+
+    def compression_ratio(self) -> float:
+        """Stored frames / frames a dense buffer would hold (pointers not included)."""
+        return self.size / (self.num_steps * self.num_envs * self.hist_len)
+
+    def flat_view(self) -> "HistoryView":
+        return HistoryView(
+            self.pool[: self.size],
+            self.ptr.view(self.num_steps * self.num_envs, self.hist_len),
+        )
+
+
+class HistoryView:
+    """Read-only (num_steps * num_envs, H * D) view that rebuilds histories on indexing."""
+
+    def __init__(self, pool: Tensor, ptr: Tensor):
+        self.pool = pool
+        self.ptr = ptr
+
+    def __len__(self):
+        return self.ptr.shape[0]
+
+    @property
+    def shape(self):
+        return (self.ptr.shape[0], self.ptr.shape[1] * self.pool.shape[1])
+
+    def __getitem__(self, idx):
+        if isinstance(idx, np.ndarray):
+            idx = torch.as_tensor(idx, device=self.ptr.device)
+        ptr = self.ptr[idx].long()
+        return self.pool[ptr].reshape(*ptr.shape[:-1], -1)
 
 
 class DictDataset(Dataset):

@@ -56,3 +56,6 @@ class MimicEnvConfig(EnvConfig):
 
     # To allow kinematic playback
     sync_motion: bool = False
+
+    # Visualization: draw blue markers at the simulated body origins (to compare against the red reference markers)
+    show_sim_body_markers: bool = False
