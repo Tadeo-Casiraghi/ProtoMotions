@@ -58,6 +58,7 @@ Key Features:
 
 """
 
+import os
 from functools import cached_property
 from typing import Optional, TYPE_CHECKING, Tuple, Dict, Any, Union, List
 
@@ -210,7 +211,7 @@ class BaseEnv:
                     humanoid_joints.append(i)
                 else:
                     print(f"Skipping joint {name_env} for humanoid joints")
-                if name_env[:-2] in ["L_Hip", "L_Knee", "L_Ankle", "R_Hip", "R_Knee"]:
+                if name_env[:-2] in ["L_Hip", "L_Knee"]: #, "R_Hip", "R_Knee"]:
                     print(f"Adding joint {name_env} to lower body joints")
                     lower_body_joints.append(i)
                 if name_env in ["R_Ankle_y"]:
@@ -271,7 +272,8 @@ class BaseEnv:
 
             temp_human = []
             for index in human_joints:
-                if index not in passive_defaults_indices:
+                # human_joints are common-order indices, so compare against the common-order passive map
+                if index not in passive_defaults_indices_env:
                     temp_human.append(index)
 
             self.simulator.humanoid_joints = temp_human
@@ -821,6 +823,92 @@ class BaseEnv:
 
         return cache
 
+    def _print_contact_debug(self, func_kwargs, reward_value, weight, env_id: int = 0):
+        """Print reference vs simulated contacts for the bodies used by the contact reward."""
+        body_names = self.robot_config.kinematic_info.body_names
+        sim_contacts = func_kwargs["sim_contacts"][env_id]
+        ref_contacts = func_kwargs["ref_contacts"][env_id]
+        indices = func_kwargs.get("indices")
+        if indices is None:
+            indices = range(len(body_names))
+        else:
+            indices = indices.tolist()
+
+        step = int(self.progress_buf[env_id].item()) if hasattr(self, "progress_buf") else -1
+        grace_mask = self.get_has_reset_grace()
+        in_grace = bool(grace_mask[env_id].item()) if grace_mask is not None else False
+
+        ref_on = [f"{i}:{body_names[i]}" for i in indices if ref_contacts[i] > 0.5]
+        sim_on = [f"{i}:{body_names[i]}" for i in indices if sim_contacts[i] > 0.5]
+        per_body = "  ".join(
+            f"[{i}:{body_names[i]} ref={float(ref_contacts[i]):.2f} sim={float(sim_contacts[i]):.0f}]"
+            for i in indices
+        )
+        # All bodies the reference says are in contact, including ones outside the reward subset
+        ref_on_all = [
+            f"{i}:{body_names[i]}"
+            for i in range(len(body_names))
+            if ref_contacts[i] > 0.5
+        ]
+        print(
+            f"[contact step={step}{' GRACE' if in_grace else ''}] "
+            f"mismatch={float(reward_value[env_id]):.3f} scaled={float(reward_value[env_id]) * weight:.4f}\n"
+            f"    should contact: {ref_on}\n"
+            f"    contacting:     {sim_on}\n"
+            f"    per body:       {per_body}\n"
+            f"    ref contacts (all bodies): {ref_on_all}"
+        )
+
+    def _print_power_debug(self, func_kwargs, reward_value, weight, env_id: int = 0):
+        """Print per-joint breakdown for power_consumption_sum / power_consumption_exp.
+
+        Sum: total = sum_i |P_i|, so per-joint scaled terms (weight * |P_i|) add up.
+        Exp: total = exp(c * sum_i |P_i|) = prod_i exp(c * |P_i|), so per-joint
+        exponents add up and per-joint exp factors multiply to the total.
+        With dof_vel = 1, |P_i| is just |tau_i|.
+        """
+        dof_names = self.robot_config.kinematic_info.dof_names
+        coefficient = func_kwargs.get("coefficient")
+        dof_forces = func_kwargs["dof_forces"][env_id]
+        dof_vel = func_kwargs["dof_vel"]
+        if isinstance(dof_vel, torch.Tensor):
+            dof_vel = dof_vel[env_id]
+        else:
+            dof_vel = torch.full_like(dof_forces, float(dof_vel))
+        indices = func_kwargs.get("indices")
+        indices = list(range(len(dof_names))) if indices is None else list(indices)
+
+        if func_kwargs.get("use_torque_squared", False):
+            power = (dof_forces[indices] * dof_forces[indices]).abs()
+        else:
+            power = (dof_forces[indices] * dof_vel[indices]).abs()
+
+        step = int(self.progress_buf[env_id].item())
+        grace_mask = self.get_has_reset_grace()
+        in_grace = bool(grace_mask[env_id].item()) if grace_mask is not None else False
+        total = float(reward_value[env_id])
+
+        header = (
+            f"[power step={step}{' GRACE' if in_grace else ''}] "
+            f"sum|P|={float(power.sum()):.2f}  raw={total:.4f}  scaled={total * weight:.4f}"
+        )
+        if coefficient is not None:
+            exponents = power * float(coefficient)
+            factors = exponents.exp()
+            header += f"  (prod factors={float(factors.prod()):.4f})"
+        lines = [header]
+        for k, i in enumerate(indices):
+            line = (
+                f"    {i:3d}:{dof_names[i]:<20s} tau={float(dof_forces[i]):8.2f} "
+                f"vel={float(dof_vel[i]):7.2f} |P|={float(power[k]):8.2f} "
+            )
+            if coefficient is not None:
+                line += f"c*|P|={float(exponents[k]):.4f} exp(c*|P|)={float(factors[k]):.4f}"
+            else:
+                line += f"scaled={float(power[k]) * weight:.5f}"
+            lines.append(line)
+        print("\n".join(lines))
+
     def _compute_dynamic_rewards(
         self,
         reward_components: Dict[str, Any],
@@ -888,6 +976,13 @@ class BaseEnv:
 
             # Call the reward function
             reward_value = component.function(**func_kwargs)
+
+            # Debug: set PROTO_PRINT_CONTACTS=1 to print env 0's ref vs sim contacts each step
+            if reward_name == "contact_match_rew" and os.environ.get("PROTO_PRINT_CONTACTS") == "1":
+                self._print_contact_debug(func_kwargs, reward_value, component.weight)
+            # Debug: set PROTO_PRINT_POWER=1 to print env 0's per-joint power breakdown each step
+            if reward_name in ("pow_rew_lower", "torque_left_side") and os.environ.get("PROTO_PRINT_POWER") == "1":
+                self._print_power_debug(func_kwargs, reward_value, component.weight)
 
             # Zero out reward during grace period if configured
             if component.zero_during_grace_period and grace_mask is not None:

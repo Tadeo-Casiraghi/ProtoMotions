@@ -120,7 +120,7 @@ def plot_knee_angle_torque():
         # ==========================================================
 
         power_plot_norm = power_plot
-        POWER_EXP_COEFFICIENT = 0.001
+        POWER_EXP_COEFFICIENT = 0.002
         
 
         fig_power, ax_power = plt.subplots( figsize=(10, 4.5) )

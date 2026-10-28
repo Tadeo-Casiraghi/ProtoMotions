@@ -137,6 +137,15 @@ class Smpl10bisRobotConfig(RobotConfig):
                     effort_limit=230,
                     velocity_limit=100,
                 ),
+                # Per-axis effort limits closer to adult human max joint torques
+                # (y = flexion/extension). Later matches override earlier ones, so
+                # these only lower effort_limit and keep the gains set above.
+                ".*_Knee_y": ControlInfo(effort_limit=230),
+                ".*_Hip_y": ControlInfo(effort_limit=250),
+                ".*_Hip_x": ControlInfo(effort_limit=150),
+                ".*_Hip_z": ControlInfo(effort_limit=80),
+                "L_Ankle_y": ControlInfo(effort_limit=180),
+                "L_Ankle_[xz]": ControlInfo(effort_limit=60),
                 "R_Ankle_y": ControlInfo(
                     stiffness=500.0,
                     damping=1.0,
@@ -146,10 +155,10 @@ class Smpl10bisRobotConfig(RobotConfig):
                     friction=0.0
                 ),
                 "R_Toe_y": ControlInfo(
-                    stiffness=60.0,
-                    damping=1.0,
+                    stiffness=20.0,
+                    damping=0.5,
                     effort_limit=20.0,
-                    velocity_limit=100.0,
+                    velocity_limit=10.0,
                     friction=0.0,
                     armature=0.0
                 ),                

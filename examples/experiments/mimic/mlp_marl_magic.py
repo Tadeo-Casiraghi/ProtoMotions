@@ -58,7 +58,8 @@ def motion_lib_config(args: argparse.Namespace):
     """Build motion library configuration."""
     from protomotions.components.motion_lib import MotionLibConfig
 
-    return MotionLibConfig(motion_file=args.motion_file)
+    # Mirror references so both legs (intact and prosthetic) get the same amount of data
+    return MotionLibConfig(motion_file=args.motion_file, mirror_motions=True)
 
 
 def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConfig:
@@ -246,7 +247,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             variables={
                 "x": "current_state.rigid_body_vel",
                 "ref_x": "ref_state.rigid_body_vel",
-                "coefficient": "-0.5",
+                "coefficient": "-3.0",
             },
             indices_subset=["tracking_bodies", "output_ankle"],
             weight=0.1,
@@ -256,7 +257,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             variables={
                 "x": "current_state.rigid_body_vel",
                 "ref_x": "ref_state.rigid_body_vel",
-                "coefficient": "-0.5",
+                "coefficient": "-3.0",
             },
             indices_subset=["end_effector_lower_bodies"],
             weight=0.1,
@@ -266,7 +267,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             variables={
                 "x": "current_state.rigid_body_vel",
                 "ref_x": "ref_state.rigid_body_vel",
-                "coefficient": "-0.5",
+                "coefficient": "-3.0",
             },
             indices_subset=["end_effector_upper_bodies"],
             weight=0.05,
@@ -322,29 +323,28 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             # min_value=-1.75,
             zero_during_grace_period=True,
         ),
-        "pow_rew_lower": RewardComponentConfig(
-            function=power_consumption_exp,
+        "torque_left_side": RewardComponentConfig(
+            function=power_consumption_sum,
             variables={
                 "dof_forces": "current_state.dof_forces",
                 "dof_vel": "current_state.dof_vel",
-                "coefficient": "0.001",
-                "use_torque_squared": "False",
+                "use_torque_squared": "True",
                 "indices": "lower_body_joints",  # Only penalize power for humanoid joints, not prosthetic
             },
-            weight=-2.0e-2, # TADEO -7.5e-5,
+            weight=-0.75e-6, # TADEO -7.5e-5,
             # min_value=-1.75,
             zero_during_grace_period=True,
         ),
-        "contact_match_rew": RewardComponentConfig(
-            function=contact_mismatch_sum,
-            variables={
-                "sim_contacts": "current_state.rigid_body_contacts",
-                "ref_contacts": "ref_state.rigid_body_contacts",
-            },
-            indices_subset=["all_left_foot_bodies", "all_right_foot_bodies_contact"],
-            weight=-0.05,
-            zero_during_grace_period=True,
-        ),
+        # "contact_match_rew": RewardComponentConfig(
+        #     function=contact_mismatch_sum,
+        #     variables={
+        #         "sim_contacts": "current_state.rigid_body_contacts",
+        #         "ref_contacts": "ref_state.rigid_body_contacts",
+        #     },
+        #     indices_subset=["all_left_foot_bodies", "all_right_foot_bodies_contact"],
+        #     weight=-0.1,
+        #     zero_during_grace_period=True,
+        # ),
         "contact_force_change_rew": RewardComponentConfig(
             function=impact_force_penalty,
             variables={
@@ -352,7 +352,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "previous_forces": "prev_contact_force_magnitudes",
             },
             indices_subset=["all_left_foot_bodies", "all_right_foot_bodies_contact"],
-            weight=-5e-4,
+            weight=-3e-4,
             min_value=-0.5,
             zero_during_grace_period=True,
         ),
@@ -368,17 +368,17 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         "action_smoothness_prosthetic_angle": RewardComponentConfig(
             function=squared_norm,
             variables={"x": "prosthetic_current_actions - prosthetic_previous_actions"},
-            weight=-1e1,  # Maybe stiffer penalty for prosthetic?
+            weight=-0.5e1,  # Maybe stiffer penalty for prosthetic?
         ),
-        "knee_moment_rew": RewardComponentConfig(
-            function=mean_squared_error_exp,
-            variables={
-                "x": "knee_moment_avg_right",
-                "ref_x": "knee_moment_avg_left",
-                "coefficient": "-0.1",
-            },
-            weight=0.2,
-        ),
+        # "knee_moment_rew": RewardComponentConfig(
+        #     function=mean_squared_error_exp,
+        #     variables={
+        #         "x": "knee_moment_avg_right",
+        #         "ref_x": "knee_moment_avg_left",
+        #         "coefficient": "-0.1",
+        #     },
+        #     weight=0.2,
+        # ),
     }
 
 
@@ -398,7 +398,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         ankle_dof_index=ankle_dof_index,
         motor_dof_index=motor_dof_index,
         knee_dof_indices=[left_knee_dof_index, right_knee_dof_index],
-        knee_moment_window_s=3.0,
+        knee_moment_window_s=1.5,
         knee_moment_window_reset=True,
         prosthetic_obs=ProstheticObsConfig(
             enabled = True,

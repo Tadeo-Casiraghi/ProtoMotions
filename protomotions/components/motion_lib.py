@@ -78,6 +78,26 @@ SMPL_BODY_NAMES = [
 ]
 
 
+def _swap_side(name: str) -> str:
+    if name.startswith("L_"):
+        return "R_" + name[2:]
+    if name.startswith("R_"):
+        return "L_" + name[2:]
+    return name
+
+
+# For each SMPL body, the index of its left/right counterpart (itself for center bodies)
+SMPL_MIRROR_BODY_IDS = [SMPL_BODY_NAMES.index(_swap_side(n)) for n in SMPL_BODY_NAMES]
+
+# SMPL data is z-up with the left side at +y, so mirroring reflects across the world xz-plane.
+# Polar vectors (positions, linear velocities) flip y. Axial vectors (angular velocities,
+# exp-map DoFs, quaternion vector parts) flip x and z. SMPL rest body frames are all
+# identity, so a mirrored global rotation is M R M with M = diag(1, -1, 1).
+_MIRROR_POLAR_SIGN = (1.0, -1.0, 1.0)
+_MIRROR_AXIAL_SIGN = (-1.0, 1.0, -1.0)
+_MIRROR_QUAT_SIGN = (-1.0, 1.0, -1.0, 1.0)  # xyzw
+
+
 
 @dataclass
 class MotionLibConfig(ConfigBuilder):
@@ -87,6 +107,8 @@ class MotionLibConfig(ConfigBuilder):
     motion_file: str = None
     world_size: int = 1
     get_motion_state_use_blend: bool = True
+    # Append a left/right mirrored copy of every motion (ids [N, 2N) mirror ids [0, N))
+    mirror_motions: bool = False
 
 
 class MotionLib:
@@ -182,6 +204,13 @@ class MotionLib:
 
         self.motion_file = motion_file
 
+        # Per-motion flag, used by the evaluator to report original vs mirrored tracking
+        self.motion_is_mirrored = torch.zeros(
+            self.num_motions(), dtype=torch.bool, device=self.device
+        )
+        if getattr(config, "mirror_motions", False):
+            self.append_mirrored_motions()
+
     def _create_empty(self):
         """Create an empty motion library with no motions."""
         self.get_motion_state_use_blend = False
@@ -203,6 +232,68 @@ class MotionLib:
         self.contacts = torch.empty(0, 0, device=self.device)
         self.motion_files = ()
         self.lrs = None
+        self.motion_is_mirrored = torch.empty(0, dtype=torch.bool, device=self.device)
+
+    def append_mirrored_motions(self):
+        """Append a left/right mirrored copy of every motion.
+
+        Must run on SMPL-ordered data, before expand_data_to_match_robot, so that every
+        body and DoF has a counterpart on the other side. Motion i's mirror gets id i + N
+        and the same initial sampling weight, so both legs get the same amount of data.
+        """
+        num_bodies = len(SMPL_BODY_NAMES)
+        num_dofs = (num_bodies - 1) * 3
+        assert self.gts.shape[1] == num_bodies and self.dps.shape[1] == num_dofs, (
+            f"Mirroring expects SMPL-ordered data ({num_bodies} bodies, {num_dofs} DoFs), "
+            f"got {self.gts.shape[1]} bodies and {self.dps.shape[1]} DoFs"
+        )
+
+        num_motions = self.num_motions()
+        body_ids = torch.tensor(SMPL_MIRROR_BODY_IDS, device=self.device)
+        # DoFs are 3 exp-map components per non-root body, in body order
+        dof_body_ids = body_ids[1:] - 1
+
+        def sign(values, like):
+            return torch.tensor(values, dtype=like.dtype, device=like.device)
+
+        def mirror_dofs(dofs):
+            dofs = dofs.view(-1, num_bodies - 1, 3)[:, dof_body_ids]
+            return (dofs * sign(_MIRROR_AXIAL_SIGN, dofs)).reshape(-1, num_dofs)
+
+        mirrored = {
+            "gts": self.gts[:, body_ids] * sign(_MIRROR_POLAR_SIGN, self.gts),
+            "gvs": self.gvs[:, body_ids] * sign(_MIRROR_POLAR_SIGN, self.gvs),
+            "gavs": self.gavs[:, body_ids] * sign(_MIRROR_AXIAL_SIGN, self.gavs),
+            "grs": self.grs[:, body_ids] * sign(_MIRROR_QUAT_SIGN, self.grs),
+            "dps": mirror_dofs(self.dps),
+            "dvs": mirror_dofs(self.dvs),
+            "contacts": self.contacts[:, body_ids],
+        }
+        if self.lrs is not None:
+            mirrored["lrs"] = self.lrs[:, body_ids] * sign(_MIRROR_QUAT_SIGN, self.lrs)
+
+        for field, value in mirrored.items():
+            setattr(self, field, torch.cat([getattr(self, field), value], dim=0))
+
+        self.motion_lengths = self.motion_lengths.repeat(2)
+        self.motion_dt = self.motion_dt.repeat(2)
+        self.motion_num_frames = self.motion_num_frames.repeat(2)
+        self.motion_weights = self.motion_weights.repeat(2)
+        lengths_shifted = self.motion_num_frames.roll(1)
+        lengths_shifted[0] = 0
+        self.length_starts = lengths_shifted.cumsum(0)
+
+        self.motion_files = tuple(self.motion_files) + tuple(
+            f"{f} [mirrored]" for f in self.motion_files
+        )
+        self.motion_is_mirrored = torch.cat(
+            [
+                self.motion_is_mirrored,
+                torch.ones(num_motions, dtype=torch.bool, device=self.device),
+            ]
+        )
+
+        print(f"MotionLib: Appended {num_motions} mirrored motions ({self.num_motions()} total).")
 
     @classmethod
     def empty(cls, device: str = "cpu"):

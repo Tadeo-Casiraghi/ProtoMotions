@@ -110,7 +110,7 @@ class BaseAgentConfig(ConfigBuilder):
 
     # Training configuration
     task_reward_w: float = 1.0
-    num_mini_epochs: int = 1
+    num_mini_epochs: int = 2
 
     training_early_termination: Optional[int] = None
 

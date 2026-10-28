@@ -110,7 +110,7 @@ class Smpl10RobotConfig(RobotConfig):
 
     asset: RobotAssetConfig = field(
         default_factory=lambda: RobotAssetConfig(
-            asset_file_name="mjcf/smpl_humanoid12.xml",
+            asset_file_name="mjcf/smpl_humanoid10.xml",
             usd_asset_file_name="usd/smpl_humanoid10.usda",
             usd_bodies_root_prim_path="/World/envs/env_.*/Robot/bodies/",
             max_linear_velocity=1000.0,
@@ -137,6 +137,15 @@ class Smpl10RobotConfig(RobotConfig):
                     effort_limit=230,
                     velocity_limit=100,
                 ),
+                # Per-axis effort limits closer to adult human max joint torques
+                # (y = flexion/extension). Later matches override earlier ones, so
+                # these only lower effort_limit and keep the gains set above.
+                ".*_Knee_y": ControlInfo(effort_limit=230),
+                ".*_Hip_y": ControlInfo(effort_limit=250),
+                ".*_Hip_x": ControlInfo(effort_limit=150),
+                ".*_Hip_z": ControlInfo(effort_limit=80),
+                "L_Ankle_y": ControlInfo(effort_limit=180),
+                "L_Ankle_[xz]": ControlInfo(effort_limit=60),
                 "R_Ankle_y": ControlInfo(
                     stiffness=500.0,
                     damping=1.0,

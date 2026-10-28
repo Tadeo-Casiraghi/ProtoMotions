@@ -192,7 +192,9 @@ class BaseAgent:
 
         if self.config.action_indices != None and len(self.config.action_indices) > 2:
             temp_list = self.config.action_indices.copy()
-            temp_list.append(self.config.prosthetic_magic_index)
+            # Only the magic setup has the humanoid driving the prosthetic motor
+            if self.config.prosthetic_magic_index is not None:
+                temp_list.append(self.config.prosthetic_magic_index)
             self.env.config.humanoid_action_indices = temp_list
             print("Set humanoid action indices for env")
 

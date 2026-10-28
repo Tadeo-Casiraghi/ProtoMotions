@@ -170,7 +170,18 @@ class MimicEvaluator(BaseEvaluator):
         new_weights.clamp_(min=0.03, max=1.0)
         self.env.motion_manager.update_sampling_weights(new_weights)
 
-        return {"eval/tracking_success_rate": tracking_success_rate}
+        result = {"eval/tracking_success_rate": tracking_success_rate}
+
+        # With mirrored motions, report each half separately so a left/right gap is visible
+        is_mirrored = getattr(self.motion_lib, "motion_is_mirrored", None)
+        if is_mirrored is not None and is_mirrored.any():
+            is_mirrored = is_mirrored.to(tracking_failures.device)
+            for name, mask in (("original", ~is_mirrored), ("mirrored", is_mirrored)):
+                result[f"eval/tracking_success_rate_{name}"] = (
+                    1.0 - tracking_failures[mask].float().mean().item()
+                )
+
+        return result
 
     def run_evaluation(self, metrics: Dict) -> None:
         """

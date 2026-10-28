@@ -58,7 +58,8 @@ def motion_lib_config(args: argparse.Namespace):
     """Build motion library configuration."""
     from protomotions.components.motion_lib import MotionLibConfig
 
-    return MotionLibConfig(motion_file=args.motion_file)
+    # Mirror references so both legs (intact and prosthetic) get the same amount of data
+    return MotionLibConfig(motion_file=args.motion_file, mirror_motions=True)
 
 
 def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConfig:
@@ -82,7 +83,6 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         contact_mismatch_sum,
         impact_force_penalty,
         skin_pressure_penalty,
-        prosthetic_directional_force_reward,
     )
 
     body_names = robot_cfg.kinematic_info.body_names
@@ -94,6 +94,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         "suspension_y",
         "suspension_z",
         "R_Ankle_y",
+        "R_Toe_y",
     ]
 
     non_actuated_joints = ["Motor"]
@@ -105,6 +106,12 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         elif name == "Motor":
             print(f"Found motor DOF at index {i}")
             motor_dof_index = i
+        elif name == "L_Knee_y":
+            print(f"Found left knee flexion DOF at index {i}")
+            left_knee_dof_index = i
+        elif name == "R_Knee_y":
+            print(f"Found right knee flexion DOF at index {i}")
+            right_knee_dof_index = i
     
     for i, name in enumerate(body_names):
         if name == "prosthetic_assembly2":
@@ -117,6 +124,8 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
     required_indices = {
         "R_Ankle_y": locals().get("ankle_dof_index"),
         "Motor": locals().get("motor_dof_index"),
+        "L_Knee_y": locals().get("left_knee_dof_index"),
+        "R_Knee_y": locals().get("right_knee_dof_index"),
         "prosthetic_assembly2": locals().get("shank_body_index"),
         "R_Ankle": locals().get("foot_body_index"),
     }
@@ -135,7 +144,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
     mimic_early_termination = [
         MimicEarlyTerminationEntry(
             mimic_early_termination_key="max_joint_err_filtered",
-            mimic_early_termination_thresh=1.0,
+            mimic_early_termination_thresh=0.5,
             less_than=False,
         )
     ]
@@ -228,17 +237,17 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             variables={
                 "q": "current_state.rigid_body_rot",
                 "ref_q": "ref_state.rigid_body_rot",
-                "coefficient": "-10.0",
+                "coefficient": "-5.0",
             },
             indices_subset=["end_effector_upper_bodies"],
-            weight=0.6,
+            weight=0.15,
         ),
         "gv_rew": RewardComponentConfig(
             function=mean_squared_error_exp,
             variables={
                 "x": "current_state.rigid_body_vel",
                 "ref_x": "ref_state.rigid_body_vel",
-                "coefficient": "-0.5",
+                "coefficient": "-3.0",
             },
             indices_subset=["tracking_bodies", "output_ankle"],
             weight=0.1,
@@ -248,7 +257,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             variables={
                 "x": "current_state.rigid_body_vel",
                 "ref_x": "ref_state.rigid_body_vel",
-                "coefficient": "-0.5",
+                "coefficient": "-3.0",
             },
             indices_subset=["end_effector_lower_bodies"],
             weight=0.1,
@@ -258,7 +267,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             variables={
                 "x": "current_state.rigid_body_vel",
                 "ref_x": "ref_state.rigid_body_vel",
-                "coefficient": "-0.5",
+                "coefficient": "-3.0",
             },
             indices_subset=["end_effector_upper_bodies"],
             weight=0.05,
@@ -293,48 +302,37 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             indices_subset=["end_effector_upper_bodies"],
             weight=0.05,
         ),
-        "rh_rew": RewardComponentConfig(
-            function=mean_squared_error_exp,
+        # "rh_rew": RewardComponentConfig(
+        #     function=mean_squared_error_exp,
+        #     variables={
+        #         "x": "current_state.rigid_body_pos[:, 0, 2]",  # Root height (z-coord of body 0)
+        #         "ref_x": "ref_state.rigid_body_pos[:, 0, 2]",
+        #         "coefficient": "-500.0",
+        #     },
+        #     weight=0.3,
+        # ),
+        "pow_rew": RewardComponentConfig(
+            function=power_consumption_sum,
             variables={
-                "x": "current_state.rigid_body_pos[:, 0, 2]",  # Root height (z-coord of body 0)
-                "ref_x": "ref_state.rigid_body_pos[:, 0, 2]",
-                "coefficient": "-500.0",
+                "dof_forces": "current_state.dof_forces",
+                "dof_vel": "current_state.dof_vel",
+                "use_torque_squared": "False",
+                "indices": "humanoid_joints",  # Only penalize power for humanoid joints, not prosthetic
             },
-            weight=0.3,
+            weight=-4.0e-5, # TADEO -7.5e-5,
+            # min_value=-1.75,
+            zero_during_grace_period=True,
         ),
-        # "pow_rew": RewardComponentConfig(
-        #     function=power_consumption_sum,
-        #     variables={
-        #         "dof_forces": "current_state.dof_forces",
-        #         "dof_vel": "current_state.dof_vel",
-        #         "use_torque_squared": "False",
-        #         "indices": "humanoid_and_prosthetic_joints",  # Only penalize power for humanoid joints, not prosthetic
-        #     },
-        #     weight=-4.0e-4, # TADEO -7.5e-5,
-        #     # min_value=-1.75,
-        #     zero_during_grace_period=True,
-        # ),
-        # "pow_rew_lower": RewardComponentConfig(
-        #     function=power_consumption_exp,
-        #     variables={
-        #         "dof_forces": "current_state.dof_forces",
-        #         "dof_vel": "current_state.dof_vel",
-        #         "coefficient": "0.001",
-        #         "use_torque_squared": "False",
-        #         "indices": "lower_body_joints",  # Only penalize power for humanoid joints, not prosthetic
-        #     },
-        #     weight=-8.0e-2, # TADEO -7.5e-5,
-        #     # min_value=-1.75,
-        #     zero_during_grace_period=True,
-        # ),
-        "contact_match_rew": RewardComponentConfig(
-            function=contact_mismatch_sum,
+        "torque_left_side": RewardComponentConfig(
+            function=power_consumption_sum,
             variables={
-                "sim_contacts": "current_state.rigid_body_contacts",
-                "ref_contacts": "ref_state.rigid_body_contacts",
+                "dof_forces": "current_state.dof_forces",
+                "dof_vel": "current_state.dof_vel",
+                "use_torque_squared": "True",
+                "indices": "lower_body_joints",  # Only penalize power for humanoid joints, not prosthetic
             },
-            indices_subset=["all_left_foot_bodies", "all_right_foot_bodies_contact"],
-            weight=-0.05,
+            weight=-1.0e-6, # TADEO -7.5e-5,
+            # min_value=-1.75,
             zero_during_grace_period=True,
         ),
         "contact_force_change_rew": RewardComponentConfig(
@@ -406,7 +404,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "prosthetic_current_dof_pos",
                 "coefficient": "-200.0",
             },
-            weight=5e-1,
+            weight=3.0e-1,
         ),
         # "skin_rew": RewardComponentConfig(
         #     function=skin_pressure_penalty,
@@ -425,7 +423,19 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "ref_state.dof_pos[:, ankle_joint]",
                 "coefficient": "-250.0",
             },
-            weight=0.8e-1,
+            weight=1.2e-1,
+        ),
+        "torque_left_side_prosthetic": RewardComponentConfig(
+            function=power_consumption_sum,
+            variables={
+                "dof_forces": "current_state.dof_forces",
+                "dof_vel": "current_state.dof_vel",
+                "use_torque_squared": "True",
+                "indices": "lower_body_joints",  # Only penalize power for humanoid joints, not prosthetic
+            },
+            weight=-1.5e-6, # TADEO -7.5e-5,
+            # min_value=-1.75,
+            zero_during_grace_period=True,
         ),
         # "useful_work": RewardComponentConfig(
         #     function=prosthetic_directional_force_reward,
@@ -516,20 +526,20 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         #     indices_subset=["tracking_bodies"],
         #     weight=0.05,
         # ),
-        "pow_rew_human": RewardComponentConfig(
-            function=power_consumption_exp,
-            variables={
-                "dof_forces": "current_state.dof_forces",
-                "dof_vel": "current_state.dof_vel",
-                "coefficient": "0.001",
-                "use_torque_squared": "False",
-                "indices": "lower_body_joints"
-            },
-            weight=-2e-1,  # Maybe softer power penalty for secondary reward?
-            min_value=-5.0,
-            zero_during_grace_period=True,
-            # TADEO ACA HAY QUE REVISAR ESTO indices_subset=["all_physical_dofs"]
-        ),
+        # "pow_rew_human": RewardComponentConfig(
+        #     function=power_consumption_exp,
+        #     variables={
+        #         "dof_forces": "current_state.dof_forces",
+        #         "dof_vel": "current_state.dof_vel",
+        #         "coefficient": "0.001",
+        #         "use_torque_squared": "False",
+        #         "indices": "lower_body_joints"
+        #     },
+        #     weight=-2e-1,  # Maybe softer power penalty for secondary reward?
+        #     min_value=-5.0,
+        #     zero_during_grace_period=True,
+        #     # TADEO ACA HAY QUE REVISAR ESTO indices_subset=["all_physical_dofs"]
+        # ),
         # "pow_rew_prosthetic": RewardComponentConfig(
         #     function=power_consumption_sum,
         #     variables={
@@ -550,7 +560,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         #         "ref_contacts": "ref_state.rigid_body_contacts",
         #     },
         #     indices_subset=["all_left_foot_bodies", "all_right_foot_bodies_contact"],
-        #     weight=-0.05,
+        #     weight=-0.1,
         #     zero_during_grace_period=True,
         # ),
         "contact_force_change_rew": RewardComponentConfig(
@@ -560,7 +570,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "previous_forces": "prev_contact_force_magnitudes",
             },
             indices_subset=["all_left_foot_bodies", "all_right_foot_bodies_contact"],
-            weight=-2e-4,
+            weight=-4e-4,
             min_value=-0.5,
             zero_during_grace_period=True,
         ),
@@ -593,6 +603,9 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         ),
         ankle_dof_index=ankle_dof_index,
         motor_dof_index=motor_dof_index,
+        knee_dof_indices=[left_knee_dof_index, right_knee_dof_index],
+        knee_moment_window_s=1.5,
+        knee_moment_window_reset=True,
         prosthetic_obs=ProstheticObsConfig(
             enabled = True,
             num_historical_steps = 10,
@@ -657,7 +670,11 @@ def humanoid_agent_config(
             or name in ["R_Toe"] # Ensure these match your URDF exact casing
         ):
             body_indices_to_remove.append(i)
-        if (name in ["R_Ankle", "R_Ankle_foot", "R_Ankle_toes", "R_Toe"] or "socket" in n_low or "prosthetic" in n_low or "osl" in n_low):
+        if (name in ["R_Ankle", "R_Ankle_foot", "R_Ankle_toes", "R_Toe"]
+            or "socket" in n_low
+            or "prosthetic" in n_low
+            or "osl" in n_low
+        ):
             contact_indices_to_remove.append(i)
     
     dofs = robot_config.kinematic_info.dof_names
@@ -670,7 +687,7 @@ def humanoid_agent_config(
             prosthetic_magic_index = i
         if (
             "suspension" in n_low 
-            or dof_name in ["R_Ankle_y", "Motor"] # Ensure these match your URDF exact casing
+            or dof_name in ["R_Ankle_y", "Motor", "R_Toe_y"] # Ensure these match your URDF exact casing
         ):
             print(dof_name, " Skipped")
             continue  # Skip this DOF
@@ -731,13 +748,12 @@ def humanoid_agent_config(
             eval_metric_keys=[
                 "gt_err",
                 "gr_err",
-                "max_joint_err",
                 "gr_err_degrees",
                 "lr_err_degrees",
                 "gt_rew",
                 "gr_rew",
+                "pow_rew",
                 "max_joint_err",
-                # "pow_rew",
                 # "contact_force_change_rew",
             ],
         ),

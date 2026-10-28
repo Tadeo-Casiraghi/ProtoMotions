@@ -338,6 +338,11 @@ class MotionManager:
                 print(
                     f"Warning: skip loading motion weights due to motion file name mismatch: {state_dict['motion_file_name']} != {self.motion_lib.motion_file}"
                 )
+            elif state_dict["motion_weights"].shape != self.motion_weights.shape:
+                # e.g. checkpoint trained without mirrored motions
+                print(
+                    f"Warning: skip loading motion weights due to motion count mismatch: {state_dict['motion_weights'].shape[0]} != {self.motion_weights.shape[0]}"
+                )
             else:
                 self.motion_weights[:] = state_dict["motion_weights"].to(
                     self.motion_weights.device
