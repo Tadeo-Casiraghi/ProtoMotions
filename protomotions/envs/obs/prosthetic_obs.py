@@ -1,6 +1,7 @@
 import torch
 from torch import Tensor, nn
 from protomotions.envs.obs.config import ProstheticObsConfig
+from protomotions.envs.obs.sensor_model import SensorModel
 from protomotions.simulator.base_simulator.simulator_state import RobotState
 from protomotions.utils import rotations
 
@@ -155,13 +156,14 @@ def compute_prosthetic_observations(
     body_ang_vel: Tensor,
     debug_step: int = 0,
     w_last: bool = True,
+    motor_ratio: float = 1.0,
 ) -> Tensor:
         """
         Computes: 
             1.  Ankle Angle (from dof_pos)
             2.  Ankle Velocity (from dof_pos history)
-            3.  Ankle Motor Angle (from dof_pos)
-            4.  Ankle Motor Velocity (from dof_pos history)
+            3.  Ankle Motor Angle (from dof_pos, times motor_ratio: the motor's side of the belt)
+            4.  Ankle Motor Velocity (from dof_pos history, times motor_ratio)
             9.  Simulated Gyro: Local Angular Velocity (from body_ang_vel + body_rot)
             10.  Simulated Accelerometer: Projected Gravity (from body_rot)
         """
@@ -185,13 +187,13 @@ def compute_prosthetic_observations(
             ankle_vel = torch.ones_like(ankle_vel) * (2.0 + time_offset)
         
         # 3. Ankle Motor Angle (1 dim)
-        motor_angle = dof_pos[:, motor_dof_index].unsqueeze(-1)
+        motor_angle = dof_pos[:, motor_dof_index].unsqueeze(-1) * motor_ratio
         if debug:
             # turn to 3.0 for debugging to see if this value is seen in the prosthetic input
             motor_angle = torch.ones_like(motor_angle) * (3.0 + time_offset)
 
         # 4. Ankle Motor Velocity (1 dim)
-        motor_vel = dof_vel[:, motor_dof_index].unsqueeze(-1)
+        motor_vel = dof_vel[:, motor_dof_index].unsqueeze(-1) * motor_ratio
         if debug:
             # turn to 4.0 for debugging to see if this value is seen in the prosthetic input
             motor_vel = torch.ones_like(motor_vel) * (4.0 + time_offset)
@@ -258,6 +260,23 @@ def compute_prosthetic_observations(
         ], dim=-1)
 
 
+# Sensor channel of each slice of the prosthetic obs vector, in compute_observations' order
+# (the shank IMU, then the foot IMU, then the motor torque). Keep in sync with the cat() above.
+PROSTHETIC_OBS_LAYOUT = [
+    ("ankle_angle", 1),
+    ("ankle_vel", 1),
+    ("motor_angle", 1),
+    ("motor_vel", 1),
+    ("gyro", 3),  # shank
+    ("accel", 3),  # shank
+    ("gravity", 3),  # shank
+    ("gravity", 3),  # foot
+    ("gyro", 3),  # foot
+    ("accel", 3),  # foot
+    ("motor_torque", 1),
+]
+
+
 class ProstheticObs:
     """
     Handles computation of prosthetic leg observations (IMU + Joint Angle).
@@ -291,6 +310,27 @@ class ProstheticObs:
                 self.config.sim_motor_dof_index = indx
                 break
 
+        self.sensor_model = None
+        if self.config.sensors.enabled:
+            dr = self.env.simulator.config.domain_randomization
+            dr_sensors = getattr(dr, "sensors", None) if dr is not None else None
+            self.sensor_model = SensorModel(
+                self.config.sensors,
+                PROSTHETIC_OBS_LAYOUT,
+                self.env.num_envs,
+                self.env.simulator.physics_dt,
+                self.device,
+                noise_scale_ranges=dr_sensors.noise_scale_range if dr_sensors is not None else None,
+                latency_ranges=dr_sensors.latency_range if dr_sensors is not None else None,
+            )
+            if self.sensor_model.needs_history:
+                # Sample the true readings at every physics step, for the latency
+                self.env.simulator.sensor_tap = self._sample_sensors
+
+    def _sample_sensors(self):
+        env_ids = torch.arange(self.env.num_envs, device=self.device)
+        self.sensor_model.push(self._true_readings(env_ids))
+
 
     def post_physics_step(self):
         env_ids = torch.arange(self.env.num_envs, device=self.device)
@@ -310,6 +350,9 @@ class ProstheticObs:
 
     def reset_hist(self, env_ids):
         """Reset history for specific environments (e.g. after a fall)."""
+        if self.sensor_model is not None:
+            self.sensor_model.resample(env_ids)
+
         if not self._initialized:
             self.compute_observations(env_ids)
 
@@ -331,12 +374,11 @@ class ProstheticObs:
             )
             self.previous_actions_hist_buf.set_all(filled_actions_hist, env_ids=env_ids)
 
-    def compute_observations(self, env_ids):
-        """Actual math computation for the current frame."""
-        self._initialized = True
-
+    def _true_readings(self, env_ids):
+        """Noise-free sensor readings now, in physical units (motor channels in the motor frame)."""
         # 1. Fetch State from Simulator
         current_state: RobotState = self.env.simulator.get_robot_state(env_ids)
+        sim_ref = self.env.simulator
 
         # 2. Compute Math
         obs = compute_prosthetic_observations(
@@ -350,23 +392,37 @@ class ProstheticObs:
                 body_rot=current_state.rigid_body_rot,
                 body_ang_vel=current_state.rigid_body_ang_vel,
                 w_last=True,
+                motor_ratio=float(getattr(sim_ref, "transmission_ratio", 1.0)),
         )
-
-        sim_ref = self.env.simulator
 
         # Pull the tensor for the specific envs and joint index
         # Shape goes from [num_envs, num_dofs] -> [len(env_ids)] -> [len(env_ids), 1]
-        if hasattr(sim_ref, "_robot") and hasattr(sim_ref._robot, "data") and hasattr(sim_ref._robot.data, "applied_torque"):
+        if getattr(sim_ref, "motor_model", None) is not None:
+            # What the motor's reply torque field reads (not the applied torque), motor frame
+            prosthetic_torque = sim_ref.motor_model.reported_torque_at(
+                current_state.dof_vel[:, sim_ref.common_torque_joints], env_ids
+            )[:, 0:1]
+        elif hasattr(sim_ref, "_robot") and hasattr(sim_ref._robot, "data") and hasattr(sim_ref._robot.data, "applied_torque"):
             # print(f"joint name {sim_ref._robot.data.joint_names[self.config.sim_motor_dof_index]}")
             prosthetic_torque = sim_ref._robot.data.applied_torque[env_ids, self.config.sim_motor_dof_index].unsqueeze(-1)
         else:
             # Fallback if the cache isn't populated yet during the very first cold-start frame
             prosthetic_torque = torch.zeros(len(env_ids), 1, dtype=torch.float, device=self.device)
 
-        # A quick pre-scale so 100Nm becomes 1.0, keeping it well under your clamp of 5
-        prosthetic_torque = prosthetic_torque * 0.04
+        return torch.cat([obs, prosthetic_torque], dim=-1)
 
-        obs = torch.cat([obs, prosthetic_torque], dim=-1)
+    def compute_observations(self, env_ids):
+        """Actual math computation for the current frame."""
+        self._initialized = True
+
+        obs = self._true_readings(env_ids)
+
+        # Sensor readings: latency, noise, bias, quantization and saturation in physical units
+        if self.sensor_model is not None:
+            obs = self.sensor_model.apply(obs, env_ids)
+
+        # A quick pre-scale so 100Nm becomes 1.0, keeping it well under your clamp of 5
+        obs[:, -1:] = obs[:, -1:] * 0.04
 
         # 3. Initialize Buffers (First Run Only)
         if self.prosthetic_obs is None:

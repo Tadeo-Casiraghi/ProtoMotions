@@ -28,6 +28,7 @@ from protomotions.simulator.isaaclab.config import (
 from protomotions.simulator.genesis.config import GenesisSimParams
 from protomotions.simulator.newton.config import NewtonSimParams
 from protomotions.components.pose_lib import ControlInfo
+from protomotions.simulator.base_simulator.motor_model import MotorModelConfig
 from typing import List, Dict
 from dataclasses import dataclass, field
 
@@ -124,6 +125,8 @@ class Smpl10RobotConfig(RobotConfig):
         default_factory=lambda: ControlConfig(
             control_type=ControlType.BUILT_IN_PD_HYBRID,
             torque_joints = ["Motor"],
+            # AK80-9 model identified on the bench (TMotorCANControl characterization)
+            motor_model=MotorModelConfig(),
             override_control_info={
                 ".*_(Hip|Knee)_.*": ControlInfo(
                     stiffness=800,
@@ -213,10 +216,11 @@ class Smpl10RobotConfig(RobotConfig):
                 "Motor": ControlInfo(
                     stiffness = 0.0,
                     damping = 0.0,
-                    armature = 0.001,
-                    effort_limit = 200.0,
-                    velocity_limit = 10.0,
-                    friction = 0.0
+                    # AK80-9 inertia (bench fit J_motor = 0.0367 at its output) through the 4.61 belt
+                    armature = 0.0367 * 4.61**2,
+                    effort_limit = 250.0,  # 4.61 x the 52.6 Nm current limit, plus friction and cogging
+                    velocity_limit = 10.0,  # back-EMF in the motor model caps it near 6 rad/s
+                    friction = 0.0  # friction is in the motor model
                 ),
             },
         )

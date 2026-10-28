@@ -46,6 +46,7 @@ from protomotions.utils import rotations
 from protomotions.components.scene_lib import SceneLib
 from protomotions.components.terrains.terrain import Terrain
 from protomotions.simulator.base_simulator.utils import build_pd_action_offset_scale
+from protomotions.simulator.base_simulator.motor_model import MotorModel
 from protomotions.simulator.base_simulator.simulator_state import (
     RobotState,
     DataConversionMapping,
@@ -204,6 +205,30 @@ class Simulator(ABC):
             self.alpha = 1.0 - np.exp(-2.0 * pi * fc_torque * self.physics_dt)
 
             self.alpha_params = 1.0 - np.exp(-2.0 * pi * fc_target * self.physics_dt)
+
+            # Identified actuator (replaces the torque low-pass above, which a MIT-mode motor cannot do)
+            self.motor_model: Optional[MotorModel] = None
+            # Desired angle action [-1, 1] -> theta command, and theta command -> joint angle
+            self.desired_angle_scale = 3.14
+            self.transmission_ratio = 1.0
+            motor_cfg = self.robot_config.control.motor_model
+            if motor_cfg is not None and motor_cfg.enabled:
+                control_info = self.robot_config.control.control_info
+                self.motor_model = MotorModel(
+                    motor_cfg,
+                    self.num_envs,
+                    joint_armature=[
+                        control_info[name].armature for name in self.robot_config.control.torque_joints
+                    ],
+                    dt=self.physics_dt,
+                    device=self.device,
+                )
+                # theta, kp and kd are the MIT command, in the motor frame (before the belt)
+                self.desired_angle_scale = motor_cfg.desired_angle_range
+                self.transmission_ratio = motor_cfg.transmission_ratio
+
+        # Called at the start of every physics step (prosthetic sensor sampling for latency)
+        self.sensor_tap: Optional[Callable[[], None]] = None
 
     def _initialize_with_markers(
         self, visualization_markers: Optional[Dict[str, VisualizationMarkerConfig]]
@@ -485,6 +510,8 @@ class Simulator(ABC):
                 self.kp_old[env_ids] = 300.0
                 self.kd_old[env_ids] = 5.0
                 self.theta_old[env_ids] = 0.0
+            if self.motor_model is not None:
+                self.motor_model.reset(env_ids)
 
     @abstractmethod
     def _set_simulator_env_state(
@@ -894,16 +921,21 @@ class Simulator(ABC):
         Returns:
             tuple[torch.Tensor, torch.Tensor, torch.Tensor]: (kp_phys, kd_phys, desired_angle)
         """
-        # Map [-1, 1] -> [-pi, pi]
-        desired_angle = raw_theta * 3.14 + 0.0
-        
+        # Map [-1, 1] -> [-pi, pi] at the joint, or the motor-frame range with the motor model
+        desired_angle = raw_theta * self.desired_angle_scale + 0.0
+
         # Map [-1, 1] -> [0, 1000]
         kp_phys       = raw_kp * 250.0 + 250.0
-        
+
         # Map [-1, 1] -> [0, 20]
         kd_phys       = raw_kd * 2.5 + 2.5
-        
+
         return kp_phys, kd_phys, desired_angle
+
+    def desired_joint_angle(self, raw_theta: torch.Tensor) -> torch.Tensor:
+        """Joint angle (after the belt) that a raw theta action in [-1, 1] asks for.
+        Use this, not the raw action, to compare the policy's target with joint angles."""
+        return raw_theta * (self.desired_angle_scale / self.transmission_ratio)
 
     def _action_to_torque_targets(self, action: torch.Tensor) -> torch.Tensor:
         """
@@ -954,6 +986,10 @@ class Simulator(ABC):
         on control_type themselves.
         """
         if self.control_type == ControlType.BUILT_IN_PD_HYBRID:
+            # Sensors see the state at the end of the previous step, before this step's command
+            if self.sensor_tap is not None:
+                self.sensor_tap()
+
             # Get high-frequency simulator states (120 Hz feedback loop)
             common_dof_state = self._get_simulator_dof_state().convert_to_common(self.data_conversion)
             current_angle = common_dof_state.dof_pos[:, self.common_torque_joints]
@@ -969,11 +1005,18 @@ class Simulator(ABC):
             
             # 2. Use the pre-computed, cached 30 Hz targets directly
             torque_desired = (
-                current_kp * (current_theta - current_angle) 
+                current_kp * (current_theta - current_angle)
                 - current_kd * current_vel
             )
-            # Low-pass filter the torques to reduce high-frequency noise
-            torque = self.alpha * torque_desired + (1 - self.alpha) * self.torque_old
+            if self.motor_model is not None:
+                # (kp, kd, theta) is the MIT command; the motor model runs the firmware PD,
+                # torque lag, current limit, friction and cogging
+                torque = self.motor_model.step(
+                    current_kp, current_kd, current_theta, current_angle, current_vel
+                )
+            else:
+                # Low-pass filter the torques to reduce high-frequency noise
+                torque = self.alpha * torque_desired + (1 - self.alpha) * self.torque_old
             self.torque_old = torque
 
             # # Print header once

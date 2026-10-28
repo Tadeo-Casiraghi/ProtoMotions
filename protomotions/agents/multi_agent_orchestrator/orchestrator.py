@@ -517,6 +517,9 @@ class CoLearningMimicEvaluator(MimicEvaluator):
                         kp_data=Kp_data,
                         kd_data=Kd_data,
                         desired_angle_data=desired_angle_data,
+                        # raw theta action -> command angle (x scale) -> joint angle (/ ratio)
+                        desired_angle_scale=getattr(sim_ref, "desired_angle_scale", 3.14),
+                        transmission_ratio=getattr(sim_ref, "transmission_ratio", 1.0),
                         motor_angle_data=motor_angle_data,
                         ankle_angle_data=ankle_angle_data,
                         motor_velocity_data=motor_velocity_data,

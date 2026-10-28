@@ -13,9 +13,9 @@ upto = 600
 # ---------------------
 
 
-def action_to_impedance_targets(raw_theta, raw_kp, raw_kd):
-    # Map [-1, 1] -> [-pi, pi]
-    desired_angle = raw_theta * 3.14
+def action_to_impedance_targets(raw_theta, raw_kp, raw_kd, desired_angle_scale=3.14):
+    # Map [-1, 1] -> command angle (joint frame [-pi, pi] before the motor model, motor frame after)
+    desired_angle = raw_theta * desired_angle_scale
 
     # Map [-1, 1] -> [0, 2000]
     kp_phys = raw_kp * 250.0 + 250.0
@@ -38,11 +38,18 @@ def plot_data():
         kd_data = loaded_data["kd_data"].flatten()
         desired_angle_data = loaded_data["desired_angle_data"].flatten()
 
-        kp_data, kd_data, desired_angle_data = action_to_impedance_targets(
+        # Files recorded before the motor model have neither key: joint frame, x3.14
+        desired_angle_scale = float(loaded_data.get("desired_angle_scale", 3.14))
+        ratio = float(loaded_data.get("transmission_ratio", 1.0))
+
+        # kp, kd and the command angle act on the motor's side of the belt
+        kp_data, kd_data, desired_motor_angle = action_to_impedance_targets(
             desired_angle_data,
             kp_data,
             kd_data,
+            desired_angle_scale,
         )
+        desired_angle_data = desired_motor_angle / ratio  # joint frame, for plots
 
         reference_ankle_angle = loaded_data["ref_angle_data"].flatten()
         ankle_angle_data = loaded_data["ankle_angle_data"].flatten()
@@ -58,12 +65,14 @@ def plot_data():
         # ==========================================================
         q_prev_est = motor_angle_data - motor_velocity_data / 360.0
 
-        angle_error = desired_angle_data - q_prev_est
+        # PD in the motor frame (joint angle and velocity x ratio), torque back to the joint (x ratio).
+        # Ideal PD only: the motor model adds lag, current/back-EMF limits, friction and cogging.
+        angle_error = desired_motor_angle - ratio * q_prev_est
 
         torque_from_kp = kp_data * angle_error
-        torque_from_kd = kd_data * motor_velocity_data
+        torque_from_kd = kd_data * ratio * motor_velocity_data
 
-        total_torque = torque_from_kp - torque_from_kd
+        total_torque = ratio * (torque_from_kp - torque_from_kd)
 
         # ==========================================================
         # Optional: Original NPZ plots for comparison

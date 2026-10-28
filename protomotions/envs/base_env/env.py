@@ -1081,6 +1081,14 @@ class BaseEnv:
                 "prosthetic_current_actions": raw_current_actions[:, self.simulator.common_torque_joints],
                 "prosthetic_previous_actions": raw_previous_actions[:, self.simulator.common_torque_joints],
                 "prosthetic_current_dof_pos": current_state.dof_pos[:, self.simulator.common_torque_joints],
+                # Joint angle (rad, after the belt) the theta action asks for: compare these with
+                # dof_pos, not the raw actions (with the motor model theta is the motor's p_des)
+                "prosthetic_current_desired_angle": self.simulator.desired_joint_angle(
+                    raw_current_actions[:, self.simulator.common_torque_joints]
+                ),
+                "prosthetic_previous_desired_angle": self.simulator.desired_joint_angle(
+                    raw_previous_actions[:, self.simulator.common_torque_joints]
+                ),
 
                 "prosthetic_current_torque": prosthetic_current_torque,
                 "prosthetic_previous_torque": prosthetic_previous_torque,

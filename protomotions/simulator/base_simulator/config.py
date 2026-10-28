@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal, Tuple, List, Dict, Optional, Any
 import torch
 import re
@@ -151,12 +151,33 @@ class CenterOfMassDomainRandomizationConfig(ConfigBuilder):
 
 
 @dataclass
+class SensorDomainRandomizationConfig(ConfigBuilder):
+    """Per-env randomization of the prosthetic sensors, redrawn every episode.
+
+    Keys are channel names of ProstheticSensorConfig (motor_angle, motor_vel, motor_torque,
+    ankle_angle, ankle_vel, gyro, accel, gravity); channels left out keep their nominal values.
+    noise_scale_range multiplies std and bias_std, latency_range (s) replaces the latency.
+    Example: noise_scale_range={"motor_torque": (0.5, 2.0)}, latency_range={"gyro": (0.0, 0.01)}
+    """
+
+    noise_scale_range: Dict[str, Tuple[float, float]] = field(default_factory=dict)
+    latency_range: Dict[str, Tuple[float, float]] = field(default_factory=dict)
+
+    def __post_init__(self):
+        for attr in ("noise_scale_range", "latency_range"):
+            for name, (lo, hi) in getattr(self, attr).items():
+                if lo < 0 or lo > hi:
+                    raise ValueError(f"{attr}[{name}] must satisfy 0 <= low <= high, got {(lo, hi)}")
+
+
+@dataclass
 class DomainRandomizationConfig(ConfigBuilder):
     """Configuration for domain randomization."""
 
     action_noise: Optional[ActionNoiseDomainRandomizationConfig] = None
     friction: Optional[FrictionDomainRandomizationConfig] = None
     center_of_mass: Optional[CenterOfMassDomainRandomizationConfig] = None
+    sensors: Optional[SensorDomainRandomizationConfig] = None
 
 
 @dataclass

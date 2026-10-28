@@ -402,7 +402,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         "theta_is_angle_next": RewardComponentConfig(
             function=mean_squared_error_exp,
             variables={
-                "x": "prosthetic_previous_actions * 3.14",
+                "x": "prosthetic_previous_desired_angle",  # joint rad, any action mapping
                 "ref_x": "prosthetic_current_dof_pos",
                 "coefficient": "-200.0",
             },

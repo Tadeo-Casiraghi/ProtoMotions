@@ -39,6 +39,7 @@ from protomotions.simulator.isaacgym.config import IsaacGymSimParams
 from protomotions.simulator.isaaclab.config import IsaacLabSimParams
 from protomotions.simulator.genesis.config import GenesisSimParams
 from protomotions.simulator.newton.config import NewtonSimParams
+from protomotions.simulator.base_simulator.motor_model import MotorModelConfig
 
 from typing import List, Optional, Dict, Union
 from enum import Enum
@@ -131,6 +132,10 @@ class ControlConfig(ConfigBuilder):
     override_control_info: Optional[Dict[str, ControlInfo]] = None
 
     torque_joints: Optional[List[str]] = None
+
+    # Actuator model for the torque_joints (BUILT_IN_PD_HYBRID). None keeps the plain PD + torque low-pass.
+    # The motor's reflected inertia goes in the joint's armature, not here.
+    motor_model: Optional[MotorModelConfig] = None
 
     # Can be "built_in_pd" or "proportional"/"velocity"/"torque" for Proportional, Velocity, Torque control
     control_type: ControlType = ControlType.BUILT_IN_PD

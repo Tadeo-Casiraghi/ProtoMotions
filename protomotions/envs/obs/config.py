@@ -73,13 +73,71 @@ class HumanoidObsConfig(ConfigBuilder):
 
 
 @dataclass
+class SensorChannelConfig(ConfigBuilder):
+    """Model of one sensor channel: reading = saturate(quantize(true(t - latency) + bias + white noise))."""
+
+    std: float = 0.0  # white noise, drawn for every observation
+    bias_std: float = 0.0  # constant offset, drawn once per episode
+    resolution: float = 0.0  # quantization step (0: none)
+    limit: Optional[float] = None  # the reading saturates at +-limit
+    latency: float = 0.0  # s, rounded to whole physics steps
+
+
+@dataclass
+class ProstheticSensorConfig(ConfigBuilder):
+    """Sensors of the prosthetic observations, in physical units (before any obs scaling).
+
+    Motor channels are the AK80-9 MIT reply, in the motor frame (before the belt): resolutions and
+    ranges are the protocol's (p 16 bit over +-12.5 rad, v 12 bit over +-25 rad/s, torque 12 bit
+    over +-28 Nm), noise measured on the bench (hold std / high-passed residual vs. the identified
+    model: p 0.1 mrad, v 0.06-0.08 rad/s, torque 0.01 Nm at rest and 0.11 Nm in motion).
+    Ankle encoder and IMU values, and all latencies, are typical-hardware guesses: replace them
+    with the datasheets and the real loop timing.
+    Per-env randomization: DomainRandomizationConfig.sensors.
+    """
+
+    enabled: bool = True
+    motor_angle: SensorChannelConfig = field(
+        default_factory=lambda: SensorChannelConfig(std=1e-4, resolution=25.0 / 65535, limit=12.5, latency=0.003)
+    )
+    motor_vel: SensorChannelConfig = field(
+        default_factory=lambda: SensorChannelConfig(std=0.07, resolution=50.0 / 4095, limit=25.0, latency=0.003)
+    )
+    motor_torque: SensorChannelConfig = field(
+        default_factory=lambda: SensorChannelConfig(
+            std=0.1, bias_std=0.02, resolution=56.0 / 4095, limit=28.0, latency=0.003
+        )
+    )
+    ankle_angle: SensorChannelConfig = field(
+        default_factory=lambda: SensorChannelConfig(
+            std=5e-4, bias_std=0.005, resolution=6.2832 / 16384, latency=0.003
+        )
+    )
+    ankle_vel: SensorChannelConfig = field(
+        default_factory=lambda: SensorChannelConfig(std=0.05, latency=0.003)
+    )
+    gyro: SensorChannelConfig = field(
+        default_factory=lambda: SensorChannelConfig(std=0.02, bias_std=0.01, latency=0.005)
+    )
+    accel: SensorChannelConfig = field(
+        default_factory=lambda: SensorChannelConfig(std=0.1, bias_std=0.05, latency=0.005)
+    )
+    # Orientation-filter estimate of the gravity direction (unit vector)
+    gravity: SensorChannelConfig = field(
+        default_factory=lambda: SensorChannelConfig(std=0.005, bias_std=0.02, latency=0.008)
+    )
+
+
+@dataclass
 class ProstheticObsConfig(ConfigBuilder):
     """Configuration for prosthetic leg specific observations."""
-    
+
     enabled: bool = False
     num_historical_steps: int = 1
 
     action_history: ActionHistoryConfig = field(default_factory=ActionHistoryConfig)
+
+    sensors: ProstheticSensorConfig = field(default_factory=ProstheticSensorConfig)
 
     # Defaults are 0, but you must override these in your experiment file!
     ankle_dof_index: int = 0   # The index in dof_pos
