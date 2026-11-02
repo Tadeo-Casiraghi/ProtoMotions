@@ -180,6 +180,16 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             indices_subset=["end_effector_lower_bodies"],
             weight=0.4,
         ),
+        "gt_chest_rew": RewardComponentConfig(
+            function=mean_squared_error_exp,
+            variables={
+                "x": "current_state.rigid_body_pos",
+                "ref_x": "ref_state.rigid_body_pos",
+                "coefficient": "-200.0",
+            },
+            indices_subset=["chest_body"],
+            weight=0.2,
+        ),
         # "gt_ef_prosthetic_rew": RewardComponentConfig(
         #     function=mean_squared_error_exp,
         #     variables={

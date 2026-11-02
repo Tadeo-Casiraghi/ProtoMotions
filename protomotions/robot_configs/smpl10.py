@@ -81,6 +81,9 @@ class Smpl10RobotConfig(RobotConfig):
             "end_effector_lower_bodies": [
                 "L_Ankle","R_Ankle",
             ],
+            "chest_body": [
+                "Chest",
+            ],
             "R_foot": [
                 "R_Hip", "R_Knee", "R_Ankle",
             ],
