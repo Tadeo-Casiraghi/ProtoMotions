@@ -319,7 +319,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "use_torque_squared": "False",
                 "indices": "humanoid_joints",  # Only penalize power for humanoid joints, not prosthetic
             },
-            weight=-4.0e-5, # TADEO -7.5e-5,
+            weight=-5.0e-5, # TADEO -7.5e-5,
             # min_value=-1.75,
             zero_during_grace_period=True,
         ),
@@ -329,7 +329,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "dof_forces": "current_state.dof_forces",
                 "dof_vel": "current_state.dof_vel",
                 "use_torque_squared": "True",
-                "indices": "lower_body_joints",  # Only penalize power for humanoid joints, not prosthetic
+                "indices": "lower_left_body_joints",  # Only penalize power for humanoid joints, not prosthetic
             },
             weight=-1.0e-6, # TADEO -7.5e-5,
             # min_value=-1.75,
@@ -359,7 +359,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         "action_smoothness_prosthetic_angle": RewardComponentConfig(
             function=squared_norm,
             variables={"x": "prosthetic_current_actions - prosthetic_previous_actions"},
-            weight=-1e1,  # Maybe stiffer penalty for prosthetic?
+            weight=-5e0,  # Maybe stiffer penalty for prosthetic?
         ),
         "action_smoothness_prosthetic_kp": RewardComponentConfig(
             function=squared_norm,
@@ -369,12 +369,12 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         "action_smoothness_prosthetic_kd": RewardComponentConfig(
             function=squared_norm,
             variables={"x": "prosthetic_current_gains[:,1:2] - prosthetic_previous_gains[:,1:2]"},
-            weight=-2e-0,  
+            weight=-1e-0,  
         ), 
         "torque_smoothness_prosthetic_ankle": RewardComponentConfig(
             function=squared_norm,
             variables={"x": "prosthetic_current_torque - prosthetic_previous_torque"},
-            weight=-2e-4,  # Start small; torque magnitudes are much larger than actions/gains
+            weight=0.0,  # Start small; torque magnitudes are much larger than actions/gains
         ),
         # "torque_bounds": RewardComponentConfig(
         #     function=norm,
@@ -393,9 +393,10 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         #     function=joint_limit_violation,
         #     variables={"dof_pos": "current_state.dof_pos",
         #                "dof_limits_lower": "soft_dof_limits_lower",
-        #                "dof_limits_upper": "soft_dof_limits_upper",},
+        #                "dof_limits_upper": "soft_dof_limits_upper",
+        #                # DOF indices go through variables: indices_subset only resolves body names
+        #                "indices": "prosthetic_joints"},
         #     weight=-8e-1,
-        #     indices_subset=["motor_joints"],
         # ),
         "theta_is_angle_next": RewardComponentConfig(
             function=mean_squared_error_exp,
@@ -404,7 +405,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "prosthetic_current_dof_pos",
                 "coefficient": "-200.0",
             },
-            weight=3.0e-1,
+            weight=1.0e-1,
         ),
         # "skin_rew": RewardComponentConfig(
         #     function=skin_pressure_penalty,
@@ -423,7 +424,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "ref_state.dof_pos[:, ankle_joint]",
                 "coefficient": "-250.0",
             },
-            weight=1.2e-1,
+            weight=1.5e-1,
         ),
         "torque_left_side_prosthetic": RewardComponentConfig(
             function=power_consumption_sum,
@@ -431,7 +432,19 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "dof_forces": "current_state.dof_forces",
                 "dof_vel": "current_state.dof_vel",
                 "use_torque_squared": "True",
-                "indices": "lower_body_joints",  # Only penalize power for humanoid joints, not prosthetic
+                "indices": "lower_left_body_joints",  # Only penalize power for humanoid joints, not prosthetic
+            },
+            weight=-1.5e-6, # TADEO -7.5e-5,
+            # min_value=-1.75,
+            zero_during_grace_period=True,
+        ),
+        "torque_right_side_prosthetic": RewardComponentConfig(
+            function=power_consumption_sum,
+            variables={
+                "dof_forces": "current_state.dof_forces",
+                "dof_vel": "current_state.dof_vel",
+                "use_torque_squared": "True",
+                "indices": "lower_right_body_joints",  # Only penalize power for humanoid joints, not prosthetic
             },
             weight=-1.5e-6, # TADEO -7.5e-5,
             # min_value=-1.75,

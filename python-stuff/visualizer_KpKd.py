@@ -9,7 +9,8 @@ OUTPUT_DIR = "python-stuff/plots"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 DT = 1.0 / 90.0
 
-upto = 600
+startfrom = int(1/DT)
+upto = int(4.2/DT)
 # ---------------------
 
 
@@ -83,7 +84,7 @@ def plot_data():
 
         # Left y-axis for Kp
         color1 = "tab:blue"
-        ax1.plot(time_line[:upto], kp_data[:upto], color=color1, label="Policy Kp")
+        ax1.plot(time_line[startfrom:upto], kp_data[startfrom:upto], color=color1, label="Policy Kp")
         ax1.set_xlabel("Time Step")
         ax1.set_ylabel("Kp", color=color1)
         ax1.tick_params(axis="y", labelcolor=color1)
@@ -92,7 +93,7 @@ def plot_data():
         # Right y-axis for Kd
         ax2 = ax1.twinx()
         color2 = "tab:red"
-        ax2.plot(time_line[:upto], kd_data[:upto], color=color2, label="Policy Kd")
+        ax2.plot(time_line[startfrom:upto], kd_data[startfrom:upto], color=color2, label="Policy Kd")
         ax2.set_ylabel("Kd", color=color2)
         ax2.tick_params(axis="y", labelcolor=color2)
         ax2.set_ylim(0, 6)  # Set limits for Kd
@@ -112,8 +113,8 @@ def plot_data():
 
         # Desired vs actual angle from NPZ
         fig2 = plt.figure(figsize=(12, 6))
-        plt.plot(time_line[:upto], desired_angle_data[:upto], label="Desired Angle")
-        plt.plot(time_line[:upto], motor_angle_data[:upto], label="Motor Angle")
+        plt.plot(time_line[startfrom:upto], desired_angle_data[startfrom:upto], label="Desired Angle")
+        plt.plot(time_line[startfrom:upto], motor_angle_data[startfrom:upto], label="Motor Angle")
         plt.title("Policy Desired Angle vs Motor Angle")
         plt.xlabel("Time Step")
         plt.ylabel("Angle (rad)")
@@ -128,9 +129,9 @@ def plot_data():
 
         # Torque comparison from NPZ
         fig3 = plt.figure(figsize=(12, 6))
-        plt.plot(time_line[:upto], motor_torque_data[:upto], label="Motor Torque")
-        plt.plot(time_line[:upto], 
-            total_torque[:upto],
+        plt.plot(time_line[startfrom:upto], motor_torque_data[startfrom:upto], label="Motor Torque")
+        plt.plot(time_line[startfrom:upto], 
+            total_torque[startfrom:upto],
             label="Reconstructed Torque (Kp + Kd)",
             linestyle="--",
         )
@@ -151,10 +152,10 @@ def plot_data():
         # ==========================================================
 
         fig4 = plt.figure(figsize=(12, 6))
-        plt.plot(time_line[:upto], reference_ankle_angle[:upto], label="Desired Angle")
-        plt.plot(time_line[:upto], ankle_angle_data[:upto], label="Ankle Angle")
-        plt.plot(time_line[:upto], motor_angle_data[:upto], label="Motor Angle")
-        plt.plot(time_line[:upto], motor_angle_data[:upto] + ankle_angle_data[:upto], label="Ankle + Motor Angle")
+        plt.plot(time_line[startfrom:upto], reference_ankle_angle[startfrom:upto], label="Desired Angle")
+        plt.plot(time_line[startfrom:upto], ankle_angle_data[startfrom:upto], label="Ankle Angle")
+        plt.plot(time_line[startfrom:upto], motor_angle_data[startfrom:upto], label="Motor Angle")
+        plt.plot(time_line[startfrom:upto], motor_angle_data[startfrom:upto] + ankle_angle_data[startfrom:upto], label="Ankle + Motor Angle")
         plt.title("Reference Ankle Angle vs Actual Ankle Angle")
         plt.xlabel("Time Step")
         plt.ylabel("Angle (rad)")
@@ -172,38 +173,59 @@ def plot_data():
         # FIGURE: 3 in 1
         # ========================================================== 
 
-        fig5, axs = plt.subplots(3, 1, figsize=(12, 6), sharex=True)
-        
-        # torque
+        sizer = 0.8
+        fig5, axs = plt.subplots(3, 1, figsize=(12*sizer, 8*sizer), sharex=True)
 
-        axs[0].plot(time_line[:upto], motor_torque_data[:upto], label="Motor Torque")
-        axs[0].plot(time_line[:upto], total_torque[:upto], label="Reconstructed Torque (Kp + Kd)", linestyle="--")
+        # Torque
+        axs[0].plot(time_line[startfrom:upto], motor_torque_data[startfrom:upto], label="Motor Torque")
+        axs[0].plot(time_line[startfrom:upto], total_torque[startfrom:upto],
+                    label="Reconstructed Torque (Kp + Kd)", linestyle="--")
         axs[0].set_ylabel("Torque")
         axs[0].set_title("Motor Torque vs Reconstructed Torque")
         axs[0].grid(True)
         axs[0].legend()
 
-        # angles
-        axs[1].plot(time_line[:upto], reference_ankle_angle[:upto], label="Desired Angle")
-        axs[1].plot(time_line[:upto], ankle_angle_data[:upto] + motor_angle_data[:upto], label="Combined Angle")
+        # Angles
+        axs[1].plot(time_line[startfrom:upto], reference_ankle_angle[startfrom:upto], label="Desired Angle")
+        axs[1].plot(time_line[startfrom:upto],
+                    ankle_angle_data[startfrom:upto] + motor_angle_data[startfrom:upto],
+                    label="Combined Angle")
         axs[1].set_ylabel("Angle (rad)")
         axs[1].set_title("Reference Ankle Angle vs Actual Ankle Angle")
         axs[1].grid(True)
         axs[1].legend()
 
         # Kp and Kd
-        axs[2].plot(time_line[:upto], kp_data[:upto], label="Policy Kp", color="tab:blue")
+        line1, = axs[2].plot(
+            time_line[startfrom:upto],
+            kp_data[startfrom:upto],
+            label="Policy Kp",
+            color="tab:blue"
+        )
 
         ax_temp = axs[2].twinx()
-        ax_temp.plot(time_line[:upto], kd_data[:upto], label="Policy Kd", color="tab:orange")
+
+        line2, = ax_temp.plot(
+            time_line[startfrom:upto],
+            kd_data[startfrom:upto],
+            label="Policy Kd",
+            color="tab:orange"
+        )
+
+        axs[2].set_ylabel("Kp", color="tab:blue")
         ax_temp.set_ylabel("Kd", color="tab:orange")
-        axs[2].set_ylabel("Kp / Kd")
+
         axs[2].set_title("Policy Kp and Kd")
         axs[2].grid(True)
-        axs[2].legend()
 
-        plt.xlabel("Time Step")
+        # Combined legend from both axes
+        axs[2].legend(
+            handles=[line1, line2],
+            labels=["Policy Kp", "Policy Kd"],
+            loc="upper right"
+        )
 
+        axs[2].set_xlabel("Time Step")
         plt.tight_layout()
         fig5.savefig(
             os.path.join(OUTPUT_DIR, "combined_plot.png"),
@@ -218,7 +240,7 @@ def plot_data():
 
         # Desired vs actual angle from NPZ
         fig6 = plt.figure(figsize=(12, 6))
-        plt.plot(time_line[:upto], motor_velocity_data[:upto], label="Motor Velocity")
+        plt.plot(time_line[startfrom:upto], motor_velocity_data[startfrom:upto], label="Motor Velocity")
         plt.title("Motor Vel")
         plt.xlabel("Time Step")
         plt.ylabel("Velocity (rad/s)")

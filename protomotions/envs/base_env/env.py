@@ -196,6 +196,8 @@ class BaseEnv:
             common_torque_joints = []
             humanoid_joints = []
             lower_body_joints = []
+            lower_right_body_joints = []
+            lower_left_body_joints = []
             sea = []
             for i, (name_sim, name_env) in enumerate(zip(sim_dof_names, env_dof_names)):
                 if name_sim in self.robot_config.control.torque_joints:
@@ -211,9 +213,15 @@ class BaseEnv:
                     humanoid_joints.append(i)
                 else:
                     print(f"Skipping joint {name_env} for humanoid joints")
-                if name_env[:-2] in ["L_Hip", "L_Knee"]: #, "R_Hip", "R_Knee"]:
+                if name_env[:-2] in ["L_Hip", "L_Knee", "R_Hip", "R_Knee"]:
                     print(f"Adding joint {name_env} to lower body joints")
                     lower_body_joints.append(i)
+                if name_env[:-2] in ["L_Hip", "L_Knee"]:
+                    print(f"Adding joint {name_env} to lower left body joints")
+                    lower_left_body_joints.append(i)
+                if name_env[:-2] in ["R_Hip", "R_Knee"]:
+                    print(f"Adding joint {name_env} to lower right body joints")
+                    lower_right_body_joints.append(i)
                 if name_env in ["R_Ankle_y"]:
                     print(f"Adding joint {name_env} to SEA joints")
                     sea.append(i)
@@ -221,6 +229,8 @@ class BaseEnv:
             self.simulator.common_torque_joints = common_torque_joints
             self.simulator.humanoid_joints = humanoid_joints
             self.simulator.lower_body_joints = lower_body_joints
+            self.simulator.lower_left_body_joints = lower_left_body_joints
+            self.simulator.lower_right_body_joints = lower_right_body_joints
             self.simulator.sea_joints = sea
 
         if hasattr(self.config, "passive_dof_names") and self.config.passive_dof_names is not None:
@@ -1105,6 +1115,8 @@ class BaseEnv:
                 
                 "humanoid_joints": self.simulator.humanoid_joints,
                 "lower_body_joints": self.simulator.lower_body_joints,
+                "lower_left_body_joints": self.simulator.lower_left_body_joints,
+                "lower_right_body_joints": self.simulator.lower_right_body_joints,
                 "humanoid_and_prosthetic_joints": self.simulator.humanoid_joints + self.simulator.common_torque_joints + self.simulator.sea_joints,
                 "prosthetic_joints": self.simulator.common_torque_joints,
                 "ankle_joint": self.config.ankle_dof_index,
