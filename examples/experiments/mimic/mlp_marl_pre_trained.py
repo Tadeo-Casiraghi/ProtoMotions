@@ -740,6 +740,10 @@ def humanoid_agent_config(
         ),
     )
 
+    # The pre-trained humanoid critic saw this many prosthetic history steps; truncate to it
+    # so the prosthetic can be given a longer history without retraining the humanoid.
+    pretrained_prosthetic_history_steps = 10
+    prosthetic_obs_cfg = env_config.prosthetic_obs
     critic_config = MLPWithConcatConfig(
         in_keys=["historical_prosthetic_obs", "historical_prosthetic_previous_actions", "max_coords_obs", "mimic_target_poses", "agent_action_history"],
         out_keys=["value"],
@@ -747,6 +751,16 @@ def humanoid_agent_config(
         norm_clamp_value=5,
         num_out=1,
         layers=[MLPLayerConfig(units=1024, activation="relu") for _ in range(4)],
+        history_truncation={
+            "historical_prosthetic_obs": [
+                pretrained_prosthetic_history_steps,
+                prosthetic_obs_cfg.num_historical_steps,
+            ],
+            "historical_prosthetic_previous_actions": [
+                pretrained_prosthetic_history_steps,
+                prosthetic_obs_cfg.action_history.num_historical_steps,
+            ],
+        },
     )
     agent_config: PPOAgentConfig = PPOAgentConfig(
         model=PPOModelConfig(
