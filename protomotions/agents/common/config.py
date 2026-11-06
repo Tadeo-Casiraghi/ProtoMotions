@@ -140,10 +140,18 @@ class MLPWithConcatConfig(NormObsBaseConfig):
     module_operations: List[ModuleOperationConfig] = field(
         default_factory=lambda: [ModuleOperationForwardConfig()]
     )
+    # Keep only the newest steps of flattened history obs (newest first, [N, H * D]):
+    # {key: [keep_steps, total_steps]}. Lets a model trained with a shorter history
+    # read an obs that now has a longer one.
+    history_truncation: Dict[str, List[int]] = field(default_factory=dict)
 
     def __post_init__(self):
         assert self.num_out is not None, "num_out must be provided"
         assert self.layers is not None, "layers must be provided"
+        for key, (keep_steps, total_steps) in self.history_truncation.items():
+            assert 0 < keep_steps <= total_steps, (
+                f"history_truncation[{key}]: keep_steps={keep_steps} must be in (0, {total_steps}]"
+            )
 
 
 @dataclass

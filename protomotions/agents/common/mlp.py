@@ -108,6 +108,19 @@ class MLPWithConcat(TensorDictModuleBase):
         self.out_keys = self.config.out_keys
         assert len(self.out_keys) == 1, "MLP requires exactly one output key"
 
+    def _get_obs(self, tensordict: TensorDict, key: str) -> torch.Tensor:
+        obs = tensordict[key]
+        truncation = self.config.history_truncation.get(key)
+        if truncation is None:
+            return obs
+        keep_steps, total_steps = truncation
+        assert obs.shape[-1] % total_steps == 0, (
+            f"'{key}' has {obs.shape[-1]} features, not divisible by {total_steps} history steps"
+        )
+        # Newest frame first, so the newest keep_steps frames are the leading features
+        frame_dim = obs.shape[-1] // total_steps
+        return obs[..., : keep_steps * frame_dim]
+
     def forward(self, tensordict: TensorDict) -> TensorDict:
         """Forward pass with optional normalization.
 
@@ -119,7 +132,7 @@ class MLPWithConcat(TensorDictModuleBase):
             TensorDict with processed outputs.
         """
         combined_obs = torch.cat(
-            [tensordict[key] for key in self.config.in_keys], dim=-1
+            [self._get_obs(tensordict, key) for key in self.config.in_keys], dim=-1
         )
 
         result = apply_module_operations(
