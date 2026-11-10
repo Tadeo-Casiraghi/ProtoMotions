@@ -638,7 +638,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
             foot_body_index = foot_body_index,
             action_history=ActionHistoryConfig(
                 enabled=True,
-                num_historical_steps=10,
+                num_historical_steps=30,
             ),
         ),
         reward_config=reward_config,

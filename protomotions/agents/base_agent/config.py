@@ -101,7 +101,7 @@ class BaseAgentConfig(ConfigBuilder):
     gradient_clip_val: float = 0.0
     fail_on_bad_grads: bool = False
     check_grad_mag: bool = True
-    gamma: float = 0.99
+    gamma: float = 0.995
 
     # Bounds and regularization
     bounds_loss_coef: float = (
