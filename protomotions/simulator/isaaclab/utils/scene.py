@@ -127,6 +127,7 @@ class SceneCfg(InteractiveSceneCfg):
         #     print('    friction:', friction)
         #     print()
 
+        actuator_groups = {}  # tuple of configured parameter names -> joints and per-joint values
         for dof_name, control_info in robot_config.control.control_info.items():
             stiffness = control_info.stiffness
             damping = control_info.damping
@@ -173,21 +174,33 @@ class SceneCfg(InteractiveSceneCfg):
             #     control_info.friction = 0.0
             #     printout(dof_name, stiffness, damping, control_info.armature, control_info.effort_limit, control_info.velocity_limit, control_info.friction)
             
-            actuators[dof_name] = ActuatorConfig(
-                joint_names_expr=[dof_name],
-                # Only include non-None values in the kwargs
-                **{
-                    key: value
-                    for key, value in {
-                        "stiffness": stiffness,
-                        "damping": damping,
-                        "armature": control_info.armature,
-                        "effort_limit_sim": control_info.effort_limit,
-                        "velocity_limit_sim": control_info.velocity_limit,
-                        "friction": control_info.friction,
-                    }.items()
-                    if value is not None
-                },
+            # Only non-None values are passed (None keeps the USD value)
+            params = {
+                key: value
+                for key, value in {
+                    "stiffness": stiffness,
+                    "damping": damping,
+                    "armature": control_info.armature,
+                    "effort_limit_sim": control_info.effort_limit,
+                    "velocity_limit_sim": control_info.velocity_limit,
+                    "friction": control_info.friction,
+                }.items()
+                if value is not None
+            }
+            group = actuator_groups.setdefault(tuple(params), {"joints": [], "params": {}})
+            group["joints"].append(dof_name)
+            for key, value in params.items():
+                group["params"].setdefault(key, {})[dof_name] = value
+
+        # One actuator per set of configured parameters instead of one per DOF: IsaacLab runs a
+        # Python loop with ~15 tensor ops per actuator group at every physics step (~1000 kernel
+        # launches per step with one group per DOF). Values are per joint (dict keyed by the exact
+        # joint name), so every joint keeps its own gains and limits. Joints are grouped by WHICH
+        # parameters they set because a dict leaves unlisted joints at 0, not at the USD value.
+        for group_idx, group in enumerate(actuator_groups.values()):
+            actuators[f"group_{group_idx}"] = ActuatorConfig(
+                joint_names_expr=list(group["joints"]),
+                **group["params"],
             )
 
         # articulation
@@ -235,17 +248,16 @@ class SceneCfg(InteractiveSceneCfg):
             new_rigid_props = self.robot.spawn.rigid_props.replace(disable_gravity=True)
             self.robot.spawn = self.robot.spawn.replace(rigid_props=new_rigid_props)
 
-        if activate_contact_sensors:
-            sensing_filter = ["/World/ground/terrain/mesh"]
-            for obj_idx in range(num_objects_per_scene):
-                sensing_filter.append(f"/World/envs/env_.*/Object_{obj_idx}")
-            for body_name in robot_config.contact_bodies:
-                contact_sensor_cfg = ContactSensorCfg(
-                    prim_path=f"{robot_config.asset.usd_bodies_root_prim_path}{body_name}",
-                    filter_prim_paths_expr=sensing_filter,
-                    history_length=config.sim.decimation,
-                )
-                setattr(self, f"contact_sensor_{body_name}", contact_sensor_cfg)
+        if activate_contact_sensors and len(robot_config.contact_bodies) > 0:
+            # One sensor for all contact bodies: one PhysX contact view (one tensor read per update)
+            # instead of one per body. No filter_prim_paths_expr: only net_forces_w is read for the
+            # robot, and a filter makes every update also compute the (unused) force matrix.
+            # net_forces_w is the total contact force on each body either way.
+            bodies_regex = "(" + "|".join(robot_config.contact_bodies) + ")"
+            self.contact_sensor_robot = ContactSensorCfg(
+                prim_path=f"{robot_config.asset.usd_bodies_root_prim_path}{bodies_regex}",
+                history_length=config.sim.decimation,
+            )
 
         if terrain is not None:
             terrain_physics_material = sim_utils.RigidBodyMaterialCfg(

@@ -53,6 +53,7 @@ from protomotions.simulator.base_simulator.simulator_state import (
     RootOnlyState,
     ObjectState,
     ResetState,
+    StateConversion,
 )
 from protomotions.simulator.base_simulator.config import (
     MarkerState,
@@ -649,6 +650,32 @@ class Simulator(ABC):
         bodies_state.merge_fields_from(contact_state)
         bodies_state.merge_fields_from(dof_forces)
         return bodies_state
+
+    def get_body_dof_subset(
+        self,
+        body_ids: List[int],
+        dof_ids: List[int],
+        env_ids: Optional[torch.Tensor] = None,
+    ) -> RobotState:
+        """Kinematic state of a few bodies and DOFs (common ordering, common quaternion format).
+
+        Returns a RobotState whose body/DOF dimensions hold only `body_ids` / `dof_ids`, in that
+        order (rigid_body_pos/rot/vel/ang_vel/acc, dof_pos/vel). Meant for code that runs every
+        physics step (e.g. sensor sampling) and needs a handful of channels, so it skips contacts
+        and DOF forces. Simulators can override it with a direct read of their buffers.
+        """
+        bodies = self.get_bodies_state(env_ids)
+        dofs = self.get_dof_state(env_ids)
+        return RobotState(
+            dof_pos=dofs.dof_pos[:, dof_ids],
+            dof_vel=dofs.dof_vel[:, dof_ids],
+            rigid_body_pos=bodies.rigid_body_pos[:, body_ids],
+            rigid_body_rot=bodies.rigid_body_rot[:, body_ids],
+            rigid_body_vel=bodies.rigid_body_vel[:, body_ids],
+            rigid_body_ang_vel=bodies.rigid_body_ang_vel[:, body_ids],
+            rigid_body_acc=bodies.rigid_body_acc[:, body_ids],
+            state_conversion=StateConversion.COMMON,
+        )
 
     def get_bodies_state(self, env_ids: Optional[torch.Tensor] = None) -> RobotState:
         """

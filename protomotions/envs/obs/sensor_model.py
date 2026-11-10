@@ -79,12 +79,15 @@ class SensorModel:
         self.scale = torch.ones(num_envs, self.num_dims, device=device)
         self.bias = torch.zeros(num_envs, self.num_dims, device=device)
         self.latency_steps = torch.zeros(num_envs, self.num_dims, dtype=torch.long, device=device)
-        # history[k] = true reading k + 1 physics steps before the newest one
-        self.history = (
+        # Ring buffer of past true readings: slot _head holds the newest one, and
+        # history[k] (= true reading k + 1 physics steps before the newest) is _buf[(_head - k) % L].
+        # _head is a Python int so push() never syncs with the GPU.
+        self._buf = (
             torch.zeros(self.max_latency_steps, num_envs, self.num_dims, device=device)
             if self.max_latency_steps > 0
             else None
         )
+        self._head = 0
         # Envs whose history predates their reset: read with zero latency until refilled
         self._stale = torch.ones(num_envs, dtype=torch.bool, device=device)
         self.resample()
@@ -92,7 +95,16 @@ class SensorModel:
     @property
     def needs_history(self) -> bool:
         """True if push() must be called every physics step."""
-        return self.history is not None
+        return self._buf is not None
+
+    @property
+    def history(self) -> Optional[torch.Tensor]:
+        """Past true readings [max_latency_steps, num_envs, num_dims], newest first (a copy)."""
+        if self._buf is None:
+            return None
+        L = self._buf.shape[0]
+        order = [(self._head - k) % L for k in range(L)]
+        return self._buf[order]
 
     def resample(self, env_ids=slice(None)) -> None:
         """Draw a new noise scale, bias and latency for these envs (call on episode reset)."""
@@ -109,22 +121,26 @@ class SensorModel:
     @torch.no_grad()
     def push(self, true_reading: torch.Tensor) -> None:
         """Store the true reading of all envs [num_envs, num_dims] at this physics step."""
-        if self.history is None:
+        if self._buf is None:
             return
-        self.history = self.history.roll(1, dims=0)
-        self.history[0] = true_reading
-        stale = self._stale.nonzero(as_tuple=True)[0]
-        if len(stale):
-            self.history[:, stale] = true_reading[stale]
-            self._stale[stale] = False
+        self._head = (self._head + 1) % self._buf.shape[0]
+        self._buf[self._head] = true_reading
+        # Envs reset since the last push: fill their whole history with this reading.
+        # Masked instead of nonzero() + len(), which would block on the GPU at every physics step.
+        self._buf = torch.where(self._stale.view(1, -1, 1), true_reading.unsqueeze(0), self._buf)
+        self._stale.zero_()
 
     def apply(self, true_reading: torch.Tensor, env_ids=slice(None)) -> torch.Tensor:
         """Return the sensor reading for these envs, given the true reading now [len(env_ids), num_dims]."""
         x = true_reading
-        if self.history is not None:
+        if self._buf is not None:
             delays = self.latency_steps[env_ids]
-            stacked = torch.cat([true_reading.unsqueeze(0), self.history[:, env_ids]], dim=0)
-            delayed = stacked.gather(0, delays.unsqueeze(0)).squeeze(0)
+            # delay 0 -> true_reading (row 0 of stacked); delay d >= 1 -> history[d - 1],
+            # which sits in ring slot (_head - d + 1) % L, i.e. row 1 + that slot of stacked
+            L = self._buf.shape[0]
+            rows = torch.where(delays == 0, 0, 1 + torch.remainder(self._head + 1 - delays, L))
+            stacked = torch.cat([true_reading.unsqueeze(0), self._buf[:, env_ids]], dim=0)
+            delayed = stacked.gather(0, rows.unsqueeze(0)).squeeze(0)
             x = torch.where(self._stale[env_ids].unsqueeze(-1), true_reading, delayed)
         x = x + self.bias[env_ids] + torch.randn_like(x) * self.std * self.scale[env_ids]
         x = torch.where(self.quantized, torch.round(x / self.safe_resolution) * self.safe_resolution, x)

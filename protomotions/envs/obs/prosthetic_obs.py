@@ -2,7 +2,6 @@ import torch
 from torch import Tensor, nn
 from protomotions.envs.obs.config import ProstheticObsConfig
 from protomotions.envs.obs.sensor_model import SensorModel
-from protomotions.simulator.base_simulator.simulator_state import RobotState
 from protomotions.utils import rotations
 
 class HistoryBuffer(nn.Module):
@@ -328,8 +327,8 @@ class ProstheticObs:
                 self.env.simulator.sensor_tap = self._sample_sensors
 
     def _sample_sensors(self):
-        env_ids = torch.arange(self.env.num_envs, device=self.device)
-        self.sensor_model.push(self._true_readings(env_ids))
+        # Runs at every physics step: read only the 2 bodies and 3 DOFs the sensors need
+        self.sensor_model.push(self._true_readings(None))
 
 
     def post_physics_step(self):
@@ -374,23 +373,36 @@ class ProstheticObs:
             )
             self.previous_actions_hist_buf.set_all(filled_actions_hist, env_ids=env_ids)
 
-    def _true_readings(self, env_ids):
-        """Noise-free sensor readings now, in physical units (motor channels in the motor frame)."""
-        # 1. Fetch State from Simulator
-        current_state: RobotState = self.env.simulator.get_robot_state(env_ids)
+    def _true_readings(self, env_ids=None):
+        """Noise-free sensor readings now, in physical units (motor channels in the motor frame).
+
+        env_ids=None reads all envs. Only the shank/foot bodies and the ankle/motor DOFs are
+        fetched from the simulator (this runs at every physics step through the sensor tap).
+        """
         sim_ref = self.env.simulator
+        rows = slice(None) if env_ids is None else env_ids
+        num_rows = self.env.num_envs if env_ids is None else len(env_ids)
+
+        # 1. Fetch only the state the sensors need, in common ordering:
+        # bodies [shank, foot], DOFs [ankle, motor, *torque joints]
+        torque_joints = list(getattr(sim_ref, "common_torque_joints", None) or [])
+        sub = sim_ref.get_body_dof_subset(
+            [self.config.shank_body_index, self.config.foot_body_index],
+            [self.config.ankle_dof_index, self.config.motor_dof_index] + torque_joints,
+            env_ids,
+        )
 
         # 2. Compute Math
         obs = compute_prosthetic_observations(
-                ankle_dof_index=self.config.ankle_dof_index,
-                motor_dof_index=self.config.motor_dof_index,
-                shank_body_index=self.config.shank_body_index,
-                foot_body_index=self.config.foot_body_index,
-                dof_pos=current_state.dof_pos,
-                dof_vel=current_state.dof_vel,
-                body_lin_acc=current_state.rigid_body_acc,
-                body_rot=current_state.rigid_body_rot,
-                body_ang_vel=current_state.rigid_body_ang_vel,
+                ankle_dof_index=0,
+                motor_dof_index=1,
+                shank_body_index=0,
+                foot_body_index=1,
+                dof_pos=sub.dof_pos,
+                dof_vel=sub.dof_vel,
+                body_lin_acc=sub.rigid_body_acc,
+                body_rot=sub.rigid_body_rot,
+                body_ang_vel=sub.rigid_body_ang_vel,
                 w_last=True,
                 motor_ratio=float(getattr(sim_ref, "transmission_ratio", 1.0)),
         )
@@ -400,14 +412,14 @@ class ProstheticObs:
         if getattr(sim_ref, "motor_model", None) is not None:
             # What the motor's reply torque field reads (not the applied torque), motor frame
             prosthetic_torque = sim_ref.motor_model.reported_torque_at(
-                current_state.dof_vel[:, sim_ref.common_torque_joints], env_ids
+                sub.dof_vel[:, 2:], rows
             )[:, 0:1]
         elif hasattr(sim_ref, "_robot") and hasattr(sim_ref._robot, "data") and hasattr(sim_ref._robot.data, "applied_torque"):
             # print(f"joint name {sim_ref._robot.data.joint_names[self.config.sim_motor_dof_index]}")
-            prosthetic_torque = sim_ref._robot.data.applied_torque[env_ids, self.config.sim_motor_dof_index].unsqueeze(-1)
+            prosthetic_torque = sim_ref._robot.data.applied_torque[rows, self.config.sim_motor_dof_index].unsqueeze(-1)
         else:
             # Fallback if the cache isn't populated yet during the very first cold-start frame
-            prosthetic_torque = torch.zeros(len(env_ids), 1, dtype=torch.float, device=self.device)
+            prosthetic_torque = torch.zeros(num_rows, 1, dtype=torch.float, device=self.device)
 
         return torch.cat([obs, prosthetic_torque], dim=-1)
 

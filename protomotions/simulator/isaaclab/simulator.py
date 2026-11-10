@@ -126,13 +126,14 @@ class IsaacLabSimulator(Simulator):
         are set. Completes scene setup and resets simulation.
         """
         self._robot = self._scene["robot"]
-        # Build a mapping from body name to contact sensor (if it exists)
-        self._contact_sensor_map = {}
-        for body_name in self._body_names:
-            if f"contact_sensor_{body_name}" in self._scene.keys():
-                self._contact_sensor_map[body_name] = self._scene[
-                    f"contact_sensor_{body_name}"
-                ]
+        # Single contact sensor covering all contact bodies (see SceneCfg). Its body order is
+        # resolved after sim.reset(), in _contact_sensor_sim_body_ids().
+        self._robot_contact_sensor = (
+            self._scene["contact_sensor_robot"]
+            if "contact_sensor_robot" in self._scene.keys()
+            else None
+        )
+        self._contact_sim_body_ids = None
 
         self._object = []
         self._object_contact_sensor = []
@@ -463,14 +464,9 @@ class IsaacLabSimulator(Simulator):
             custom_torques: [Num Envs, Num DOFs] - Feed-forward torques.
         """
         
-        if getattr(self, "passive_dof_defaults", None) is not None:
-            for dof_idx, physical_val in self.passive_dof_defaults.items():
-                # Overwrite the target with the EXACT physical value from your config.
-                # e.g., -0.025 meters
-                # if dof_idx == 21:
-                #     physical_val = -0.075
-                #     # print(dof_idx, physical_val)
-                pd_targets[..., dof_idx] = physical_val
+        # Overwrite passive DOF targets with the EXACT physical values from the config
+        # (e.g. -0.025 m), as one indexed write
+        self._write_passive_dof_defaults(pd_targets)
 
         # 2. SEND POSITIONS (Drivers: Body + Passive)
         # For the Prosthetic (if Stiffness=0), this command is ignored by physics.
@@ -489,14 +485,23 @@ class IsaacLabSimulator(Simulator):
 
     def _apply_simulator_pd_targets(self, pd_targets: torch.Tensor) -> None:
         """Applies PD position targets using IsaacLab's internal PD controller."""
-        # TEMPORARY
-        if getattr(self, "passive_dof_defaults", None) is not None:
-            for dof_idx, physical_val in self.passive_dof_defaults.items():
-                # Overwrite the target with the EXACT physical value from your config.
-                # e.g., -0.025 meters
-                pd_targets[..., dof_idx] = physical_val
+        self._write_passive_dof_defaults(pd_targets)
 
         self._robot.set_joint_position_target(pd_targets, joint_ids=None)
+
+    def _write_passive_dof_defaults(self, pd_targets: torch.Tensor) -> None:
+        """Set the targets of passive DOFs (sim order) to their fixed values, in place."""
+        passive = getattr(self, "passive_dof_defaults", None)
+        if not passive:
+            return
+        # Rebuilt only when the dict object changes (it is assigned once by the env)
+        cached = getattr(self, "_passive_dof_cache", None)
+        if cached is None or cached[0] is not passive:
+            idx = torch.tensor(list(passive.keys()), dtype=torch.long, device=pd_targets.device)
+            vals = torch.tensor(list(passive.values()), dtype=pd_targets.dtype, device=pd_targets.device)
+            cached = (passive, idx, vals)
+            self._passive_dof_cache = cached
+        pd_targets[..., cached[1]] = cached[2]
 
     def _apply_simulator_torques(self, torques: torch.Tensor) -> None:
         """Applies torques to the robot DOFs."""
@@ -610,6 +615,44 @@ class IsaacLabSimulator(Simulator):
             state_conversion=StateConversion.SIMULATOR,
         )
 
+    def get_body_dof_subset(
+        self,
+        body_ids: List[int],
+        dof_ids: List[int],
+        env_ids: Optional[torch.Tensor] = None,
+    ) -> RobotState:
+        """Direct read of a few bodies/DOFs from the articulation buffers (see base class)."""
+        key = (tuple(int(i) for i in body_ids), tuple(int(i) for i in dof_ids))
+        cache = self.__dict__.setdefault("_subset_index_cache", {})
+        if key not in cache:
+            conv = self.data_conversion
+            common_b = torch.tensor(key[0], dtype=torch.long, device=self.device)
+            common_d = torch.tensor(key[1], dtype=torch.long, device=self.device)
+            # common[:, i] == sim[:, convert_to_common[i]]
+            cache[key] = (
+                conv.body_convert_to_common.to(self.device)[common_b],
+                conv.dof_convert_to_common.to(self.device)[common_d],
+            )
+        sim_b, sim_d = cache[key]
+
+        data = self._robot.data
+        rot = data.body_quat_w[:, sim_b]
+        if not self.data_conversion.sim_w_last:
+            rot = rot[..., [1, 2, 3, 0]]  # wxyz -> xyzw (common format)
+        out = RobotState(
+            dof_pos=data.joint_pos[:, sim_d],
+            dof_vel=data.joint_vel[:, sim_d],
+            rigid_body_pos=data.body_pos_w[:, sim_b],
+            rigid_body_rot=rot,
+            rigid_body_vel=data.body_lin_vel_w[:, sim_b],
+            rigid_body_ang_vel=data.body_ang_vel_w[:, sim_b],
+            rigid_body_acc=data.body_lin_acc_w[:, sim_b],
+            state_conversion=StateConversion.COMMON,
+        )
+        if env_ids is not None:
+            out = out[env_ids]
+        return out
+
     def _get_simulator_dof_forces(
         self, env_ids: Optional[torch.Tensor] = None
     ) -> RobotState:
@@ -679,23 +722,17 @@ class IsaacLabSimulator(Simulator):
         Returns:
             RobotState: Robot state containing contact forces in simulator body order.
         """
-        # Get simulator body ordering
-        sim_body_names = self._robot.data.body_names
-        num_bodies = len(sim_body_names)
+        num_bodies = len(self._robot.data.body_names)
 
-        # Pre-allocate tensor for contact forces (initialized to zeros)
+        # Bodies without a contact sensor read zero
         rigid_body_contact_forces = torch.zeros(
             self.num_envs, num_bodies, 3, device=self.device
         )
-
-        # Fill in contact forces for bodies that have sensors
-        for body_idx, body_name in enumerate(sim_body_names):
-            if body_name in self._contact_sensor_map:
-                contact_sensor = self._contact_sensor_map[body_name]
-                # net_forces_w has shape [num_envs, 1, 3], extract the single body dimension
-                rigid_body_contact_forces[:, body_idx, :] = (
-                    contact_sensor.data.net_forces_w.clone()[:, 0, :]
-                )
+        if self._robot_contact_sensor is not None:
+            # net_forces_w: [num_envs, num_sensor_bodies, 3], in the sensor's body order
+            rigid_body_contact_forces[:, self._contact_sensor_sim_body_ids()] = (
+                self._robot_contact_sensor.data.net_forces_w
+            )
 
         if env_ids is not None:
             rigid_body_contact_forces = rigid_body_contact_forces[env_ids]
@@ -703,6 +740,17 @@ class IsaacLabSimulator(Simulator):
             rigid_body_contact_forces=rigid_body_contact_forces,
             state_conversion=StateConversion.SIMULATOR,
         )
+
+    def _contact_sensor_sim_body_ids(self) -> torch.Tensor:
+        """Simulator body index of each body of the robot contact sensor, in the sensor's order."""
+        if self._contact_sim_body_ids is None:
+            sim_body_names = list(self._robot.data.body_names)
+            self._contact_sim_body_ids = torch.tensor(
+                [sim_body_names.index(n) for n in self._robot_contact_sensor.body_names],
+                dtype=torch.long,
+                device=self.device,
+            )
+        return self._contact_sim_body_ids
 
     def _get_simulator_object_contact_buf(
         self,
