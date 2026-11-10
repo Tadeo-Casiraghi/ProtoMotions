@@ -31,6 +31,7 @@ from protomotions.envs.utils.humanoid import (
 )
 from protomotions.envs.obs.config import HumanoidObsConfig
 from protomotions.simulator.base_simulator.simulator_state import RobotState
+from protomotions.utils import rotations
 
 
 class HistoryBuffer(nn.Module):
@@ -205,8 +206,36 @@ class HumanoidObs:
                 shape=(self.env.robot_config.number_of_actions,),
                 device=self.env.device,
             )
-            
+
+        # Residual-limb tissue patches (robots with "<skin body>_tissue" joints): per patch, the
+        # tissue deformation and the normal force, what a person feels in the socket
+        dof_names = self.env.robot_config.kinematic_info.dof_names
+        body_names = self.env.robot_config.kinematic_info.body_names
+        tissue = [(i, n[: -len("_tissue")]) for i, n in enumerate(dof_names) if n.endswith("_tissue")]
+        self.tissue_dof_ids = None
+        self.skin_patch_obs = None
+        if tissue:
+            self.tissue_dof_ids = torch.tensor([i for i, _ in tissue], dtype=torch.long, device=self.env.device)
+            self.tissue_body_ids = torch.tensor(
+                [body_names.index(b) for _, b in tissue], dtype=torch.long, device=self.env.device
+            )
+            self.skin_patch_obs = torch.zeros(self.env.num_envs, 2 * len(tissue), device=self.env.device)
+
         self._initialized = False
+
+    def compute_skin_patch_obs(self, current_state: RobotState) -> Tensor:
+        """[num_envs, 2 * num_patches]: deformation (mm, + = compressed) then normal force (x100 N).
+
+        The normal force is the contact force on the patch along its tissue axis (the patch local z,
+        which points from the socket into the limb), so it is positive when the socket presses.
+        """
+        disp = current_state.dof_pos[:, self.tissue_dof_ids] * 1000.0
+        rot = current_state.rigid_body_rot[:, self.tissue_body_ids]  # xyzw
+        z = torch.zeros_like(rot[..., :3])
+        z[..., 2] = 1.0
+        normal = rotations.quat_rotate(rot.reshape(-1, 4), z.reshape(-1, 3), True).view_as(z)
+        force = (current_state.rigid_body_contact_forces[:, self.tissue_body_ids] * normal).sum(-1)
+        return torch.cat([disp, force / 100.0], dim=-1)
 
     def post_physics_step(self):
         if not self._initialized:
@@ -385,6 +414,9 @@ class HumanoidObs:
                 self.env.simulator.get_previous_actions(env_ids), env_ids
             )
 
+        if self.skin_patch_obs is not None:
+            self.skin_patch_obs[env_ids] = self.compute_skin_patch_obs(current_state)
+
     def build_self_obs_demo(self, motion_ids: Tensor, motion_times0: Tensor):
         obs_demo = {}
 
@@ -536,5 +568,8 @@ class HumanoidObs:
             obs["historical_reduced_coords_obs"] = (
                 self.humanoid_reduced_coords_obs_hist_buf.get_all_flattened().clone()
             )
+
+        if self.skin_patch_obs is not None:
+            obs["skin_patch_obs"] = self.skin_patch_obs.clone()
 
         return obs

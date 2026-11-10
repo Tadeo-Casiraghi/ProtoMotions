@@ -96,6 +96,8 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         "R_Ankle_y",
         "R_Toe_y",
     ]
+    # Residual-limb tissue joints (smpl10bis_tissue): passive springs, never policy actions
+    passive_dof_names += [n for n in all_dof_names if n.endswith("_tissue")]
 
     non_actuated_joints = ["Motor"]
 
@@ -139,6 +141,8 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
         "suspension_slide": -0.075,
         "default": 0.0
     }
+    # Robots can override passive targets (smpl10bis_tissue: suspension rest position, see its config)
+    passive_defaults_by_name.update(getattr(robot_cfg, "passive_dof_targets", None) or {})
 
 
     mimic_early_termination = [
@@ -701,6 +705,8 @@ def humanoid_agent_config(
             contact_indices_to_remove.append(i)
     
     dofs = robot_config.kinematic_info.dof_names
+    # Per-patch tissue deformation and force ("skin_patch_obs"), only for robots with tissue joints
+    skin_keys = ["skin_patch_obs"] if any(d.endswith("_tissue") for d in dofs) else []
     action_indices = []
     prosthetic_magic_index = None
 
@@ -710,6 +716,7 @@ def humanoid_agent_config(
             prosthetic_magic_index = i
         if (
             "suspension" in n_low 
+            or n_low.endswith("_tissue")
             or dof_name in ["R_Ankle_y", "Motor", "R_Toe_y"] # Ensure these match your URDF exact casing
         ):
             print(dof_name, " Skipped")
@@ -723,14 +730,14 @@ def humanoid_agent_config(
     actor_config = PPOActorConfig(
         num_out=num_active_actions+1,
         actor_logstd=-2.9,
-        in_keys=["blind_body_obs", "blind_mimic_target_poses", "agent_action_history"],
+        in_keys=["blind_body_obs", "blind_mimic_target_poses", "agent_action_history"] + skin_keys,
         mu_key="actor_trunk_out",
         mu_model=MLPWithConcatConfig(
             in_keys=[
                 "blind_body_obs",
                 "blind_mimic_target_poses",
                 "agent_action_history",
-            ],
+            ] + skin_keys,
             normalize_obs=True,
             norm_clamp_value=5,
             out_keys=["actor_trunk_out"],
@@ -745,7 +752,7 @@ def humanoid_agent_config(
     pretrained_prosthetic_history_steps = 10
     prosthetic_obs_cfg = env_config.prosthetic_obs
     critic_config = MLPWithConcatConfig(
-        in_keys=["historical_prosthetic_obs", "historical_prosthetic_previous_actions", "max_coords_obs", "mimic_target_poses", "agent_action_history"],
+        in_keys=["historical_prosthetic_obs", "historical_prosthetic_previous_actions", "max_coords_obs", "mimic_target_poses", "agent_action_history"] + skin_keys,
         out_keys=["value"],
         normalize_obs=True,
         norm_clamp_value=5,
@@ -764,7 +771,7 @@ def humanoid_agent_config(
     )
     agent_config: PPOAgentConfig = PPOAgentConfig(
         model=PPOModelConfig(
-            in_keys=["historical_prosthetic_obs", "historical_prosthetic_previous_actions", "max_coords_obs", "mimic_target_poses", "agent_action_history", "blind_body_obs", "blind_mimic_target_poses"],
+            in_keys=["historical_prosthetic_obs", "historical_prosthetic_previous_actions", "max_coords_obs", "mimic_target_poses", "agent_action_history", "blind_body_obs", "blind_mimic_target_poses"] + skin_keys,
             out_keys=["action", "mean_action", "neglogp", "value"],
             actor=actor_config,
             critic=critic_config,
@@ -818,6 +825,8 @@ def prosthetic_agent_config(
 
     gSDE = False  # Enable gSDE for the prosthetic agent
     dofs = robot_config.kinematic_info.dof_names
+    # Per-patch tissue deformation and force ("skin_patch_obs"), only for robots with tissue joints
+    skin_keys = ["skin_patch_obs"] if any(d.endswith("_tissue") for d in dofs) else []
     action_indices = []
 
     for i, dof_name in enumerate(dofs):
@@ -844,7 +853,7 @@ def prosthetic_agent_config(
     )
 
     critic_config = MLPWithConcatConfig(
-        in_keys=["historical_prosthetic_obs", "historical_prosthetic_previous_actions", "max_coords_obs", "mimic_target_poses", "agent_action_history"],
+        in_keys=["historical_prosthetic_obs", "historical_prosthetic_previous_actions", "max_coords_obs", "mimic_target_poses", "agent_action_history"] + skin_keys,
         out_keys=["value"],
         normalize_obs=True,
         norm_clamp_value=5,
@@ -857,7 +866,7 @@ def prosthetic_agent_config(
                      "historical_prosthetic_previous_actions",
                      "max_coords_obs",
                      "mimic_target_poses",
-                     "agent_action_history"],
+                     "agent_action_history"] + skin_keys,
             out_keys=["action", "mean_action", "neglogp", "value"],
             actor=actor_config,
             critic=critic_config,
