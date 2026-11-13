@@ -192,7 +192,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "coefficient": "-200.0",
             },
             indices_subset=["chest_body"],
-            weight=0.2,
+            weight=0.3,
         ),
         # "gt_ef_prosthetic_rew": RewardComponentConfig(
         #     function=mean_squared_error_exp,
@@ -345,7 +345,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "use_torque_squared": "True",
                 "indices": "lower_left_body_joints",  # Only penalize power for humanoid joints, not prosthetic
             },
-            weight=-1.0e-6, # TADEO -7.5e-5,
+            weight=-0.25e-6, # TADEO -7.5e-5,
             # min_value=-1.75,
             zero_during_grace_period=True,
         ),
@@ -419,7 +419,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "prosthetic_current_dof_pos",
                 "coefficient": "-200.0",
             },
-            weight=1.0e-1,
+            weight=2.0e-1,
         ),
         # "skin_rew": RewardComponentConfig(
         #     function=skin_pressure_penalty,
@@ -438,7 +438,7 @@ def env_config(robot_cfg: RobotConfig, args: argparse.Namespace) -> MimicEnvConf
                 "ref_x": "ref_state.dof_pos[:, ankle_joint]",
                 "coefficient": "-250.0",
             },
-            weight=1.5e-1,
+            weight=3.0e-1,
         ),
         "torque_left_side_prosthetic": RewardComponentConfig(
             function=power_consumption_sum,
