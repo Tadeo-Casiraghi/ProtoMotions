@@ -9,8 +9,8 @@ OUTPUT_DIR = "python-stuff/plots"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 DT = 1.0 / 90.0
 
-startfrom = int(1/DT)
-upto = int(4.2/DT)
+startfrom = int(0/DT)
+upto = int(3/DT)
 # ---------------------
 
 
