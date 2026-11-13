@@ -2055,6 +2055,14 @@ def Xform "smpl_humanoid10" (
                 </smpl_humanoid10/bodies/L_Ankle>,
                 </smpl_humanoid10/bodies/L_Toe>,
                 </smpl_humanoid10/bodies/socket_assembly>,
+                </smpl_humanoid10/bodies/socket_box_posterior_top_collisions>,
+                </smpl_humanoid10/bodies/socket_box_anterior_top_collisions>,
+                </smpl_humanoid10/bodies/socket_box_medial_top_collisions>,
+                </smpl_humanoid10/bodies/socket_box_lateral_top_collisions>,
+                </smpl_humanoid10/bodies/socket_box_posterior_bottom_collisions>,
+                </smpl_humanoid10/bodies/socket_box_anterior_bottom_collisions>,
+                </smpl_humanoid10/bodies/socket_box_medial_bottom_collisions>,
+                </smpl_humanoid10/bodies/socket_box_lateral_bottom_collisions>,
             ]
             rel physics:simulationOwner
             quatd xformOp:orient = (1, 0, 0, 0)
@@ -3000,8 +3008,8 @@ def Xform "smpl_humanoid10" (
 
                 over "_geom_15"
                 {
-                    double3 xformOp:scale = (0.02500000037252903, 0.06250000149011611, 0.004999999888241291)
-                    double3 xformOp:translate = (0, 0.025, 0)
+                    double3 xformOp:scale = (0.02500000037252903, 0.07250000149011612, 0.004999999888241291)
+                    double3 xformOp:translate = (0, 0.015000000000000001, 0)
                 }
             }
 
@@ -3017,8 +3025,8 @@ def Xform "smpl_humanoid10" (
 
                 over "_geom_15"
                 {
-                    double3 xformOp:scale = (0.02500000037252903, 0.06250000149011611, 0.004999999888241291)
-                    double3 xformOp:translate = (0, 0.025, 0)
+                    double3 xformOp:scale = (0.02500000037252903, 0.07250000149011612, 0.004999999888241291)
+                    double3 xformOp:translate = (0, 0.015000000000000001, 0)
                 }
             }
 
@@ -3038,8 +3046,8 @@ def Xform "smpl_humanoid10" (
 
                 over "_geom_16"
                 {
-                    double3 xformOp:scale = (0.02500000037252903, 0.06250000149011611, 0.004999999888241291)
-                    double3 xformOp:translate = (0, 0.025, 0)
+                    double3 xformOp:scale = (0.02500000037252903, 0.08500000149011612, 0.004999999888241291)
+                    double3 xformOp:translate = (0, 0.0025000000000000022, 0)
                 }
             }
 
@@ -3055,8 +3063,8 @@ def Xform "smpl_humanoid10" (
 
                 over "_geom_16"
                 {
-                    double3 xformOp:scale = (0.02500000037252903, 0.06250000149011611, 0.004999999888241291)
-                    double3 xformOp:translate = (0, 0.025, 0)
+                    double3 xformOp:scale = (0.02500000037252903, 0.08500000149011612, 0.004999999888241291)
+                    double3 xformOp:translate = (0, 0.0025000000000000022, 0)
                 }
             }
 
@@ -3076,8 +3084,8 @@ def Xform "smpl_humanoid10" (
 
                 over "_geom_17"
                 {
-                    double3 xformOp:scale = (0.02500000037252903, 0.06250000149011611, 0.004999999888241291)
-                    double3 xformOp:translate = (0, 0.025, 0)
+                    double3 xformOp:scale = (0.02500000037252903, 0.08500000149011612, 0.004999999888241291)
+                    double3 xformOp:translate = (0, 0.0025000000000000022, 0)
                 }
             }
 
@@ -3093,8 +3101,8 @@ def Xform "smpl_humanoid10" (
 
                 over "_geom_17"
                 {
-                    double3 xformOp:scale = (0.02500000037252903, 0.06250000149011611, 0.004999999888241291)
-                    double3 xformOp:translate = (0, 0.025, 0)
+                    double3 xformOp:scale = (0.02500000037252903, 0.08500000149011612, 0.004999999888241291)
+                    double3 xformOp:translate = (0, 0.0025000000000000022, 0)
                 }
             }
 
@@ -3114,8 +3122,8 @@ def Xform "smpl_humanoid10" (
 
                 over "_geom_18"
                 {
-                    double3 xformOp:scale = (0.02500000037252903, 0.06250000149011611, 0.004999999888241291)
-                    double3 xformOp:translate = (0, 0.025, 0)
+                    double3 xformOp:scale = (0.02500000037252903, 0.08500000149011612, 0.004999999888241291)
+                    double3 xformOp:translate = (0, 0.0025000000000000022, 0)
                 }
             }
 
@@ -3131,8 +3139,8 @@ def Xform "smpl_humanoid10" (
 
                 over "_geom_18"
                 {
-                    double3 xformOp:scale = (0.02500000037252903, 0.06250000149011611, 0.004999999888241291)
-                    double3 xformOp:translate = (0, 0.025, 0)
+                    double3 xformOp:scale = (0.02500000037252903, 0.08500000149011612, 0.004999999888241291)
+                    double3 xformOp:translate = (0, 0.0025000000000000022, 0)
                 }
             }
 
@@ -3169,8 +3177,8 @@ def Xform "smpl_humanoid10" (
 
                 over "_geom_19"
                 {
-                    double3 xformOp:scale = (0.02500000037252903, 0.06250000149011611, 0.004999999888241291)
-                    double3 xformOp:translate = (0, 0.025, 0)
+                    double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+                    double3 xformOp:translate = (0, 0, 0)
                 }
             }
 
@@ -3207,8 +3215,8 @@ def Xform "smpl_humanoid10" (
 
                 over "_geom_20"
                 {
-                    double3 xformOp:scale = (0.02500000037252903, 0.06250000149011611, 0.004999999888241291)
-                    double3 xformOp:translate = (0, 0.025, 0)
+                    double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+                    double3 xformOp:translate = (0, 0, 0)
                 }
             }
 
@@ -3245,8 +3253,8 @@ def Xform "smpl_humanoid10" (
 
                 over "_geom_21"
                 {
-                    double3 xformOp:scale = (0.02500000037252903, 0.06250000149011611, 0.004999999888241291)
-                    double3 xformOp:translate = (0, 0.025, 0)
+                    double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+                    double3 xformOp:translate = (0, 0, 0)
                 }
             }
 
@@ -3283,8 +3291,8 @@ def Xform "smpl_humanoid10" (
 
                 over "_geom_22"
                 {
-                    double3 xformOp:scale = (0.02500000037252903, 0.06250000149011611, 0.004999999888241291)
-                    double3 xformOp:translate = (0, 0.025, 0)
+                    double3 xformOp:scale = (0.02500000037252903, 0.03750000149011612, 0.004999999888241291)
+                    double3 xformOp:translate = (0, 0, 0)
                 }
             }
         }
@@ -3566,9 +3574,9 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysicsJointStateAPI:linear", "PhysxJointAPI", "PhysxLimitAPI:X", "PhysicsDriveAPI:linear"]
         )
         {
-            float drive:linear:physics:damping = 0
-            float drive:linear:physics:maxForce = 1000000000
-            float drive:linear:physics:stiffness = 1000
+            float drive:linear:physics:damping = 1000
+            float drive:linear:physics:maxForce = 1000
+            float drive:linear:physics:stiffness = 27000
             float drive:linear:physics:targetPosition = -0.05
             uniform token drive:linear:physics:type = "force"
             uniform token physics:axis = "X"
@@ -3591,17 +3599,17 @@ def Xform "smpl_humanoid10" (
             apiSchemas = ["PhysxJointAPI", "PhysicsLimitAPI:rotX", "PhysxLimitAPI:rotX", "PhysicsJointStateAPI:angular", "PhysicsDriveAPI:rotX", "PhysicsLimitAPI:rotY", "PhysxLimitAPI:rotY", "PhysicsDriveAPI:rotY", "PhysicsLimitAPI:rotZ", "PhysxLimitAPI:rotZ", "PhysicsDriveAPI:rotZ"]
         )
         {
-            float drive:rotX:physics:damping = 1
+            float drive:rotX:physics:damping = 175
             float drive:rotX:physics:maxForce = 1000
-            float drive:rotX:physics:stiffness = 100
+            float drive:rotX:physics:stiffness = 350
             uniform token drive:rotX:physics:type = "force"
-            float drive:rotY:physics:damping = 1
+            float drive:rotY:physics:damping = 175
             float drive:rotY:physics:maxForce = 1000
-            float drive:rotY:physics:stiffness = 100
+            float drive:rotY:physics:stiffness = 350
             uniform token drive:rotY:physics:type = "force"
-            float drive:rotZ:physics:damping = 1
+            float drive:rotZ:physics:damping = 175
             float drive:rotZ:physics:maxForce = 1000
-            float drive:rotZ:physics:stiffness = 100
+            float drive:rotZ:physics:stiffness = 350
             uniform token drive:rotZ:physics:type = "force"
             int isaac:physics:Rot_X:DofOffset
             int isaac:physics:Rot_Y:DofOffset
@@ -4478,9 +4486,9 @@ def Xform "smpl_humanoid10" (
             prepend apiSchemas = ["PhysicsDriveAPI:linear"]
         )
         {
-            float drive:linear:physics:damping = 1
-            float drive:linear:physics:maxForce = 1000000
-            float drive:linear:physics:stiffness = 1
+            float drive:linear:physics:damping = 2000
+            float drive:linear:physics:maxForce = 1000
+            float drive:linear:physics:stiffness = 46666
             float drive:linear:physics:targetPosition = 0
             uniform token drive:linear:physics:type = "force"
             uniform token physics:axis = "Z"
@@ -4498,9 +4506,9 @@ def Xform "smpl_humanoid10" (
             prepend apiSchemas = ["PhysicsDriveAPI:linear"]
         )
         {
-            float drive:linear:physics:damping = 1
-            float drive:linear:physics:maxForce = 1000000
-            float drive:linear:physics:stiffness = 1
+            float drive:linear:physics:damping = 2000
+            float drive:linear:physics:maxForce = 1000
+            float drive:linear:physics:stiffness = 74500
             float drive:linear:physics:targetPosition = 0
             uniform token drive:linear:physics:type = "force"
             uniform token physics:axis = "Z"
@@ -4518,9 +4526,9 @@ def Xform "smpl_humanoid10" (
             prepend apiSchemas = ["PhysicsDriveAPI:linear"]
         )
         {
-            float drive:linear:physics:damping = 1
-            float drive:linear:physics:maxForce = 1000000
-            float drive:linear:physics:stiffness = 1
+            float drive:linear:physics:damping = 2000
+            float drive:linear:physics:maxForce = 1000
+            float drive:linear:physics:stiffness = 140000
             float drive:linear:physics:targetPosition = 0
             uniform token drive:linear:physics:type = "force"
             uniform token physics:axis = "Z"
@@ -4538,9 +4546,9 @@ def Xform "smpl_humanoid10" (
             prepend apiSchemas = ["PhysicsDriveAPI:linear"]
         )
         {
-            float drive:linear:physics:damping = 1
-            float drive:linear:physics:maxForce = 1000000
-            float drive:linear:physics:stiffness = 1
+            float drive:linear:physics:damping = 2000
+            float drive:linear:physics:maxForce = 1000
+            float drive:linear:physics:stiffness = 104000
             float drive:linear:physics:targetPosition = 0
             uniform token drive:linear:physics:type = "force"
             uniform token physics:axis = "Z"
@@ -4558,9 +4566,9 @@ def Xform "smpl_humanoid10" (
             prepend apiSchemas = ["PhysicsDriveAPI:linear"]
         )
         {
-            float drive:linear:physics:damping = 1
-            float drive:linear:physics:maxForce = 1000000
-            float drive:linear:physics:stiffness = 1
+            float drive:linear:physics:damping = 2000
+            float drive:linear:physics:maxForce = 1000
+            float drive:linear:physics:stiffness = 46666
             float drive:linear:physics:targetPosition = 0
             uniform token drive:linear:physics:type = "force"
             uniform token physics:axis = "Z"
@@ -4578,9 +4586,9 @@ def Xform "smpl_humanoid10" (
             prepend apiSchemas = ["PhysicsDriveAPI:linear"]
         )
         {
-            float drive:linear:physics:damping = 1
-            float drive:linear:physics:maxForce = 1000000
-            float drive:linear:physics:stiffness = 1
+            float drive:linear:physics:damping = 2000
+            float drive:linear:physics:maxForce = 1000
+            float drive:linear:physics:stiffness = 74500
             float drive:linear:physics:targetPosition = 0
             uniform token drive:linear:physics:type = "force"
             uniform token physics:axis = "Z"
@@ -4598,9 +4606,9 @@ def Xform "smpl_humanoid10" (
             prepend apiSchemas = ["PhysicsDriveAPI:linear"]
         )
         {
-            float drive:linear:physics:damping = 1
-            float drive:linear:physics:maxForce = 1000000
-            float drive:linear:physics:stiffness = 1
+            float drive:linear:physics:damping = 2000
+            float drive:linear:physics:maxForce = 1000
+            float drive:linear:physics:stiffness = 140000
             float drive:linear:physics:targetPosition = 0
             uniform token drive:linear:physics:type = "force"
             uniform token physics:axis = "Z"
@@ -4618,9 +4626,9 @@ def Xform "smpl_humanoid10" (
             prepend apiSchemas = ["PhysicsDriveAPI:linear"]
         )
         {
-            float drive:linear:physics:damping = 1
-            float drive:linear:physics:maxForce = 1000000
-            float drive:linear:physics:stiffness = 1
+            float drive:linear:physics:damping = 2000
+            float drive:linear:physics:maxForce = 1000
+            float drive:linear:physics:stiffness = 104000
             float drive:linear:physics:targetPosition = 0
             uniform token drive:linear:physics:type = "force"
             uniform token physics:axis = "Z"

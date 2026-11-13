@@ -68,8 +68,15 @@ pistoning was solver error. Joint drives are solved exactly, rigid contacts conv
 - suspension (liner/suction/sleeve) = `suspension_slide` drive 27000 N/m, 1000 Ns/m, rest target
   +0.022 m (+ = socket away from the limb; carries the ~3 kg prosthesis, tissue unloaded at rest);
   `suspension_x/y/z` 350 Nm/rad, 175 Nms/rad (y = limb long axis = torsion)
-- socket plates extended 5 cm distally (box corners caught plate edges and locked the socket);
-  not proximally (would hit the thigh earlier in knee flexion)
+- socket plates extended 5 cm distally (box corners caught plate edges and locked the socket).
+  Bottom plate visuals keep their original length (`--bottom-visual-distal-extension 0`): the
+  bottom skin boxes never reach the extended part, only the collisions are long.
+  Top plates also extended proximally, 45 mm (posterior only 20 mm: a longer posterior wall hits the
+  thigh in swing): the socket hangs at slide ~+23 mm and reaches 25-30 mm in swing, which put the
+  1 cm top skin boxes completely above the top plates (they then landed on the plate edge). The top
+  and bottom plate of a side are coplanar, so the bottom boxes ride on the top plate's distal part
+- skin box collision geoms are ~3 mm (top) / ~1.4 mm (bottom) thicker towards the plate than their
+  visuals: in the viewer, patches in contact still show a small gap
 - no R_Knee (tibia) <-> socket collision (no rigid end stop); pylon shortened 22 mm for standing
   parity (prosthetic side carries 52 % of body weight standing)
 - calibrated against static pistoning data (Gholizadeh 2011/2012: ~10 mm loading->unloading,
@@ -125,4 +132,6 @@ post-physics (obs + rewards, ~25 ms at 2048 envs). Training at 2048 envs: smpl10
   patch deformation/force (`skin_patch_obs`, or the `*_tissue` DOF positions; `skin_pressure_penalty`
   in envs/utils/rewards.py is the old contact-force version).
 - Open: rotations/torsion of the socket are uncalibrated; torsion is under-resolved by up to ~1 deg
-  at 16 iterations; the socket can touch the thigh above ~60 deg knee flexion (also in the original).
+  at 16 iterations; the posterior socket wall touches the thigh above ~64 deg knee flexion at the
+  swing slide (~22 mm), ~45 deg with the socket fully up (slide 0); 1.3 % of walk_dataset steps
+  exceed 64 deg.

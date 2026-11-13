@@ -14,10 +14,19 @@ quickly, so the tissue compliance is moved into joints:
   * skin <-> socket contact becomes rigid and frictionless (the skin materials lose their compliant
     stiffness/damping and friction); shear, suction and liner effects live in the suspension joint
     drives (suspension_slide / _x / _y / _z);
-  * the socket plates are extended down the limb axis (distal end only) so that each side is one
+  * the socket plates are extended down the limb axis (distal end) so that each side is one
     continuous surface over the piston range: with separate plates, skin box corners caught on the
     plate edges / the gap between the top and bottom plate and locked the socket (a modelling
-    artifact). The proximal end is not extended: it would reach the thigh earlier in knee flexion;
+    artifact). The top and bottom plate of a side are coplanar, so the bottom skin boxes ride on
+    the distal extension of the top plate when the socket hangs;
+  * the top plates are also extended at the proximal end: the suspension rests at +22 mm (socket
+    hanging away from the limb) and reaches ~25-29 mm in swing, which moved the top skin boxes
+    (1 cm, 12.5 mm below the original proximal edge at slide 0) completely off the top of their
+    plates; when the socket came back up they landed on the plate edge. Medial / anterior /
+    lateral: +45 mm, the whole suspension_slide range (+50 mm). Posterior: +20 mm only (fully on
+    up to ~28 mm of slide), like the lower posterior trim line of a real socket: a longer posterior
+    wall hits the thigh in swing (at 22 mm of slide: 81 deg knee flexion without the extension,
+    64.5 deg with 20 mm, 42 deg with 45 mm; the other walls never reach the thigh);
   * the tibia capsule (R_Knee) no longer collides with socket_assembly: no rigid bone-on-pylon end stop;
   * the pylon is shortened (osl_ankle_assembly and everything below it moves up the limb axis), the
     way a prosthetist sets the length: with the softer, more realistic socket the prosthetic leg was
@@ -50,7 +59,15 @@ def _plate_down_sign(R_cols_y):
 PYLON_BODIES = ["osl_ankle_assembly", "R_Ankle_Motor", "R_Ankle_foot", "R_Ankle_toes", "R_Ankle"]
 
 
-def build_usd(src: Path, dst: Path, tissue_range, plate_extension, pylon_shortening=0.0):
+def _extensions(plate, distal, top_proximal):
+    """(added length, centre shift down the limb) of a plate, in m. top_proximal: {side: m}."""
+    side, level = plate.split("_")[2:]
+    prox = top_proximal.get(side, 0.0) if level == "top" else 0.0
+    return distal + prox, (distal - prox) / 2
+
+
+def build_usd(src: Path, dst: Path, tissue_range, plate_extension, top_proximal_extension=None, pylon_shortening=0.0,
+              bottom_visual_distal_extension=None):
     stage = Usd.Stage.Open(str(src))
     layer = stage.GetRootLayer()
     bodies, joints = f"{ROOT}/bodies", f"{ROOT}/joints"
@@ -101,10 +118,17 @@ def build_usd(src: Path, dst: Path, tissue_range, plate_extension, pylon_shorten
         prim.GetAttribute("physics:dynamicFriction").Set(0.0)
         prim.GetAttribute("physics:restitution").Set(0.0)
 
-    # 3. socket plates: extend the distal end (down the limb = socket frame +y) by plate_extension
+    # 3. socket plates: extend the distal end (down the limb = socket frame +y) by plate_extension,
+    #    and the proximal end of the top plates by top_proximal_extension[side]. The bottom skin boxes
+    #    never reach the distal part of the bottom plates, so their visuals can be extended less
+    #    (bottom_visual_distal_extension; visuals have no collision and the link mass is explicit)
     sa = f"{bodies}/socket_assembly"
     for p in SOCKET_PLATES:
         for kind in ("collisions", "visuals"):
+            distal = plate_extension
+            if kind == "visuals" and p.endswith("_bottom") and bottom_visual_distal_extension is not None:
+                distal = bottom_visual_distal_extension
+            length, shift = _extensions(p, distal, top_proximal_extension or {})
             holder = stage.GetPrimAtPath(f"{sa}/{p}_{kind}")
             q = holder.GetAttribute("xformOp:orient").Get()  # plate orientation in the socket frame
             y_axis = Gf.Rotation(q).TransformDir(Gf.Vec3d(0, 1, 0))
@@ -112,10 +136,10 @@ def build_usd(src: Path, dst: Path, tissue_range, plate_extension, pylon_shorten
             for g in holder.GetChildren():
                 sc = g.GetAttribute("xformOp:scale")
                 v = sc.Get()
-                sc.Set(Gf.Vec3d(v[0], v[1] + plate_extension / 2, v[2]))  # half extent
+                sc.Set(Gf.Vec3d(v[0], v[1] + length / 2, v[2]))  # half extent
                 tr = g.GetAttribute("xformOp:translate")
                 t = tr.Get()
-                tr.Set(Gf.Vec3d(t[0], t[1] + sgn * plate_extension / 2, t[2]))
+                tr.Set(Gf.Vec3d(t[0], t[1] + sgn * shift, t[2]))
 
     # 4. pylon length: move the ankle subtree up the limb (prosthetic_assembly2 frame -y) by pylon_shortening
     if pylon_shortening:
@@ -138,7 +162,7 @@ def build_usd(src: Path, dst: Path, tissue_range, plate_extension, pylon_shorten
     layer.Export(str(dst))
 
 
-def build_mjcf(src: Path, dst: Path, tissue_range, plate_extension, pylon_shortening=0.0):
+def build_mjcf(src: Path, dst: Path, tissue_range, plate_extension, top_proximal_extension=None, pylon_shortening=0.0):
     xml = src.read_text()
     if pylon_shortening:  # osl_ankle_assembly offset in the prosthetic_assembly2 frame (+y = down the limb)
         m = re.search(r'(<body name="osl_ankle_assembly" pos=")([^"]+)(")', xml)
@@ -151,7 +175,8 @@ def build_mjcf(src: Path, dst: Path, tissue_range, plate_extension, pylon_shorte
         assert m, b
         joint = f'<joint name="{b}_tissue" type="slide" axis="0 0 1" range="{lo} {hi}"/>\n{m.group(2)}'
         xml = xml[: m.end()] + joint + xml[m.end():]
-    for p in SOCKET_PLATES:  # extend the distal end: half-length + ext/2, centre moved ext/2 down the limb
+    for p in SOCKET_PLATES:  # extend the ends: half-length + length/2, centre moved by shift down the limb
+        length, shift = _extensions(p, plate_extension, top_proximal_extension or {})
         pat = re.compile(rf'<geom name="{p}_geom" pos="([^"]+)" quat="([^"]+)"([^>]*)size="([\d.]+) ([\d.]+) ([\d.]+)"')
         m = pat.search(xml)
         assert m, p
@@ -160,8 +185,8 @@ def build_mjcf(src: Path, dst: Path, tissue_range, plate_extension, pylon_shorte
         y_axis = np.array([2 * (x * y - w * z), 1 - 2 * (x * x + z * z), 2 * (y * z + w * x)])  # R[:, 1]
         y_axis /= np.linalg.norm(y_axis)
         sgn = _plate_down_sign(y_axis)
-        new_pos = pos + y_axis * sgn * plate_extension / 2
-        half = float(m.group(5)) + plate_extension / 2
+        new_pos = pos + y_axis * sgn * shift
+        half = float(m.group(5)) + length / 2
         new = (f'<geom name="{p}_geom" pos="{" ".join(f"{v:.6f}" for v in new_pos)}" quat="{m.group(2)}"{m.group(3)}'
                f'size="{m.group(4)} {half:.6f} {m.group(6)}"')
         xml = xml[: m.start()] + new + xml[m.end():]
@@ -178,11 +203,23 @@ def main():
     ap.add_argument("--tissue-range", type=float, nargs=2, default=(-0.002, 0.025),
                     help="tissue joint limits (m): small extension, up to 25 mm compression")
     ap.add_argument("--plate-extension", type=float, default=0.05, help="added to the distal end of each plate (m)")
+    ap.add_argument("--top-proximal-extension", type=float, default=0.045,
+                    help="added to the proximal end of the medial / anterior / lateral top plates (m): keeps "
+                         "the top skin boxes on the socket wall over the whole suspension_slide range")
+    ap.add_argument("--posterior-proximal-extension", type=float, default=0.02,
+                    help="added to the proximal end of the posterior top plate (m); shorter: it hits the thigh")
     ap.add_argument("--pylon-shortening", type=float, default=0.022,
                     help="shorten the pylon by this much (m) for standing leg-length parity")
+    ap.add_argument("--bottom-visual-distal-extension", type=float, default=0.0,
+                    help="distal extension of the bottom plate VISUALS only (m; collisions use --plate-extension): "
+                         "the bottom skin boxes stay >= 35 mm proximal of the bottom plate centre down to -10 mm "
+                         "of slide, so the extended part is never touched and only made the socket look long")
     a = ap.parse_args()
-    build_usd(Path(a.usd), Path(a.out_usd), a.tissue_range, a.plate_extension, a.pylon_shortening)
-    build_mjcf(Path(a.mjcf), Path(a.out_mjcf), a.tissue_range, a.plate_extension, a.pylon_shortening)
+    top_prox = {"posterior": a.posterior_proximal_extension, "medial": a.top_proximal_extension,
+                "anterior": a.top_proximal_extension, "lateral": a.top_proximal_extension}
+    build_usd(Path(a.usd), Path(a.out_usd), a.tissue_range, a.plate_extension, top_prox, a.pylon_shortening,
+              a.bottom_visual_distal_extension)
+    build_mjcf(Path(a.mjcf), Path(a.out_mjcf), a.tissue_range, a.plate_extension, top_prox, a.pylon_shortening)
     print(f"wrote {a.out_usd}\nwrote {a.out_mjcf}")
 
 

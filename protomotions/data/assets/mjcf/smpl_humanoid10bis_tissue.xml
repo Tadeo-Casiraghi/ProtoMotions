@@ -128,10 +128,10 @@
                 <!-- merged by protomotions/data/assets/scripts/merge_socket_links.py: osl_tibial_pylon + 8 socket boxes, combined inertia -->
                 <inertial pos="-0.000122652456 -0.00920757905 -0.00103625304" quat="0.499486925 0.50473745 -0.494854379 -0.500871303" mass="0.881139427" diaginertia="0.0018529998 0.0028005279 0.00316730039"/>
                 <geom name="osl_tibial_pylon_geom" type="cylinder" size="0.012 0.035" pos="-0.00345975  0.09410516 -0.00263468" quat="0.49964592 -0.49981643  0.50035573  0.5001816" rgba="0 0 0 1.0" condim="3" contype="1"/>
-                <geom name="socket_box_posterior_top_geom" pos="0.000000 -0.027782 0.050882" quat="0.0 -0.0 0.99627 -0.08629" type="box" size="0.025000 0.062500 0.005000" density="2833" rgba="1 0 0 0.5"/>
-                <geom name="socket_box_medial_top_geom" pos="0.040708 -0.027782 -0.001287" quat="0.79039 0.06846 -0.60649 0.05253" type="box" size="0.025000 0.062500 0.005000" density="2833" rgba="0 1 0 0.5"/>
-                <geom name="socket_box_anterior_top_geom" pos="-0.000000 -0.027782 -0.050882" quat="0.99627 0.08629 -0.0 0.0" type="box" size="0.025000 0.062500 0.005000" density="2833" rgba="0 0 1 0.5"/>
-                <geom name="socket_box_lateral_top_geom" pos="-0.040708 -0.027782 -0.001287" quat="0.79039 0.06846 0.60649 -0.05253" type="box" size="0.025000 0.062500 0.005000" density="2833" rgba="1 1 0 0.5"/>
+                <geom name="socket_box_posterior_top_geom" pos="0.000000 -0.037633 0.052601" quat="0.0 -0.0 0.99627 -0.08629" type="box" size="0.025000 0.072500 0.005000" density="2833" rgba="1 0 0 0.5"/>
+                <geom name="socket_box_medial_top_geom" pos="0.044445 -0.049947 -0.002289" quat="0.79039 0.06846 -0.60649 0.05253" type="box" size="0.025000 0.085000 0.005000" density="2833" rgba="0 1 0 0.5"/>
+                <geom name="socket_box_anterior_top_geom" pos="-0.000000 -0.049947 -0.054750" quat="0.99627 0.08629 -0.0 0.0" type="box" size="0.025000 0.085000 0.005000" density="2833" rgba="0 0 1 0.5"/>
+                <geom name="socket_box_lateral_top_geom" pos="-0.044445 -0.049947 -0.002289" quat="0.79039 0.06846 0.60649 -0.05253" type="box" size="0.025000 0.085000 0.005000" density="2833" rgba="1 1 0 0.5"/>
                 <geom name="socket_box_posterior_bottom_geom" pos="0.000000 0.051028 0.037122" quat="0.0 -0.0 0.99627 -0.08629" type="box" size="0.025000 0.062500 0.005000" density="2833" rgba="1 0 0 0.5"/>
                 <geom name="socket_box_medial_bottom_geom" pos="0.027068 0.051028 -0.000397" quat="0.79039 0.06846 -0.60649 0.05253" type="box" size="0.025000 0.062500 0.005000" density="2833" rgba="0 1 0 0.5"/>
                 <geom name="socket_box_anterior_bottom_geom" pos="-0.000000 0.051028 -0.037122" quat="0.99627 0.08629 -0.0 0.0" type="box" size="0.025000 0.062500 0.005000" density="2833" rgba="0 0 1 0.5"/>
